@@ -2,4 +2,4 @@
 title: "ISSS608-VAA"
 ---
 
-**Visual Analytics and Applications**
+Welcome to my **Visual Analytics and Applications online portfolio**
