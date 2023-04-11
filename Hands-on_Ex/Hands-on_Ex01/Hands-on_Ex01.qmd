@@ -1,0 +1,16 @@
+---
+title: "Hands-on Exercise 1"
+author: "HCSY"
+---
+
+## Load and Install R packages
+
+```{r}
+pacman::p_load(tidyverse)
+```
+
+Importing the data
+
+```{r}
+#exam_data <- read_csv()
+```
