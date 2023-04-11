@@ -12,12 +12,5 @@
     "title": "ISSS608-VAA",
     "section": "",
     "text": "Welcome to my Visual Analytics and Applications online portfolio"
-  },
-  {
-    "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html",
-    "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html",
-    "title": "Hands-on Exercise 1",
-    "section": "",
-    "text": "Getting Started\nInstall and launch R packages\n\npacman::p_load(tidyverse)"
   }
 ]
