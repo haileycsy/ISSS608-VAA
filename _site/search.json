@@ -2,7 +2,7 @@
   {
     "objectID": "about.html",
     "href": "about.html",
-    "title": "About",
+    "title": "Visual Analytics",
     "section": "",
     "text": "About this site\n\n1 + 1\n\n[1] 2"
   },
@@ -11,6 +11,6 @@
     "href": "index.html",
     "title": "ISSS608-VAA",
     "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+    "text": "Visual Analytics and Applications"
   }
 ]
