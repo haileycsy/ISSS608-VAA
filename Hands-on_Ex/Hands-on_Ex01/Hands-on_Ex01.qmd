@@ -3,14 +3,28 @@ title: "Hands-on Exercise 1"
 author: "HCSY"
 ---
 
+# Getting Started
+
 ## Load and Install R packages
 
 ```{r}
 pacman::p_load(tidyverse)
 ```
 
-Importing the data
+## Importing the data
 
 ```{r}
-#exam_data <- read_csv()
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+# Plotting a simple bar chart
+
+```{r}
+ggplot(data = exam_data, 
+       aes(x = RACE, fill = RACE)) +
+    geom_bar()+
+    labs(x = "Race",
+         y = "Number of Students",
+         title = "Race Distribution of Exam Data") + 
+    theme_grey()
 ```
