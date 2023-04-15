@@ -4,25 +4,29 @@ project:
 website:
   title: "haileycsy"
   sidebar:
+    font-size: small
     style: "docked"
     background: "#453a60"
     search: true
     tools:
-      - icon: github
-        href: https://github.com/haileycsy
+      - icon: linkedin
+        href: https://www.linkedin.com/in/hailey-sy-cheong/
       - icon: diagram-3-fill
         href: https://public.tableau.com/app/profile/hailey.cheong
+      - icon: github
+        href: https://github.com/haileycsy
     contents:
       - section: "Home"
         contents:
           - index.qmd
-      - section: "About"
-        contents:
           - about.qmd
       - section: "Hands-on Exercises"
         contents:
           - text: "Hands-on Exercise 1"
             href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
+      - section: "Take Home Exercises"
+        contents:
+          - text: "Take Home Exercise 1"
 format:
   html:
     theme: flatly
