@@ -24,6 +24,10 @@ website:
         contents:
           - text: "Hands-on Exercise 1"
             href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
+      - section: "In-class Exercises"
+        contents:
+          - text: "In-class Exercise 1"
+            href: In-class_Ex/In-class_Ex01/In-class_Ex01.html
       - section: "Take Home Exercises"
         contents:
           - text: "Take Home Exercise 1"
