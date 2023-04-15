@@ -2,22 +2,30 @@ project:
   type: website
 
 website:
-  title: "ISSS608-VAA"
-  navbar:
-    left:
-      - text: "Hands-on Exercise 1"
-        menu: 
+  title: "haileycsy"
+  sidebar:
+    style: "docked"
+    background: "#453a60"
+    search: true
+    tools:
+      - icon: github
+        href: https://github.com/haileycsy
+      - icon: diagram-3-fill
+        href: https://public.tableau.com/app/profile/hailey.cheong
+    contents:
+      - section: "Home"
+        contents:
+          - index.qmd
+      - section: "About"
+        contents:
+          - about.qmd
+      - section: "Hands-on Exercises"
+        contents:
           - text: "Hands-on Exercise 1"
-            href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html"
-            
-    right:
-        - href: index.qmd
-          text: Home
-        - about.qmd
-
+            href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
 format:
   html:
-    theme: minty
+    theme: flatly
     mainfont: Bahnschrift
     css: styles.css
     toc: true
