@@ -44,7 +44,7 @@ format:
   html:
     theme: flatly
     backgroundcolor: "#F8F3E6"
-    mainfont: Bahnschrift
+    mainfont: Consolas
     css: styles.css
     toc: true
 
