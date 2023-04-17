@@ -27,7 +27,8 @@ ggplot(data = exam_data,
     labs(x = "Race",
          y = "Number of Students",
          title = "Race Distribution of Exam Data") + 
-    theme_grey()
+    theme_grey() + 
+    theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
 # Plotting Practice
@@ -44,7 +45,8 @@ ggplot(data = exam_data,
       panel.background=element_rect(fill='lightblue', colour='lightblue'),
       panel.border=element_blank(),
       panel.grid.major=element_line(linewidth=0.2, linetype='solid', colour="white"), 
-      panel.grid.minor=element_line(linewidth=0.2, linetype='solid', colour="white")
+      panel.grid.minor=element_line(linewidth=0.2, linetype='solid', colour="white"),
+      plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6")
   )
 ```
 
@@ -63,7 +65,8 @@ ggplot(data = exam_data,
          y = "No. of\nPupils") + 
     theme_grey() +
     theme(
-      axis.title.y = element_text(hjust=1, angle=0)
+      axis.title.y = element_text(hjust=1, angle=0),
+      plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6")
     )
 ```
 
@@ -80,7 +83,8 @@ exam_data %>%
       vjust=-1) +
   xlab("Race") +
   ylab("No. of\nPupils") +
-  theme(axis.title.y=element_text(angle = 0))
+  theme(axis.title.y=element_text(angle = 0),
+        plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
 ## 3: Makeover Design for Distribution of Math Scores
@@ -97,5 +101,44 @@ ggplot(data=exam_data,
     geom_vline(aes(xintercept=median(exam_data$MATHS, na.rm=T)),
                color="grey30", linewidth=1, linetype="dashed") + 
     geom_vline(aes(xintercept=mean(exam_data$MATHS, na.rm=T)),
-               colour="red", linewidth=1, linetype="dashed")
+               colour="red", linewidth=1, linetype="dashed") + 
+    theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+## 4: Makeover Design for Distribution of English Score by Gender
+
+```{r}
+eng_data <- exam_data["ENGLISH"]
+
+ggplot(data=exam_data,
+       aes(x=ENGLISH, fill=GENDER)) +
+    geom_histogram(bins=20, data=eng_data, fill="grey", alpha=0.7, na.rm=T) + 
+    geom_histogram(bins=20, color="black", na.rm=T) + 
+    facet_wrap(~ GENDER) +
+    xlim(20,100) + 
+    labs(x = "English Score",
+         y = "No. of Pupils",
+         title = "Distribution of English Scores by Gender") + 
+    theme_bw() + 
+    theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    )
+```
+
+## 5: Makeover Design for Scatterplot of English and Math Scores
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x= MATHS, y=ENGLISH)) +
+  geom_point() +
+  coord_cartesian(xlim=c(0,100),
+                  ylim=c(0,100)) +
+  geom_vline(aes(xintercept=50),
+               color="grey", linewidth=0.8, linetype="dashed") + 
+  geom_hline(aes(yintercept=50),
+               color="grey", linewidth=0.8, linetype="dashed") + 
+  labs(x = "Math Score",
+       y = "English Score",
+       title = "Correlation between English and Math Scores") + 
+  theme_gray() +
+  theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```

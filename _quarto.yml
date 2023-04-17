@@ -34,6 +34,7 @@ website:
 format:
   html:
     theme: flatly
+    backgroundcolor: "#F8F3E6"
     mainfont: Bahnschrift
     css: styles.css
     toc: true
