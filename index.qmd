@@ -1,5 +1,13 @@
 ---
 title: "ISSS608-VAA"
+format: 
+  html: 
+    toc: false
 ---
+::: {layout-ncol=2}
 
-Welcome to my **Visual Analytics and Applications** online portfolio
+![](Images/data3.gif){width=150%}
+
+![](Images/data2.gif){width=150%}
+
+:::

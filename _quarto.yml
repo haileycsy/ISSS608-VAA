@@ -2,24 +2,33 @@ project:
   type: website
 
 website:
-  title: "haileycsy"
+  title: haileycsy
+  favicon: "Images/apple-touch-icon.png"
   sidebar:
-    font-size: small
+    logo: "Images/Name_Logo2.png"
+    font-size: x-small
     style: "docked"
-    background: "#453a60"
+    background: "#3A3B60"
+    alignment: center
+    collapse-level: 1
     search: true
+    color: "#F8F3E6"
     tools:
       - icon: linkedin
         href: https://www.linkedin.com/in/hailey-sy-cheong/
+        aria-label: Linkedin
       - icon: diagram-3-fill
         href: https://public.tableau.com/app/profile/hailey.cheong
+        aria-label: Tableau
       - icon: github
         href: https://github.com/haileycsy
+        aria-label: Github
     contents:
       - section: "Home"
         contents:
           - index.qmd
-          - about.qmd
+          - text: "Hello World"
+            href: about.html
       - section: "Hands-on Exercises"
         contents:
           - text: "Hands-on Exercise 1"
@@ -40,4 +49,5 @@ format:
     toc: true
 
 editor: visual
+
 

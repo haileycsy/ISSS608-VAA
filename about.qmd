@@ -1,9 +1,5 @@
 ---
-title: "About"
+title: ""
 ---
 
-About this site
-
-```{r}
-1 + 1
-```
+![](Images/Name_Logo2.png){height=100px style="display: block; margin: 0 auto;"}

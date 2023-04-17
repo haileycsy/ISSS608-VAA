@@ -1,6 +1,5 @@
 ---
-title: "Hands-on Exercise 1"
-author: "HCSY"
+title: ""
 ---
 
 # Getting Started
@@ -50,7 +49,11 @@ ggplot(data = exam_data,
   )
 ```
 
-## 2: Makeover Design for Pupil Count by Race
+## 2: Makeover Design for Pupil Count by Race 
+
+::: panel-tabset
+
+### Formula
 
 ```{r}
 ggplot(data = exam_data, 
@@ -69,8 +72,8 @@ ggplot(data = exam_data,
       plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6")
     )
 ```
+### Forcats 
 
-Alternative version using forcats package:
 ```{r}
 exam_data %>%
   mutate(RACE = fct_infreq(RACE)) %>%
@@ -86,6 +89,7 @@ exam_data %>%
   theme(axis.title.y=element_text(angle = 0),
         plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
+:::
 
 ## 3: Makeover Design for Distribution of Math Scores
 
