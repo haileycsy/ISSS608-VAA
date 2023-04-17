@@ -8,7 +8,7 @@ author: "HCSY"
 ## Load and Install R packages
 
 ```{r}
-pacman::p_load(tidyverse)
+pacman::p_load(tidyverse, forcats)
 ```
 
 ## Importing the data
@@ -28,4 +28,74 @@ ggplot(data = exam_data,
          y = "Number of Students",
          title = "Race Distribution of Exam Data") + 
     theme_grey()
+```
+
+# Plotting Practice
+
+## 1: Working with Themes
+
+```{r}
+ggplot(data = exam_data,
+       aes(x = RACE)) +
+    geom_bar() + 
+    coord_flip()+
+    theme_minimal() + 
+    theme(
+      panel.background=element_rect(fill='lightblue', colour='lightblue'),
+      panel.border=element_blank(),
+      panel.grid.major=element_line(linewidth=0.2, linetype='solid', colour="white"), 
+      panel.grid.minor=element_line(linewidth=0.2, linetype='solid', colour="white")
+  )
+```
+
+## 2: Makeover Design for Pupil Count by Race
+
+```{r}
+ggplot(data = exam_data, 
+       aes(x = reorder(RACE, RACE, function(x)-length(x)))) +
+    geom_bar()+
+    ylim(0, 220) + 
+    geom_text(stat="count", 
+      aes(label=paste0(after_stat(count), ", ", 
+      round(after_stat(count)/sum(after_stat(count))*100, 1), "%")),
+      vjust=-1) +
+    labs(x = "Race",
+         y = "No. of\nPupils") + 
+    theme_grey() +
+    theme(
+      axis.title.y = element_text(hjust=1, angle=0)
+    )
+```
+
+Alternative version using forcats package:
+```{r}
+exam_data %>%
+  mutate(RACE = fct_infreq(RACE)) %>%
+  ggplot(aes(x = RACE)) + 
+  geom_bar()+
+  ylim(0,220) +
+  geom_text(stat="count", 
+      aes(label=paste0(after_stat(count), ", ", 
+      round(after_stat(count)/sum(after_stat(count))*100, 1), "%")),
+      vjust=-1) +
+  xlab("Race") +
+  ylab("No. of\nPupils") +
+  theme(axis.title.y=element_text(angle = 0))
+```
+
+## 3: Makeover Design for Distribution of Math Scores
+
+```{r}
+ggplot(data=exam_data,
+       aes(x=MATHS)) + 
+    geom_histogram(bins=20, 
+                   color="grey30", 
+                   fill="lightblue") +
+    labs(x = "Math Score",
+         y = "No. of Pupils",
+         title = "Distribution of Math Scores") + 
+    geom_vline(aes(xintercept=median(exam_data$MATHS, na.rm=T)),
+               color="grey30", linewidth=1, linetype="dashed") + 
+    geom_vline(aes(xintercept=mean(exam_data$MATHS, na.rm=T)),
+               colour="red", linewidth=1, linetype="dashed")
 ```
