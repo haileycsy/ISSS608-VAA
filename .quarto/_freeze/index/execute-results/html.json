@@ -2,9 +2,7 @@
   "hash": "5baefcbc4e620f6c91a245dc330c7085",
   "result": {
     "markdown": "---\ntitle: \"\"\nformat: \n  html: \n    toc: false\n---\n\n::: {.cell}\n\n```{.r .cell-code}\nISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )\n```\n:::\n\n\n::: {layout-ncol=\"2\"}\n[![](Images/data3.gif){width=\"170%\"}](https://media.giphy.com/media/MT5UUV1d4CXE2A37Dg/giphy.gif)\n\n[![](Images/data2.gif){width=\"170%\"}](https://media.giphy.com/media/MT5UUV1d4CXE2A37Dg/giphy.gif)\n:::\n",
-    "supporting": [
-      "index_files"
-    ],
+    "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"
     ],

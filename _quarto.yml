@@ -49,6 +49,7 @@ format:
   html:
     toc: true
     theme: flatly
+    highlight-style: tango
     backgroundcolor: "#F8F3E6"
     mainfont: Consolas
     code-copy: hover
