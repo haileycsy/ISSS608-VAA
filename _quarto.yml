@@ -10,10 +10,8 @@ website:
     logo: "Images/Name_Logo2.png"
     title: false
     collapse-below: lg
-    font-size: x-small
     background: "#3A3B60"
     search: true
-    color: "#F8F3E6"
     left:
       - text: "{{< fa house-chimney-window >}} Home"
         menu: 
