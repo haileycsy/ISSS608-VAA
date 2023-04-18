@@ -1,5 +1,19 @@
 ---
 title: ""
+about:
+  template: jolla
+  image: Images/data1.gif
+  image-shape: round
+  image-width: 20em
+  links: 
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/hailey-sy-cheong/
+    - icon: diagram-3-fill
+      text: Tableau
+      href: https://public.tableau.com/app/profile/hailey.cheong
+    - icon: github
+      text: Github
+      href: https://github.com/haileycsy
 ---
-
-![](Images/Name_Logo2.png){height=100px style="display: block; margin: 0 auto;"}
+![](Images/Name_Logo3.png){height=140px style="display: block; margin: 0 auto;"}

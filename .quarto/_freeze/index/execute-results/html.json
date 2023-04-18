@@ -1,8 +1,10 @@
 {
-  "hash": "d35c89a8572130c39bbfc479379bbdc5",
+  "hash": "5baefcbc4e620f6c91a245dc330c7085",
   "result": {
-    "markdown": "---\ntitle: \"ISSS608-VAA\"\n---\n\n\nThis is a Quarto website.\n\nTo learn more about Quarto websites visit <https://quarto.org/docs/websites>.\n\n\n::: {.cell}\n\n```{.r .cell-code}\n1 + 1\n```\n\n::: {.cell-output .cell-output-stdout}\n```\n[1] 2\n```\n:::\n:::\n",
-    "supporting": [],
+    "markdown": "---\ntitle: \"\"\nformat: \n  html: \n    toc: false\n---\n\n::: {.cell}\n\n```{.r .cell-code}\nISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )\n```\n:::\n\n\n::: {layout-ncol=\"2\"}\n[![](Images/data3.gif){width=\"170%\"}](https://media.giphy.com/media/MT5UUV1d4CXE2A37Dg/giphy.gif)\n\n[![](Images/data2.gif){width=\"170%\"}](https://media.giphy.com/media/MT5UUV1d4CXE2A37Dg/giphy.gif)\n:::\n",
+    "supporting": [
+      "index_files"
+    ],
     "filters": [
       "rmarkdown/pagebreak.lua"
     ],

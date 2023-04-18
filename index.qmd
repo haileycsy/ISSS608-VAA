@@ -1,13 +1,16 @@
 ---
-title: "ISSS608-VAA"
+title: ""
 format: 
   html: 
     toc: false
 ---
-::: {layout-ncol=2}
 
-![](Images/data3.gif){width=150%}
+```{r}
+ISSS608_VAA <- c( "Data", "R", "Tableau", "Coffee", "Tears", "StackOverflow", "ChatGPT" )
+```
 
-![](Images/data2.gif){width=150%}
+::: {layout-ncol="2"}
+[![](Images/data3.gif){width="170%"}](https://media.giphy.com/media/MT5UUV1d4CXE2A37Dg/giphy.gif)
 
+[![](Images/data2.gif){width="170%"}](https://media.giphy.com/media/MT5UUV1d4CXE2A37Dg/giphy.gif)
 :::

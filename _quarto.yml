@@ -2,18 +2,36 @@ project:
   type: website
 
 website:
-  title: haileycsy
+  title: "haileycsy"
+  image: "Images/Name_LogoL.png"
   favicon: "Images/apple-touch-icon.png"
-  sidebar:
+  page-navigation: true
+  navbar:
     logo: "Images/Name_Logo2.png"
+    title: false
+    collapse-below: lg
     font-size: x-small
-    style: "docked"
     background: "#3A3B60"
-    alignment: center
-    collapse-level: 1
     search: true
     color: "#F8F3E6"
-    tools:
+    left:
+      - text: "{{< fa house-chimney-window >}} Home"
+        menu: 
+          - text: "Home"
+            href: index.qmd
+          - text: "Hello World"
+            href: about.html
+      - text: "{{< fa hand-sparkles >}} Hands-on Exercises"
+        menu:
+          - text: "Hands-on Ex 1"
+            href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
+      - text: "{{< fa pen-to-square >}} In-class Exercises"
+        menu:
+          - text: "In-class Ex"
+      - text: "{{< fa magnifying-glass-chart >}} Take-home Exercises"
+        menu:
+          - text: "Take-home Ex 1"
+    right:
       - icon: linkedin
         href: https://www.linkedin.com/in/hailey-sy-cheong/
         aria-label: Linkedin
@@ -23,30 +41,20 @@ website:
       - icon: github
         href: https://github.com/haileycsy
         aria-label: Github
-    contents:
-      - section: "Home"
-        contents:
-          - index.qmd
-          - text: "Hello World"
-            href: about.html
-      - section: "Hands-on Exercises"
-        contents:
-          - text: "Hands-on Exercise 1"
-            href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
-      - section: "In-class Exercises"
-        contents:
-          - text: "In-class Exercise 1"
-            href: In-class_Ex/In-class_Ex01/In-class_Ex01.html
-      - section: "Take Home Exercises"
-        contents:
-          - text: "Take Home Exercise 1"
+  page-footer:
+    background: "#F8F3E6"
+    right: |
+      Copyright 2023![](Images/Name_Logo3.png){fig-alt="Name_logo" width=100px}
 format:
   html:
+    toc: true
     theme: flatly
     backgroundcolor: "#F8F3E6"
     mainfont: Consolas
+    code-copy: hover
+    code-overflow: wrap
     css: styles.css
-    toc: true
+    
 
 editor: visual
 

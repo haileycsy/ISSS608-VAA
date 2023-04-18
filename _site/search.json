@@ -40,5 +40,12 @@
     "title": "haileycsy",
     "section": "5: Makeover Design for Scatterplot of English and Math Scores",
     "text": "5: Makeover Design for Scatterplot of English and Math Scores\n\nggplot(data=exam_data, \n       aes(x= MATHS, y=ENGLISH)) +\n  geom_point() +\n  coord_cartesian(xlim=c(0,100),\n                  ylim=c(0,100)) +\n  geom_vline(aes(xintercept=50),\n               color=\"grey\", linewidth=0.8, linetype=\"dashed\") + \n  geom_hline(aes(yintercept=50),\n               color=\"grey\", linewidth=0.8, linetype=\"dashed\") + \n  labs(x = \"Math Score\",\n       y = \"English Score\",\n       title = \"Correlation between English and Math Scores\") + \n  theme_gray() +\n  theme(plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\"))"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "haileycsy",
+    "section": "",
+    "text": "ISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )"
   }
 ]

@@ -3,6 +3,15 @@ body {
   font-size: 16px;
   color: #3E4254;
 }
+/* Navbar height */
+.navbar {
+  height: 60px;
+}
+
+/* Navbar Logo */
+.navbar-brand > img {
+  max-height: 50px;
+}
 
 /* Heading 1 */
 h1 {
