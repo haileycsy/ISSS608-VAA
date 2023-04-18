@@ -48,7 +48,7 @@ website:
 format:
   html:
     toc: true
-    theme: flatly
+    theme: cosmo
     highlight-style: tango
     backgroundcolor: "#F8F3E6"
     mainfont: Consolas
