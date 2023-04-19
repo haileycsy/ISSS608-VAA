@@ -14,20 +14,23 @@ website:
     left:
       - text: "{{< fa house-chimney-window >}} Home"
         menu: 
-          - text: "Home"
+          - text: "{{< fa house-chimney-window >}} Home"
             href: index.qmd
-          - text: "Hello World"
+          - text: "{{< fa robot >}} Hello World"
             href: about.html
-      - text: "{{< fa hand-sparkles >}} Hands-on Exercises"
+      - text: "{{< fa hand-sparkles >}} Hands-on Ex"
         menu:
           - text: "Hands-on Ex 1"
             href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
-      - text: "{{< fa pen-to-square >}} In-class Exercises"
+      - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
           - text: "In-class Ex"
-      - text: "{{< fa magnifying-glass-chart >}} Take-home Exercises"
+      - text: "{{< fa magnifying-glass-chart >}} Take-home Ex"
         menu:
           - text: "Take-home Ex 1"
+      - text: "{{< fa laptop-code >}} Projects"
+        menu:
+          - text: "Shiny"
     right:
       - icon: linkedin
         href: https://www.linkedin.com/in/hailey-sy-cheong/

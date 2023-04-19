@@ -17,6 +17,8 @@ about:
       href: https://github.com/haileycsy
 ---
 
-![](Images/Name_Logo3.png){height=140px style="display: block; margin: 0 auto;"}
+![](Images/Name_Logo3.png){height="140px" style="display: block; margin: 0 auto;"}
 
 ![](Images/er_cv.png){style="display: block; margin: 0 auto;"}
+
+<font size="1">[gif source](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTUyNDdiODM1NTAwYzM5ZDZjMDlkMzk3ZGE0MDE2Y2FiYTM4ZGUzYSZjdD1n/HUplkVCPY7jTW/giphy.gif)</font>
