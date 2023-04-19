@@ -19,4 +19,4 @@ about:
 
 ![](Images/Name_Logo3.png){height=140px style="display: block; margin: 0 auto;"}
 
-![](Images/er_cv2.png){style="display: block; margin: 0 auto;"}
+![](Images/er_cv.png){style="display: block; margin: 0 auto;"}
