@@ -8,6 +8,8 @@ $gray: #64605f;
 $light-gray: #dfdfeb;
 $blue: #4d5887;
 $teal: #93c7c2;
+$orange: #f5bc5f;
+$pink: #f53b5d;
 
 // Base document colors
 $navbar-bg: $dark-blue; // navbar
@@ -24,6 +26,12 @@ $font-family: Consolas,monaco,monospace;
 //toc 
 $toc-font-size: 14px;
 $toc-active-border: $teal;
+
+// callouts
+$callout-color-note: $blue;
+$callout-color-tip: $teal;
+$callout-color-caution: $orange;
+$callout-color-important: $pink;
 
 
 /*-- scss:rules --*/

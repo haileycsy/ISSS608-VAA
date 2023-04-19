@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "haileycsy",
+    "section": "",
+    "text": "gif source"
+  },
+  {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html",
     "title": "haileycsy",
@@ -47,12 +54,5 @@
     "title": "haileycsy",
     "section": "",
     "text": "ISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "haileycsy",
-    "section": "",
-    "text": "gif source"
   }
 ]
