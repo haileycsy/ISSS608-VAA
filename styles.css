@@ -1,8 +1,4 @@
 /* css styles */
-body {
-  font-size: 16px;
-  color: #3E4254;
-}
 
 
 /* Navbar Logo */
@@ -10,29 +6,41 @@ body {
   max-height: 50px;
 }
 
+@media (max-width: 1060px) and (min-width: 991.98px) {
+
+#navbarCollapse ul:last-of-type a.nav-link {
+  padding-left: .25em;
+  padding-right: .25em;
+}
+
+.navbar #quarto-search {
+  margin-left: .1em;
+}
+}
 
 /* Heading 1 */
 h1 {
   font-size: 28px;
+  font-variant: normal; 
+  font-weight: 700; 
+  line-height: 28px;
 }
 
 /* Heading 2 */
 h2 {
-  font-size: 24px;
+  font-size: 22px;
+  font-variant: normal; 
+  font-weight: 700; 
 }
 
 /* Heading 3 */
 h3 {
   font-size: 20px;
+  font-variant: normal; 
+  font-weight: 700; 
 }
 
 /* Heading 4 */
 h4 {
   font-size: 18px;
-}
-
-/* Table of contents */
-.toc {
-  font-size: 10px;
-  color: #3E4254;
 }

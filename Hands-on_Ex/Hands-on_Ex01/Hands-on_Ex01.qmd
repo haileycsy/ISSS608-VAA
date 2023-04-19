@@ -21,7 +21,7 @@ summary(exam_data)
 
 ```{r}
 ggplot(data = exam_data, 
-       aes(x = RACE, fill = RACE)) +
+       aes(x = RACE)) +
     geom_bar()+
     labs(x = "Race",
          y = "Number of Students",

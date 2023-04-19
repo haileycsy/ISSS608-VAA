@@ -10,7 +10,6 @@ website:
     logo: "Images/Name_Logo2.png"
     title: false
     collapse-below: lg
-    background: "#3A3B60"
     search: true
     left:
       - text: "{{< fa house-chimney-window >}} Home"
@@ -40,16 +39,15 @@ website:
         href: https://github.com/haileycsy
         aria-label: Github
   page-footer:
-    background: "#F8F3E6"
     right: |
       Copyright 2023![](Images/Name_Logo3.png){fig-alt="Name_logo" width=100px}
 format:
   html:
     toc: true
-    theme: cosmo
+    theme: 
+      - cosmo
+      - theme.scss
     highlight-style: tango
-    backgroundcolor: "#F8F3E6"
-    mainfont: Consolas
     code-copy: hover
     code-overflow: wrap
     css: styles.css
