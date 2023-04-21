@@ -10,6 +10,10 @@ format:
 
 # Load and Install R Packages
 
+```{r, echo=FALSE}
+knitr::opts_chunk$set(fig.width=10, fig.height=6) 
+```
+
 ```{r, message=FALSE}
 pacman::p_load(ggrepel, patchwork, 
                ggthemes, hrbrthemes, extrafont,
