@@ -16,7 +16,7 @@ knitr::opts_chunk$set(fig.width=10, fig.height=6)
 
 ```{r, message=FALSE}
 pacman::p_load(ggrepel, patchwork, 
-               ggthemes, hrbrthemes, extrafont,
+               ggthemes, hrbrthemes, extrafont, InraeThemes,
                ggpubr, tidyverse) 
 ```
 
@@ -115,7 +115,7 @@ ggplot(data=exam_data,
 ```
 :::
 
-### theme_ipsum_ps
+## Trying out [InraeThemes](https://github.com/davidcarayon/InraeThemes)
 
 ::: panel-tabset
 
@@ -125,11 +125,11 @@ ggplot(data=exam_data,
              aes(x = ENGLISH)) +
   geom_histogram(bins=20, 
                  boundary = 100,
-                 color="#64605f", 
-                 fill="grey90") +
+                 color="#F8F3E6",
+                 fill="#275662") +
   labs(x="English Scores", y="count",
        title="Distribution of English scores") +
-  theme_ipsum_ps()
+  theme_inrae()
 ```
 
 ### code
@@ -138,23 +138,22 @@ ggplot(data=exam_data,
              aes(x = ENGLISH)) +
   geom_histogram(bins=20, 
                  boundary = 100,
-                 color="#64605f", 
-                 fill="grey90") +
+                 color="#F8F3E6",
+                 fill="#275662") +
   labs(x="English Scores", y="count",
        title="Distribution of English scores") +
-  theme_ipsum_ps()
+  theme_inrae()
 ```
 :::
 
 ### Customising hbrthemes
 
-::: {.callout-tip}
-## Changing font sizes for increased clarity
+:::: {.focusbox .focus data-latex="focus"}
+**Changing font sizes for increased clarity**
 
 * axis_title_size argument is used to increase the font size of the axis title
 * base_size argument is used to increase the default axis label
 * grid argument is used to remove the x-axis grid lines
-
 :::
 
 ```{r, warning=FALSE}
@@ -174,9 +173,9 @@ ggplot(data=exam_data,
 
 ### Creating Plots 
 
-::: {.callout-note}
-Give each plot a variable name for easy access
-:::
+:::: {.solvebox .solve data-latex="solve"}
+Assign each plot to a variable in order to access it for patchworking
+::::
 
 ```{r}
 p1 <- ggplot(data=exam_data, 

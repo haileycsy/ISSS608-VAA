@@ -18,3 +18,52 @@
 }
 }
 
+/* Custom callout boxes */
+
+.cautionbox {
+  padding: 1em 1em 1em 4em;
+  margin-bottom: 10px;
+  border: 1.5px solid #3A3B60;
+  border-radius: 10px;
+  background: #fac978 5px center/3em no-repeat;
+}
+
+.caution {
+  background-image: url("Images/caution.png");
+}
+
+.focusbox {
+  padding: 1em 1em 1em 4em;
+  margin-bottom: 10px;
+  border: 1.5px solid #3A3B60;
+  border-radius: 10px;
+  background: #a3b1e6 5px center/3em no-repeat;
+}
+
+.focus {
+  background-image: url("Images/focus.png");
+}
+
+.pinbox {
+  padding: 1em 1em 1em 4em;
+  margin-bottom: 10px;
+  border: 1.5px solid #3A3B60;
+  border-radius: 10px;
+  background: #d6a3ac 5px center/3em no-repeat;
+}
+
+.pin {
+  background-image: url("Images/pin.png");
+}
+
+.solvebox {
+  padding: 1em 1em 1em 4em;
+  margin-bottom: 10px;
+  border: 1.5px solid #3A3B60;
+  border-radius: 10px;
+  background: #a9d9d4 5px center/3em no-repeat;
+}
+
+.solve {
+  background-image: url("Images/solution.png");
+}
