@@ -9,42 +9,42 @@
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html",
-    "title": "haileycsy",
+    "title": "Hands on Exercise 1",
     "section": "",
     "text": "pacman::p_load(tidyverse, forcats)\n\n\n\n\n\nexam_data <- read_csv(\"data/Exam_data.csv\")\n\nRows: 322 Columns: 7\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (4): ID, CLASS, GENDER, RACE\ndbl (3): ENGLISH, MATHS, SCIENCE\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\nsummary(exam_data)\n\n      ID               CLASS              GENDER              RACE          \n Length:322         Length:322         Length:322         Length:322        \n Class :character   Class :character   Class :character   Class :character  \n Mode  :character   Mode  :character   Mode  :character   Mode  :character  \n                                                                            \n                                                                            \n                                                                            \n    ENGLISH          MATHS          SCIENCE     \n Min.   :21.00   Min.   : 9.00   Min.   :15.00  \n 1st Qu.:59.00   1st Qu.:58.00   1st Qu.:49.25  \n Median :70.00   Median :74.00   Median :65.00  \n Mean   :67.18   Mean   :69.33   Mean   :61.16  \n 3rd Qu.:78.00   3rd Qu.:85.00   3rd Qu.:74.75  \n Max.   :96.00   Max.   :99.00   Max.   :96.00"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#working-with-themes",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#working-with-themes",
-    "title": "haileycsy",
+    "title": "Hands on Exercise 1",
     "section": "1: Working with Themes",
     "text": "1: Working with Themes\n\nggplot(data = exam_data,\n       aes(x = RACE)) +\n    geom_bar() + \n    coord_flip()+\n    theme_minimal() + \n    theme(\n      panel.background=element_rect(fill='lightblue', colour='lightblue'),\n      panel.border=element_blank(),\n      panel.grid.major=element_line(linewidth=0.2, linetype='solid', colour=\"white\"), \n      panel.grid.minor=element_line(linewidth=0.2, linetype='solid', colour=\"white\"),\n      plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\")\n  )"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-pupil-count-by-race",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-pupil-count-by-race",
-    "title": "haileycsy",
+    "title": "Hands on Exercise 1",
     "section": "2: Makeover Design for Pupil Count by Race",
     "text": "2: Makeover Design for Pupil Count by Race\n\nFormulaForcats\n\n\n\nggplot(data = exam_data, \n       aes(x = reorder(RACE, RACE, function(x)-length(x)))) +\n    geom_bar()+\n    ylim(0, 220) + \n    geom_text(stat=\"count\", \n      aes(label=paste0(after_stat(count), \", \", \n      round(after_stat(count)/sum(after_stat(count))*100, 1), \"%\")),\n      vjust=-1) +\n    labs(x = \"Race\",\n         y = \"No. of\\nPupils\") + \n    theme_grey() +\n    theme(\n      axis.title.y = element_text(hjust=1, angle=0),\n      plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\")\n    )\n\n\n\n\n\n\n\nexam_data %>%\n  mutate(RACE = fct_infreq(RACE)) %>%\n  ggplot(aes(x = RACE)) + \n  geom_bar()+\n  ylim(0,220) +\n  geom_text(stat=\"count\", \n      aes(label=paste0(after_stat(count), \", \", \n      round(after_stat(count)/sum(after_stat(count))*100, 1), \"%\")),\n      vjust=-1) +\n  xlab(\"Race\") +\n  ylab(\"No. of\\nPupils\") +\n  theme(axis.title.y=element_text(angle = 0),\n        plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\"))"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-distribution-of-math-scores",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-distribution-of-math-scores",
-    "title": "haileycsy",
+    "title": "Hands on Exercise 1",
     "section": "3: Makeover Design for Distribution of Math Scores",
     "text": "3: Makeover Design for Distribution of Math Scores\n\nggplot(data=exam_data,\n       aes(x=MATHS)) + \n    geom_histogram(bins=20, \n                   color=\"grey30\", \n                   fill=\"lightblue\") +\n    labs(x = \"Math Score\",\n         y = \"No. of Pupils\",\n         title = \"Distribution of Math Scores\") + \n    geom_vline(aes(xintercept=median(exam_data$MATHS, na.rm=T)),\n               color=\"grey30\", linewidth=1, linetype=\"dashed\") + \n    geom_vline(aes(xintercept=mean(exam_data$MATHS, na.rm=T)),\n               colour=\"red\", linewidth=1, linetype=\"dashed\") + \n    theme(plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\"))"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-distribution-of-english-score-by-gender",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-distribution-of-english-score-by-gender",
-    "title": "haileycsy",
+    "title": "Hands on Exercise 1",
     "section": "4: Makeover Design for Distribution of English Score by Gender",
     "text": "4: Makeover Design for Distribution of English Score by Gender\n\neng_data <- exam_data[\"ENGLISH\"]\n\nggplot(data=exam_data,\n       aes(x=ENGLISH, fill=GENDER)) +\n    geom_histogram(bins=20, data=eng_data, fill=\"grey\", alpha=0.7, na.rm=T) + \n    geom_histogram(bins=20, color=\"black\", na.rm=T) + \n    facet_wrap(~ GENDER) +\n    xlim(20,100) + \n    labs(x = \"English Score\",\n         y = \"No. of Pupils\",\n         title = \"Distribution of English Scores by Gender\") + \n    theme_bw() + \n    theme(plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\")\n    )"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-scatterplot-of-english-and-math-scores",
     "href": "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html#makeover-design-for-scatterplot-of-english-and-math-scores",
-    "title": "haileycsy",
+    "title": "Hands on Exercise 1",
     "section": "5: Makeover Design for Scatterplot of English and Math Scores",
     "text": "5: Makeover Design for Scatterplot of English and Math Scores\n\nggplot(data=exam_data, \n       aes(x= MATHS, y=ENGLISH)) +\n  geom_point() +\n  coord_cartesian(xlim=c(0,100),\n                  ylim=c(0,100)) +\n  geom_vline(aes(xintercept=50),\n               color=\"grey\", linewidth=0.8, linetype=\"dashed\") + \n  geom_hline(aes(yintercept=50),\n               color=\"grey\", linewidth=0.8, linetype=\"dashed\") + \n  labs(x = \"Math Score\",\n       y = \"English Score\",\n       title = \"Correlation between English and Math Scores\") + \n  theme_gray() +\n  theme(plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\"))"
   },
@@ -54,5 +54,33 @@
     "title": "haileycsy",
     "section": "",
     "text": "ISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html",
+    "title": "Hands on Exercise 2",
+    "section": "",
+    "text": "code block\npacman::p_load(ggrepel, patchwork, \n               ggthemes, hrbrthemes,\n               ggpubr, tidyverse)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html#annotations-with-ggrepel",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html#annotations-with-ggrepel",
+    "title": "Hands on Exercise 2",
+    "section": "Annotations with ggrepel",
+    "text": "Annotations with ggrepel\nA comparison between annotations using geom_label(), geom_text() and package ggrepel\n\nwith ggrepelwithout\n\n\n\n\ncode block\nggplot(data=exam_data, \n       aes(x= MATHS, \n           y=ENGLISH)) +\n  geom_point() +\n  geom_smooth(method=lm, \n              linewidth=0.5,\n              formula= y~x) +  \n  geom_label_repel(aes(label = ID), \n                   fontface = \"bold\") +\n  coord_cartesian(xlim=c(0,100),\n                  ylim=c(0,100)) +\n  labs(x=\"Math\", y=\"English\",\n       title=\"Comparing English and Math Scores for Primary 3\",\n       subtitle=\"There is a positive correlation between Math and English scores\") +\n  stat_cor(label.x.npc = \"left\", label.y.npc = \"top\",\n          aes(label=paste(after_stat(rr.label)))) +\n  theme_stata() + \n  theme(plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\"))\n\n\n\n\n\n\n\n\n\ncode block\nggplot(data=exam_data, \n       aes(x= MATHS, \n           y=ENGLISH)) +\n  geom_point() +\n  geom_smooth(method=lm, \n              linewidth=0.5,\n              formula= y~x) +  \n  geom_label(aes(label = ID), \n            fontface = \"bold\") +\n  coord_cartesian(xlim=c(0,100),\n                  ylim=c(0,100)) +\n  labs(x=\"Math\", y=\"English\",\n       title=\"Comparing English and Math Scores for Primary 3\",\n       subtitle=\"There are too many labels to view the scatterplot well\") +\n  theme_stata() +\n  theme(plot.background=element_rect(fill=\"#F8F3E6\",colour=\"#F8F3E6\"))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html#trying-out-hbrthemeshttpscinc.rud.iswebpackageshrbrthemes",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html#trying-out-hbrthemeshttpscinc.rud.iswebpackageshrbrthemes",
+    "title": "Hands on Exercise 2",
+    "section": "Trying out hbrthemes(https://cinc.rud.is/web/packages/hrbrthemes/)",
+    "text": "Trying out hbrthemes(https://cinc.rud.is/web/packages/hrbrthemes/)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html#trying-out-hbrthemes",
+    "href": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html#trying-out-hbrthemes",
+    "title": "Hands on Exercise 2",
+    "section": "Trying out hbrthemes",
+    "text": "Trying out hbrthemes\n\ntheme_ipsum_rc()\n\nplotcode\n\n\n\n\n\n\n\n\n\n\n\ncode block\nggplot(data=exam_data, \n             aes(x = MATHS)) +\n  geom_histogram(bins=20, \n                 boundary = 100,\n                 color=\"#64605f\", \n                 fill=\"grey90\") +\n  labs(x=\"Math Scores\", y=\"count\",\n       title=\"Distribution of Maths scores\") +\n  theme_ipsum_rc()"
   }
 ]

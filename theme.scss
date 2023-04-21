@@ -1,4 +1,5 @@
 /*-- scss:defaults --*/
+  @import url('https://fonts.googleapis.com/css2?family=Chivo:wght@200&family=Roboto+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
 
 // Colors
 $blue-gray: #3E4254;
@@ -21,10 +22,10 @@ $footer-bg: $eggshell; // footer
 $link-color: $blue; // hyperlinks 
 
 // fonts
-$font-family: Consolas,monaco,monospace;
+$font-family: 'Roboto Mono', monospace;
 
 //toc 
-$toc-font-size: 14px;
+$toc-font-size: 12px;
 $toc-active-border: $teal;
 
 // callouts
@@ -36,8 +37,15 @@ $callout-color-important: $pink;
 
 /*-- scss:rules --*/
 
+.title {
+  margin-top: 2em !important;
+  margin-bottom: 1.5em;
+  font-size: 28px;
+  font-weight: 500;
+}
+
 body {
-  font-size: 16px;
+  font-size: 15px;
   font-family: $font-family;
 }
 
@@ -49,3 +57,27 @@ body {
   text-align: right;
   padding-right: 1em;
 }
+
+
+/* Heading 1 */
+h1 {
+  font-size: 24px;
+  font-variant: normal; 
+  font-weight: 500; 
+  line-height: 20px;
+}
+
+/* Heading 2 */
+h2 {
+  font-size: 21px;
+  font-variant: normal; 
+  font-weight: 500; 
+}
+
+/* Heading 3 */
+h3 {
+  font-size: 18px;
+  font-variant: italic; 
+  font-weight: 400; 
+}
+

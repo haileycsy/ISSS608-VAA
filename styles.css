@@ -18,30 +18,3 @@
 }
 }
 
-/* Heading 1 */
-h1 {
-  font-size: 28px;
-  font-variant: normal; 
-  font-weight: 700; 
-  line-height: 28px;
-}
-
-/* Heading 2 */
-h2 {
-  font-size: 22px;
-  font-variant: normal; 
-  font-weight: 700; 
-}
-
-/* Heading 3 */
-h3 {
-  font-size: 20px;
-  font-variant: normal; 
-  font-weight: 700; 
-}
-
-/* Heading 4 */
-h4 {
-  font-size: 18px;
-}
-

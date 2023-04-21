@@ -1,0 +1,252 @@
+---
+title: "Hands on Exercise 2"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: show
+    code-tools: true
+    code-summary: "code block"
+---
+
+# Load and Install R Packages
+
+```{r, message=FALSE}
+pacman::p_load(ggrepel, patchwork, 
+               ggthemes, hrbrthemes, extrafont,
+               ggpubr, tidyverse) 
+```
+
+# Importing the data
+
+```{r, message=FALSE}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+# Overview of the data
+
+```{r}
+summary(exam_data)
+```
+
+# Plotting Practice
+
+## Annotations with ggrepel
+
+A comparison between annotations using geom_label(), geom_text() and package ggrepel
+
+::: panel-tabset
+### with ggrepel
+
+```{r, warning=FALSE}
+ggplot(data=exam_data, 
+       aes(x= MATHS, 
+           y=ENGLISH)) +
+  geom_point() +
+  geom_smooth(method=lm, 
+              linewidth=0.5,
+              formula= y~x) +  
+  geom_label_repel(aes(label = ID), 
+                   fontface = "bold") +
+  coord_cartesian(xlim=c(0,100),
+                  ylim=c(0,100)) +
+  labs(x="Math", y="English",
+       title="Comparing English and Math Scores for Primary 3",
+       subtitle="There is a positive correlation between Math and English scores") +
+  theme_stata() + 
+  theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+### without
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x= MATHS, 
+           y=ENGLISH)) +
+  geom_point() +
+  geom_smooth(method=lm, 
+              linewidth=0.5,
+              formula= y~x) +  
+  geom_label(aes(label = ID), 
+            fontface = "bold") +
+  coord_cartesian(xlim=c(0,100),
+                  ylim=c(0,100)) +
+  labs(x="Math", y="English",
+       title="Comparing English and Math Scores for Primary 3",
+       subtitle="There are too many labels to view the scatterplot well") +
+  theme_stata() +
+  theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+:::
+
+## Trying out [hbrthemes](https://cinc.rud.is/web/packages/hrbrthemes/)
+
+### theme_ipsum_rc()
+
+::: panel-tabset
+### plot
+```{r, warning=FALSE, echo=FALSE}
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="#64605f", 
+                 fill="grey90") +
+  labs(x="Math Scores", y="count",
+       title="Distribution of Maths scores") +
+  theme_ipsum_rc()
+```
+
+### code
+
+```{r,warning=FALSE, fig.keep='none'}
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="#64605f", 
+                 fill="grey90") +
+  labs(x="Math Scores", y="count",
+       title="Distribution of Maths scores") +
+  theme_ipsum_rc()
+```
+:::
+
+### theme_ipsum_ps
+
+::: panel-tabset
+
+### plot
+```{r, warning=FALSE, echo=FALSE}
+ggplot(data=exam_data, 
+             aes(x = ENGLISH)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="#64605f", 
+                 fill="grey90") +
+  labs(x="English Scores", y="count",
+       title="Distribution of English scores") +
+  theme_ipsum_ps()
+```
+
+### code
+```{r, warning=FALSE, fig.keep='none'}
+ggplot(data=exam_data, 
+             aes(x = ENGLISH)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="#64605f", 
+                 fill="grey90") +
+  labs(x="English Scores", y="count",
+       title="Distribution of English scores") +
+  theme_ipsum_ps()
+```
+:::
+
+### Customising hbrthemes
+
+::: {.callout-tip}
+## Changing font sizes for increased clarity
+
+* axis_title_size argument is used to increase the font size of the axis title
+* base_size argument is used to increase the default axis label
+* grid argument is used to remove the x-axis grid lines
+
+:::
+
+```{r, warning=FALSE}
+ggplot(data=exam_data, 
+             aes(x = SCIENCE)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(title="Distribution of Science scores") +
+  theme_ipsum(axis_title_size = 17,
+              base_size = 13,
+              grid = "Y")
+```
+
+## Grid Layout for Multiple Graphs
+
+### Creating Plots 
+
+::: {.callout-note}
+Give each plot a variable name for easy access
+:::
+
+```{r}
+p1 <- ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="#F8F3E6", 
+                 fill="#4d5887") +
+  labs(x="Math Scores", y="Student Count",
+       title="Distribution of Maths scores")
+```
+
+```{r}
+p2 <- ggplot(data=exam_data, 
+             aes(x = ENGLISH)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="#F8F3E6", 
+                 fill="#4d5887") +
+  labs(x="Math Scores", y="Student Count",
+       title="Distribution of English scores")
+
+```
+
+```{r}
+p3 <- ggplot(data=exam_data, 
+       aes(x= MATHS, 
+           y=ENGLISH)) +
+  geom_point() +
+  geom_smooth(method=lm, 
+              linewidth=0.5,
+              formula= y~x) +  
+  coord_cartesian(xlim=c(0,100),
+                  ylim=c(0,100)) +
+  labs(x="Math Scores", y="English Scores",
+       title="Correlation of English and Math Scores") +
+  stat_cor(label.x.npc = "left", label.y.npc = "top",
+          aes(label=paste(after_stat(rr.label))))
+
+```
+
+### Patching Plots Together
+
+2 by 2
+
+```{r}
+p1 + p2
+```
+
+```{r}
+p1 / p2
+```
+
+Grid of 3 with tags
+
+```{r}
+((p1 / p2) | p3) +
+plot_annotation(tag_levels = 'I')
+```
+
+```{r}
+patchplot <- ((p1 / p2) | p3) +
+plot_annotation(tag_levels = 'I')
+
+patchplot & theme_stata() +
+  theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+### Inset Plots
+
+```{r}
+p3 + inset_element(p2, 
+                   left = 0.02, 
+                   bottom = 0.7, 
+                   right = 0.5, 
+                   top = 1)
+```

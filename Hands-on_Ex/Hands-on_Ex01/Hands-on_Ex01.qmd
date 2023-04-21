@@ -1,5 +1,6 @@
 ---
-title: ""
+title: "Hands on Exercise 1"
+date: "April 13, 2023"
 ---
 
 # Getting Started
@@ -49,10 +50,9 @@ ggplot(data = exam_data,
   )
 ```
 
-## 2: Makeover Design for Pupil Count by Race 
+## 2: Makeover Design for Pupil Count by Race
 
 ::: panel-tabset
-
 ### Formula
 
 ```{r}
@@ -72,7 +72,8 @@ ggplot(data = exam_data,
       plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6")
     )
 ```
-### Forcats 
+
+### Forcats
 
 ```{r}
 exam_data %>%
