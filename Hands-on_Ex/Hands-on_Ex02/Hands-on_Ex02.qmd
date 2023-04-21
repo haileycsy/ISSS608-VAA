@@ -34,7 +34,7 @@ summary(exam_data)
 
 # Plotting Practice
 
-## Annotations with ggrepel
+## 1: Annotations with ggrepel
 
 A comparison between annotations using geom_label(), geom_text() and package ggrepel
 
@@ -82,7 +82,7 @@ ggplot(data=exam_data,
 ```
 :::
 
-## Trying out [hbrthemes](https://cinc.rud.is/web/packages/hrbrthemes/)
+## 2: Trying out [hbrthemes](https://cinc.rud.is/web/packages/hrbrthemes/)
 
 ### theme_ipsum_rc()
 
@@ -115,7 +115,7 @@ ggplot(data=exam_data,
 ```
 :::
 
-## Trying out [InraeThemes](https://github.com/davidcarayon/InraeThemes)
+## 3: Trying out [InraeThemes](https://github.com/davidcarayon/InraeThemes)
 
 ::: panel-tabset
 
@@ -146,7 +146,8 @@ ggplot(data=exam_data,
 ```
 :::
 
-### Customising hbrthemes
+### 4: Customising hbrthemes
+
 
 :::: {.focusbox .focus data-latex="focus"}
 **Changing font sizes for increased clarity**
@@ -169,7 +170,7 @@ ggplot(data=exam_data,
               grid = "Y")
 ```
 
-## Grid Layout for Multiple Graphs
+## 5: Grid Layout for Multiple Graphs
 
 ### Creating Plots 
 
