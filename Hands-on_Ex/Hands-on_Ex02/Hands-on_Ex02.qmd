@@ -88,6 +88,7 @@ ggplot(data=exam_data,
 
 ::: panel-tabset
 ### plot
+
 ```{r, warning=FALSE, echo=FALSE}
 ggplot(data=exam_data, 
              aes(x = MATHS)) +
@@ -118,8 +119,8 @@ ggplot(data=exam_data,
 ## 3: Trying out [InraeThemes](https://github.com/davidcarayon/InraeThemes)
 
 ::: panel-tabset
-
 ### plot
+
 ```{r, warning=FALSE, echo=FALSE}
 ggplot(data=exam_data, 
              aes(x = ENGLISH)) +
@@ -133,6 +134,7 @@ ggplot(data=exam_data,
 ```
 
 ### code
+
 ```{r, warning=FALSE, fig.keep='none'}
 ggplot(data=exam_data, 
              aes(x = ENGLISH)) +
@@ -148,13 +150,12 @@ ggplot(data=exam_data,
 
 ### 4: Customising hbrthemes
 
-
-:::: {.focusbox .focus data-latex="focus"}
+::: {.focusbox .focus data-latex="focus"}
 **Changing font sizes for increased clarity**
 
-* axis_title_size argument is used to increase the font size of the axis title
-* base_size argument is used to increase the default axis label
-* grid argument is used to remove the x-axis grid lines
+-   axis_title_size argument is used to increase the font size of the axis title
+-   base_size argument is used to increase the default axis label
+-   grid argument is used to remove the x-axis grid lines
 :::
 
 ```{r, warning=FALSE}
@@ -172,11 +173,11 @@ ggplot(data=exam_data,
 
 ## 5: Grid Layout for Multiple Graphs
 
-### Creating Plots 
+### Creating Plots
 
-:::: {.solvebox .solve data-latex="solve"}
+::: {.solvebox .solve data-latex="solve"}
 Assign each plot to a variable in order to access it for patchworking
-::::
+:::
 
 ```{r}
 p1 <- ggplot(data=exam_data, 

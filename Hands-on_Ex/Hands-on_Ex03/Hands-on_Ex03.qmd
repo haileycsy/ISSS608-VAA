@@ -1,0 +1,257 @@
+---
+title: "Hands-on Exercise 3"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: true
+    code-summary: "code block"
+---
+# Load and Install R Packages
+```{r, message=FALSE}
+pacman::p_load(ggiraph, plotly, gganimate,
+               DT, tidyverse, patchwork,
+               urbnthemes, ggthemr)
+```
+
+# Importing the data
+```{r, message=FALSE}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+# Interactive Data Visualisation
+## ggiraph package
+
+::: {.focusbox .focus data-latex="focus"}
+**Interactive Arguments of ggiraph**
+
+-   **Tooltip:** displayed when hovering over chart elements
+-   **Onclick:** executed when elements are clicked
+-   **Data_id:** Uses columns as id to show association of elements
+:::
+
+### 1: Tooltips
+
+Original ggplot dotplot:
+```{r}
+set_urbn_defaults(style = "print")
+
+ggplot(data = exam_data,
+       aes(x = MATHS)) +
+  geom_dotplot(stackdir = "up", 
+               binwidth = 1,
+               dotsize = 1) +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(x = "Math Scores") + 
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+```
+With ggiraph tooltips:
+```{r}
+p <- ggplot(data = exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(
+    aes(tooltip = ID),
+    stackgroups = TRUE, 
+    binwidth = 1,
+    dotsize = 1,
+    method = "histodot") +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(x = "Math Scores")
+
+girafe(
+  ggobj = p,
+  width_svg = 6,
+  height_svg = 6*0.618
+)
+
+```
+
+### 1.1: Controlling Information in Tooltips
+
+Customise information to be included in tooltips by creating a new list
+
+```{r}
+exam_data$tooltip <- c(paste0(
+  "Name:", exam_data$ID,
+  "\n Class:", exam_data$CLASS
+))
+
+p <- ggplot(data = exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(
+    aes(tooltip = exam_data$tooltip),
+    stackgroups = TRUE, 
+    binwidth = 1,
+    dotsize = 1,
+    method = "histodot") +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(x = "Math Scores")
+
+girafe(
+  ggobj = p,
+  width_svg = 6,
+  height_svg = 6*0.618
+)
+
+```
+
+### 1.2: Formatting style of Tooltips
+
+Adding css arguments to opts_tooltip() of **ggiraph**
+```{r}
+tooltip_css <- "background-color:#dfdfeb; font-style:bold; color:black;"  #<<
+
+exam_data$tooltip <- c(paste0(
+  "Name:", exam_data$ID,
+  "\n Class:", exam_data$CLASS
+))
+
+p <- ggplot(data = exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(
+    aes(tooltip = exam_data$tooltip),
+    stackgroups = TRUE, 
+    binwidth = 1,
+    dotsize = 1,
+    method = "histodot") +
+  scale_y_continuous(NULL, breaks = NULL) +
+  labs(x = "Math Scores")
+
+girafe(
+  ggobj = p,
+  width_svg = 6,
+  height_svg = 6*0.618,
+  options = list(    #<<
+    opts_tooltip(    #<<
+      css = tooltip_css)) #<<
+)                               
+
+```
+### 1.3: Displaying Statistics in tooltips
+
+Adding stat_summary() calculations in ggplot
+```{r}
+ggthemr("flat")
+
+tooltip <- function(y, ymax, accuracy = .01) {   #<<
+  mean <- scales::number(y, accuracy = accuracy) #<<
+  sem <- scales::number(ymax - y, accuracy = accuracy) #<<
+  paste("Mean Math Score:", mean, "+/-", sem) #<<
+} #<<
+
+p2 <- ggplot(data=exam_data, 
+                   aes(x = RACE)) +
+  stat_summary(aes(y = MATHS, 
+                   tooltip = after_stat(tooltip(y, ymax))),
+               fun.data ="mean_se",
+               geom = GeomInteractiveCol,
+               fill = "light blue") +
+  stat_summary(aes(y = MATHS),
+               fun.data = mean_se,
+               geom ="errorbar", 
+               width = 0.2, linewidth = 0.2) +
+  labs(y ="Math Scores") + 
+  theme(axis.title.x = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+girafe(ggobj = p2,
+       width_svg = 8,
+       height_svg = 8*0.618)
+
+```
+
+### 2: Hover effect with data_id 
+
+::: {.pinbox .pin data-latex="pin"}
+**data_id** is specified as an **aes() argument** in the interactive geom functions  
+
+e.g: geom_dotplot_interactive(aes(data_id = variablename))
+:::
+
+```{r}
+p <- ggplot(data = exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(           
+    aes(data_id = CLASS),             #<<
+    stackgroups = TRUE,               
+    binwidth = 1,                        
+    method = "histodot") +               
+  scale_y_continuous(NULL,               
+                     breaks = NULL) + 
+  labs(x ="Math Scores") + 
+  theme(axis.line = element_blank(),
+        plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+girafe(                                  
+  ggobj = p,                             
+  width_svg = 6,                         
+  height_svg = 6*0.618                      
+)        
+```
+
+### 2.1: Formatting Style of Hover Effect
+
+::: {.focusbox .focus}
+**Customisation Options**  
+
+-   **opts_hover**(css = NULL, reactive = FALSE, nearest_distance = NULL)  > effect on geometries  
+-   **opts_hover_inv**(css = NULL) > effect on other geometries, while one is hovered
+-   **opts_hover_key**(css = NULL, reactive = FALSE) > interactive scales
+-   **opts_hover_theme**(css = NULL, reactive = FALSE) > interactive theme elements
+:::
+
+```{r}
+p <- ggplot(data = exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(           
+    aes(data_id = CLASS),             
+    stackgroups = TRUE,               
+    binwidth = 1,                        
+    method = "histodot") +               
+  scale_y_continuous(NULL,               
+                     breaks = NULL) + 
+  labs(x ="Math Scores") + 
+  theme(axis.line = element_blank(),
+        plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+girafe(                                  
+  ggobj = p,                             
+  width_svg = 6,                         
+  height_svg = 6*0.618,
+  options = list(                     #<<
+  opts_hover(css = "fill: #202020;"), #<<
+  opts_hover_inv(css = "opacity:0.2;") #<<
+  )                                   #<<  
+) 
+```
+
+### 1 + 2: Tooltip + Hover Powers Combined!!
+
+```{r}
+p <- ggplot(data=exam_data, 
+       aes(x = MATHS)) +
+  geom_dotplot_interactive(              
+    aes(tooltip = CLASS, #<<
+        data_id = CLASS),#<<              
+    stackgroups = TRUE,                  
+    binwidth = 1,                        
+    method = "histodot") +               
+  scale_y_continuous(NULL,               
+                     breaks = NULL) +
+  labs(x ="Math Scores") + 
+  theme(axis.line = element_blank(),
+        plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+girafe(                                  
+  ggobj = p,                             
+  width_svg = 6,                         
+  height_svg = 6*0.618,
+  options = list(                        
+    opts_hover(css = "fill: #202020;"),  
+    opts_hover_inv(css = "opacity:0.2;") 
+  )                                        
+)                                        
+```

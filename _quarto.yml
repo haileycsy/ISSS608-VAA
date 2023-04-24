@@ -24,6 +24,8 @@ website:
             href: Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html
           - text: "Hands-on Ex 2"
             href: Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html
+          - text: "Hands-on Ex 3"
+            href: Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
           - text: "In-class Ex"
