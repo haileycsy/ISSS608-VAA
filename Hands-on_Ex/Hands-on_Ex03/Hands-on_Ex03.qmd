@@ -356,3 +356,24 @@ Create interactive graphs using:
 
 *   `plot_ly()`
 *   `ggplotly()`
+
+## 3.1: Using plot_ly()
+
+```{r}
+#| message: false
+plot_ly(data = exam_data, 
+             x = ~MATHS, 
+             y = ~ENGLISH)
+```
+
+### 3.1.2: Adding Visual Variables
+
+Adding `color` argument to code chunk to vary marker colors by specified category
+
+```{r}
+#| message: false
+plot_ly(data = exam_data, 
+        x = ~ENGLISH, 
+        y = ~MATHS, 
+        color = ~RACE) #<<
+```

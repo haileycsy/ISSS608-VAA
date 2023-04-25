@@ -105,6 +105,13 @@
     "text": "plotly package\nCreate interactive graphs using:\n\nplot_ly()\nggplotly()"
   },
   {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#using-plot_ly",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#using-plot_ly",
+    "title": "Hands-on Exercise 3",
+    "section": "3.1: Using plot_ly()",
+    "text": "3.1: Using plot_ly()\n\n\ncode block\nplot_ly(data = exam_data, \n             x = ~MATHS, \n             y = ~ENGLISH)\n\n\n\n\n\n\n\n3.1.2: Adding Visual Variables\nAdding color argument to code chunk to vary marker colors by specified category\n\n\ncode block\nplot_ly(data = exam_data, \n        x = ~ENGLISH, \n        y = ~MATHS, \n        color = ~RACE) #<<"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "haileycsy",
