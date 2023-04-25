@@ -98,17 +98,17 @@
     "text": "3: Onlick\nonclick argument opens link up in new window when clicked.\n\n\ncode block\ntt <- \"click me\"\n\nexam_data$onclick <- sprintf(\"window.open(\\\"%s%s\\\")\",\n\"https://www.onemap.gov.sg/main/v2/schoolquery\",\nas.character(exam_data$ID))\n\np <- ggplot(data=exam_data,\n            aes(x = MATHS)) +\n  geom_dotplot_interactive(aes(tooltip = tt,\n                               onclick = exam_data$onclick),\n                           stackgroups = TRUE,\n                           binwidth = 1,\n                           method = \"histodot\") +               \n  scale_y_continuous(NULL,               \n                     breaks = NULL) +\n  labs(x =\"Math Scores\") + \n  theme(axis.line = element_blank(),\n        plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\ngirafe(                                  \n  ggobj = p,                             \n  width_svg = 6,                         \n  height_svg = 6*0.618)"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "haileycsy",
-    "section": "",
-    "text": "ISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )"
-  },
-  {
     "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#plotly-package",
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#plotly-package",
     "title": "Hands-on Exercise 3",
     "section": "plotly package",
     "text": "plotly package\nCreate interactive graphs using:\n\nplot_ly()\nggplotly()"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "haileycsy",
+    "section": "",
+    "text": "ISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )"
   }
 ]
