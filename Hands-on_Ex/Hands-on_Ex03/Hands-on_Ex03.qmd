@@ -12,8 +12,9 @@ format:
 ```{r}
 #| message: false
 pacman::p_load(ggiraph, plotly, gganimate,
+               gifski, gapminder,
                DT, tidyverse, patchwork,
-               urbnthemes, ggthemr)
+               urbnthemes, ggthemr, wesanderson)
 ```
 
 # Importing the data
@@ -357,7 +358,7 @@ Create interactive graphs using:
 *   `plot_ly()`
 *   `ggplotly()`
 
-## 3.1: Using plot_ly()
+## 3.1: Using **plot_ly()**
 
 ```{r}
 #| message: false
@@ -373,7 +374,166 @@ Adding `color` argument to code chunk to vary marker colors by specified categor
 ```{r}
 #| message: false
 plot_ly(data = exam_data, 
-        x = ~ENGLISH, 
-        y = ~MATHS, 
-        color = ~RACE) #<<
+        x = ~ENGLISH,
+        y = ~MATHS,
+        color = ~RACE) 
 ```
+
+## 3.2: Using **ggplotly()**
+
+```{r}
+moonrise_cols <- wes_palette("Moonrise2", type = "discrete")
+
+p <- ggplot(data = exam_data,
+            aes(x = ENGLISH,
+                y = MATHS,
+                color = RACE,
+                text = paste("<b>English Score:</b>", ENGLISH, "<br><b>Math Score:</b>", MATHS,"<br>Race:", RACE))) +
+      geom_point(size = 1.5) +
+      labs(title = "Math and English Scores by Race",
+           x = "English Score",
+           y = "Math Score") +
+      scale_color_manual(values = wes_palette("Moonrise2", n = 4)) + 
+      theme_grey() +
+      theme(plot.title = element_text(color = moonrise_cols[4], size = 14, face = "bold"),
+            axis.title.x = element_text(color = moonrise_cols[1], size = 10, face = "bold"),
+            axis.title.y = element_text(color = moonrise_cols[1], size = 10, face = "bold"),
+            plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6")
+           )
+
+ggplotly(p, tooltip = "text")
+```
+
+### 3.2.2: Coordinated Multiple views with ggplotly
+
+::: {.focusbox .focus data-latex="focus"}
+**This involves three steps:** 
+
+*   `highlight_key()` of plotly package is used as shared data
+*   create scatterplots using ggplot2 functions
+*   `subplot()` of plotly package is used to place them side-by-side
+:::
+
+```{r}
+d <- highlight_key(exam_data)
+
+p1 <- ggplot(data = d, 
+            aes(x = MATHS,
+                y = ENGLISH,
+                text = paste("<b>Math Score:</b>", MATHS,"<br><b>English Score:", ENGLISH))) +
+  geom_point(size = 1, shape = 18) +
+  coord_cartesian(xlim = c(0,100),
+                  ylim = c(0,100)) + 
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+p2 <- ggplot(data = d, 
+            aes(x = MATHS,
+                y = SCIENCE,
+                text = paste("<b>Math Score:</b>", MATHS,"<br><b>Science Score:", SCIENCE))) +
+  geom_point(size = 1) +
+  coord_cartesian(xlim = c(0,100),
+                  ylim = c(0,100)) +
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+subplot(ggplotly(p1, tooltip = "text"),
+        ggplotly(p2, tooltip = "text"))
+```
+
+## Crosstalk and DT 
+
+[Crosstalk](https://rstudio.github.io/crosstalk/) is an add-on to the htmlwidgets package. It extends htmlwidgets with a set of classes, functions, and conventions for implementing cross-widget interactions (currently, linked brushing and filtering).
+
+::: {.cautionbox .caution data-latex="caution"}
+**Limitations of Crosstalk:** 
+
+*   HTML widgets must be specifically modified to support Crosstalk
+*   Only works for linked brushing and filtering of views that show individual data points, not aggregate or summary views 
+*   Because all data must be loaded into the browser, Crosstalk is not appropriate for large data sets
+:::
+
+## 4.1: DataTables using DT package
+
+**DT package** allow rendering of data objects as HTML tables
+
+```{r}
+DT::datatable(exam_data[c("ID","CLASS","GENDER","RACE","ENGLISH","MATHS","SCIENCE")],
+              caption = htmltools::tags$caption(style = "caption-side: bottom; text-align: center;",
+                                                "Table 1: ", htmltools::em("Exam Data for Primary 3")),
+              class = "compact")
+```
+
+## 4.2: Linking Plot to Table
+
+```{r}
+#| message: false
+exam_data <- subset(exam_data, select = c(1:7))
+d <- highlight_key(exam_data)
+
+p <- ggplot(data = d, 
+            aes(x = MATHS,
+                y = ENGLISH,
+                text = paste("<b>Math Score:</b>", MATHS,"<br><b>English Score:", ENGLISH))) +
+  geom_point(size = 1) +
+  coord_cartesian(xlim = c(0,100),
+                  ylim = c(0,100)) + 
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+gg <- highlight(ggplotly(p, tooltip = "text"),        
+                "plotly_selected")  
+
+crosstalk::bscols(gg,               
+                  DT::datatable(d), 
+                  widths = 5)  
+```
+
+## gganimate and gifski packages
+
+**gganimate** provides a range of new grammar classes that can be added to the plot object in order to customise how it should change with time.  
+
+*   `transition_*()` defines how the data should be spread out and how it relates to itself across time
+*   `view_*()` defines how the positional scales should change along the animation
+*   `shadow_*()` defines how data from other points in time should be presented in the given point in time
+*   `enter_*()/exit_*()` defines how new data should appear and how old data should disappear during the course of the animation
+*   `ease_aes()` defines how different aesthetics should be eased during transitions  
+
+**gifski** converts video frames to GIF animations  
+
+Importing Data
+
+```{r}
+#| message: false
+col <- c("Ethnicity")
+
+msia_pop <- read_csv("data/Malaysia_demographics.csv") %>%
+  mutate(Year = as.integer(Year))
+```
+## 5.1: Animated Bubble Plot
+
+::: {.focusbox .focus data-latex="focus"}
+**This involves three steps:**  
+
+*   Create a static Bubble Plot using ggplot
+*   `transition_time()` of gganimate is used to create transition through distinct states in time (i.e. Year)
+*   `ease_aes()` is used to control easing of aesthetics. The default is linear. Other methods are: quadratic, cubic, quartic, quintic, sine, circular, exponential, elastic, back, and bounce
+:::
+  
+  
+
+```{r}
+ggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young, 
+                      size = Population, 
+                      colour = Ethnicity)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_manual(values = wes_palette("Darjeeling1")) +
+  scale_size(range = c(5, 25)) +
+  labs(title = 'Malaysian Population by Ethnicity for Year: {frame_time}',
+       subtitle = "Data Source: https://www.kaggle.com/datasets/jasonkwm/malaysia-demographic-20102019",
+       x = '% Aged', 
+       y = '% Young') +
+  guides(size = "none") +
+  theme(legend.position = "bottom",
+        plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6")) + 
+  transition_time(Year) +       #<<
+  ease_aes('linear')    
+```
+

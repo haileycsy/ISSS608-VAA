@@ -67,7 +67,7 @@
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html",
     "title": "Hands-on Exercise 3",
     "section": "",
-    "text": "code block\npacman::p_load(ggiraph, plotly, gganimate,\n               DT, tidyverse, patchwork,\n               urbnthemes, ggthemr)"
+    "text": "code block\npacman::p_load(ggiraph, plotly, gganimate,\n               gifski, gapminder,\n               DT, tidyverse, patchwork,\n               urbnthemes, ggthemr, wesanderson)"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#ggiraph-package",
@@ -109,7 +109,49 @@
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#using-plot_ly",
     "title": "Hands-on Exercise 3",
     "section": "3.1: Using plot_ly()",
-    "text": "3.1: Using plot_ly()\n\n\ncode block\nplot_ly(data = exam_data, \n             x = ~MATHS, \n             y = ~ENGLISH)\n\n\n\n\n\n\n\n3.1.2: Adding Visual Variables\nAdding color argument to code chunk to vary marker colors by specified category\n\n\ncode block\nplot_ly(data = exam_data, \n        x = ~ENGLISH, \n        y = ~MATHS, \n        color = ~RACE) #<<"
+    "text": "3.1: Using plot_ly()\n\n\ncode block\nplot_ly(data = exam_data, \n             x = ~MATHS, \n             y = ~ENGLISH)\n\n\n\n\n\n\n\n3.1.2: Adding Visual Variables\nAdding color argument to code chunk to vary marker colors by specified category\n\n\ncode block\nplot_ly(data = exam_data, \n        x = ~ENGLISH,\n        y = ~MATHS,\n        color = ~RACE)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#using-ggplotly",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#using-ggplotly",
+    "title": "Hands-on Exercise 3",
+    "section": "3.2: Using ggplotly()",
+    "text": "3.2: Using ggplotly()\n\n\ncode block\nmoonrise_cols <- wes_palette(\"Moonrise2\", type = \"discrete\")\n\np <- ggplot(data = exam_data,\n            aes(x = ENGLISH,\n                y = MATHS,\n                color = RACE,\n                text = paste(\"<b>English Score:</b>\", ENGLISH, \"<br><b>Math Score:</b>\", MATHS,\"<br>Race:\", RACE))) +\n      geom_point(size = 1.5) +\n      labs(title = \"Math and English Scores by Race\",\n           x = \"English Score\",\n           y = \"Math Score\") +\n      scale_color_manual(values = wes_palette(\"Moonrise2\", n = 4)) + \n      theme_grey() +\n      theme(plot.title = element_text(color = moonrise_cols[4], size = 14, face = \"bold\"),\n            axis.title.x = element_text(color = moonrise_cols[1], size = 10, face = \"bold\"),\n            axis.title.y = element_text(color = moonrise_cols[1], size = 10, face = \"bold\"),\n            plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\")\n           )\n\nggplotly(p, tooltip = \"text\")\n\n\n\n\n\n\n\n3.2.2: Coordinated Multiple views with ggplotly\n\nThis involves three steps:\n\nhighlight_key() of plotly package is used as shared data\ncreate scatterplots using ggplot2 functions\nsubplot() of plotly package is used to place them side-by-side\n\n\n\n\ncode block\nd <- highlight_key(exam_data)\n\np1 <- ggplot(data = d, \n            aes(x = MATHS,\n                y = ENGLISH,\n                text = paste(\"<b>Math Score:</b>\", MATHS,\"<br><b>English Score:\", ENGLISH))) +\n  geom_point(size = 1, shape = 18) +\n  coord_cartesian(xlim = c(0,100),\n                  ylim = c(0,100)) + \n  theme(plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\np2 <- ggplot(data = d, \n            aes(x = MATHS,\n                y = SCIENCE,\n                text = paste(\"<b>Math Score:</b>\", MATHS,\"<br><b>Science Score:\", SCIENCE))) +\n  geom_point(size = 1) +\n  coord_cartesian(xlim = c(0,100),\n                  ylim = c(0,100)) +\n  theme(plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\nsubplot(ggplotly(p1, tooltip = \"text\"),\n        ggplotly(p2, tooltip = \"text\"))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#crosstalk-and-dt",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#crosstalk-and-dt",
+    "title": "Hands-on Exercise 3",
+    "section": "Crosstalk and DT",
+    "text": "Crosstalk and DT\nCrosstalk is an add-on to the htmlwidgets package. It extends htmlwidgets with a set of classes, functions, and conventions for implementing cross-widget interactions (currently, linked brushing and filtering).\n\nLimitations of Crosstalk:\n\nHTML widgets must be specifically modified to support Crosstalk\nOnly works for linked brushing and filtering of views that show individual data points, not aggregate or summary views\nBecause all data must be loaded into the browser, Crosstalk is not appropriate for large data sets"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#datatables-using-dt-package",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#datatables-using-dt-package",
+    "title": "Hands-on Exercise 3",
+    "section": "4.1: DataTables using DT package",
+    "text": "4.1: DataTables using DT package\nDT package allow rendering of data objects as HTML tables\n\n\ncode block\nDT::datatable(exam_data[c(\"ID\",\"CLASS\",\"GENDER\",\"RACE\",\"ENGLISH\",\"MATHS\",\"SCIENCE\")],\n              caption = htmltools::tags$caption(style = \"caption-side: bottom; text-align: center;\",\n                                                \"Table 1: \", htmltools::em(\"Exam Data for Primary 3\")),\n              class = \"compact\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#linking-plot-to-table",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#linking-plot-to-table",
+    "title": "Hands-on Exercise 3",
+    "section": "4.2: Linking Plot to Table",
+    "text": "4.2: Linking Plot to Table\n\n\ncode block\nexam_data <- subset(exam_data, select = c(1:7))\nd <- highlight_key(exam_data)\n\np <- ggplot(data = d, \n            aes(x = MATHS,\n                y = ENGLISH,\n                text = paste(\"<b>Math Score:</b>\", MATHS,\"<br><b>English Score:\", ENGLISH))) +\n  geom_point(size = 1) +\n  coord_cartesian(xlim = c(0,100),\n                  ylim = c(0,100)) + \n  theme(plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\ngg <- highlight(ggplotly(p, tooltip = \"text\"),        \n                \"plotly_selected\")  \n\ncrosstalk::bscols(gg,               \n                  DT::datatable(d), \n                  widths = 5)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#gganimate-and-gifski-packages",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#gganimate-and-gifski-packages",
+    "title": "Hands-on Exercise 3",
+    "section": "gganimate and gifski packages",
+    "text": "gganimate and gifski packages\ngganimate provides a range of new grammar classes that can be added to the plot object in order to customise how it should change with time.\n\ntransition_*() defines how the data should be spread out and how it relates to itself across time\nview_*() defines how the positional scales should change along the animation\nshadow_*() defines how data from other points in time should be presented in the given point in time\nenter_*()/exit_*() defines how new data should appear and how old data should disappear during the course of the animation\nease_aes() defines how different aesthetics should be eased during transitions\n\ngifski converts video frames to GIF animations\nImporting Data\n\n\ncode block\ncol <- c(\"Ethnicity\")\n\nmsia_pop <- read_csv(\"data/Malaysia_demographics.csv\") %>%\n  mutate(Year = as.integer(Year))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot",
+    "title": "Hands-on Exercise 3",
+    "section": "5.1: Animated Bubble Plot",
+    "text": "5.1: Animated Bubble Plot\n\nThis involves three steps:\n\nCreate a static Bubble Plot using ggplot\ntransition_time() of gganimate is used to create transition through distinct states in time (i.e. Year)\nease_aes() is used to control easing of aesthetics. The default is linear. Other methods are: quadratic, cubic, quartic, quintic, sine, circular, exponential, elastic, back, and bounce\n\n\n\n\ncode block\nggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young, \n                      size = Population, \n                      colour = Ethnicity)) +\n  geom_point(alpha = 0.7) +\n  scale_colour_manual(values = wes_palette(\"Darjeeling1\")) +\n  scale_size(range = c(5, 25)) +\n  labs(title = 'Malaysian Population by Ethnicity for Year: {frame_time}',\n       subtitle = \"Data Source: https://www.kaggle.com/datasets/jasonkwm/malaysia-demographic-20102019\",\n       x = '% Aged', \n       y = '% Young') +\n  guides(size = \"none\") +\n  theme(legend.position = \"bottom\",\n        plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\")) + \n  transition_time(Year) +       #<<\n  ease_aes('linear')"
   },
   {
     "objectID": "index.html",
