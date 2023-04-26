@@ -19,7 +19,7 @@ pacman::p_load(ggiraph, plotly, gganimate,
 
 # Importing the data
 
-```{r}  
+```{r}
 #| message: false
 exam_data <- read_csv("data/Exam_data.csv")
 ```
@@ -270,15 +270,13 @@ girafe(
 ```
 
 ### 2.2: Coordinated Multiple Views
-  
-  
+
 ::: {.focusbox .focus data-latex="focus"}
-**When a data point of one of the dotplot is selected, the corresponding data point ID on the second data visualisation will be highlighted too** 
+**When a data point of one of the dotplot is selected, the corresponding data point ID on the second data visualisation will be highlighted too**
 
-*   Use interactive functions of **ggiraph** to create multiple views  
-*   Patchwork function from **patchwork** package weaves views together as coordinated plots
+-   Use interactive functions of **ggiraph** to create multiple views\
+-   Patchwork function from **patchwork** package weaves views together as coordinated plots
 :::
-
 
 ```{r}
 p1 <- ggplot(data=exam_data, 
@@ -321,9 +319,9 @@ girafe(code = print(p1 / p2), #<<
        ) 
 ```
 
-## 3: Onlick 
+## 3: Onlick
 
-`onclick` argument opens link up in new window when clicked. 
+`onclick` argument opens link up in new window when clicked.
 
 ```{r}
 tt <- "click me"
@@ -353,10 +351,10 @@ girafe(
 
 ## plotly package
 
-Create interactive graphs using:  
+Create interactive graphs using:
 
-*   `plot_ly()`
-*   `ggplotly()`
+-   `plot_ly()`
+-   `ggplotly()`
 
 ## 3.1: Using **plot_ly()**
 
@@ -407,11 +405,11 @@ ggplotly(p, tooltip = "text")
 ### 3.2.2: Coordinated Multiple views with ggplotly
 
 ::: {.focusbox .focus data-latex="focus"}
-**This involves three steps:** 
+**This involves three steps:**
 
-*   `highlight_key()` of plotly package is used as shared data
-*   create scatterplots using ggplot2 functions
-*   `subplot()` of plotly package is used to place them side-by-side
+-   `highlight_key()` of plotly package is used as shared data
+-   create scatterplots using ggplot2 functions
+-   `subplot()` of plotly package is used to place them side-by-side
 :::
 
 ```{r}
@@ -439,16 +437,16 @@ subplot(ggplotly(p1, tooltip = "text"),
         ggplotly(p2, tooltip = "text"))
 ```
 
-## Crosstalk and DT 
+## Crosstalk and DT
 
 [Crosstalk](https://rstudio.github.io/crosstalk/) is an add-on to the htmlwidgets package. It extends htmlwidgets with a set of classes, functions, and conventions for implementing cross-widget interactions (currently, linked brushing and filtering).
 
 ::: {.cautionbox .caution data-latex="caution"}
-**Limitations of Crosstalk:** 
+**Limitations of Crosstalk:**
 
-*   HTML widgets must be specifically modified to support Crosstalk
-*   Only works for linked brushing and filtering of views that show individual data points, not aggregate or summary views 
-*   Because all data must be loaded into the browser, Crosstalk is not appropriate for large data sets
+-   HTML widgets must be specifically modified to support Crosstalk
+-   Only works for linked brushing and filtering of views that show individual data points, not aggregate or summary views
+-   Because all data must be loaded into the browser, Crosstalk is not appropriate for large data sets
 :::
 
 ## 4.1: DataTables using DT package
@@ -488,15 +486,15 @@ crosstalk::bscols(gg,
 
 ## gganimate and gifski packages
 
-**gganimate** provides a range of new grammar classes that can be added to the plot object in order to customise how it should change with time.  
+**gganimate** provides a range of new grammar classes that can be added to the plot object in order to customise how it should change with time.
 
-*   `transition_*()` defines how the data should be spread out and how it relates to itself across time
-*   `view_*()` defines how the positional scales should change along the animation
-*   `shadow_*()` defines how data from other points in time should be presented in the given point in time
-*   `enter_*()/exit_*()` defines how new data should appear and how old data should disappear during the course of the animation
-*   `ease_aes()` defines how different aesthetics should be eased during transitions  
+-   `transition_*()` defines how the data should be spread out and how it relates to itself across time
+-   `view_*()` defines how the positional scales should change along the animation
+-   `shadow_*()` defines how data from other points in time should be presented in the given point in time
+-   `enter_*()/exit_*()` defines how new data should appear and how old data should disappear during the course of the animation
+-   `ease_aes()` defines how different aesthetics should be eased during transitions
 
-**gifski** converts video frames to GIF animations  
+**gifski** converts video frames to GIF animations
 
 Importing Data
 
@@ -507,17 +505,16 @@ col <- c("Ethnicity")
 msia_pop <- read_csv("data/Malaysia_demographics.csv") %>%
   mutate(Year = as.integer(Year))
 ```
+
 ## 5.1: Animated Bubble Plot
 
 ::: {.focusbox .focus data-latex="focus"}
-**This involves three steps:**  
+**This involves three steps:**
 
-*   Create a static Bubble Plot using ggplot
-*   `transition_time()` of gganimate is used to create transition through distinct states in time (i.e. Year)
-*   `ease_aes()` is used to control easing of aesthetics. The default is linear. Other methods are: quadratic, cubic, quartic, quintic, sine, circular, exponential, elastic, back, and bounce
+-   Create a static Bubble Plot using ggplot
+-   `transition_time()` of gganimate is used to create transition through distinct states in time (i.e. Year)
+-   `ease_aes()` is used to control easing of aesthetics. The default is linear. Other methods are: quadratic, cubic, quartic, quintic, sine, circular, exponential, elastic, back, and bounce
 :::
-  
-  
 
 ```{r}
 ggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young, 
@@ -536,4 +533,3 @@ ggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young,
   transition_time(Year) +       #<<
   ease_aes('linear')    
 ```
-

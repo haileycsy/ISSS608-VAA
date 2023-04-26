@@ -6,27 +6,30 @@ date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
 # Load and Install R Packages
 
 ```{r}
-pacman::p_load(ggrepel, patchwork, 
-               ggthemes, hrbrthemes, InraeThemes,
+pacman::p_load(ggrepel, patchwork, ggpmisc,
+               ggthemes, hrbrthemes, InraeThemes, ggthemr,
                tidyverse) 
 ```
 
 # Importing the data
+
 ```{r, message=FALSE}
 exam_data <- read_csv("data/Exam_data.csv")
 ```
 
 # Overview of the data
+
 ```{r}
 summary(exam_data)
 ```
 
 # Plotting Practice
-## Annotations with ggrepel
+
+## 1: Annotations with ggrepel
+
 A comparison between annotations using geom_label(), geom_text() and package ggrepel
 
 ::: panel-tabset
-
 ### with ggrepel
 
 ```{r, warning=FALSE}
@@ -70,5 +73,246 @@ ggplot(data=exam_data,
        subtitle="There are too many annotations to see the points clearly") +
   theme(plot.background=element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
+:::
+
+## 2: Customising themes
+
+### 2.1: **ggtheme** package
+
+::: panel-tabset
+### Plot
+```{r}
+#| echo: false
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(x = "Math Scores",
+       y = "Number of Students",
+       title = "Distribution of Math Scores") +
+  theme_economist()
+```
+
+### Code
+
+```{r}
+#| fig-show: hide
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(x = "Math Scores",
+       y = "No. of Students",
+       title = "Distribution of Math Scores") +
+  theme_economist()
+```
+:::
+
+### 2.2: **hbrthemes** package
+
+::: panel-tabset
+### Plot 1
+```{r}
+#| echo: false
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(x = "Math Scores",
+       y = "Number of Students",
+       title = "Distribution of Math Scores") +
+  theme_ipsum()
+```
+
+### Code 1
+```{r}
+#| fig-show: hide
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(x = "Math Scores",
+       y = "No. of Students",
+       title = "Distribution of Math Scores") +
+  theme_ipsum()
+```
+### Plot 2
+```{r}
+#| echo: false
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(x = "Math Scores",
+       y = "Number of Students",
+       title = "Distribution of Math Scores") +
+  theme_ipsum(axis_title_size = 18,
+              base_size = 12,
+              grid = "Y")
+```
+
+### Code 2
+```{r}
+#| fig-show: hide
+ggplot(data=exam_data, 
+             aes(x = MATHS)) +
+  geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey25", 
+                 fill="grey90") +
+  labs(x = "Math Scores",
+       y = "Number of Students",
+       title = "Distribution of Math Scores") +
+  theme_ipsum(axis_title_size = 18,
+              base_size = 12,
+              grid = "Y")
+```
 
 :::
+
+## 3: Composite Graphs
+
+### 3.1 Combining 2 graphs: '+' operator
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+p1 <- ggplot(data=exam_data, 
+            aes(x = MATHS)) +
+        geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey90", 
+                 fill="#3A3B60") +
+        labs(x = "Math Scores",
+             y = "Number of Students",
+             title = "Distribution of Math Scores")
+
+p2 <- ggplot(data=exam_data, 
+            aes(x = ENGLISH)) +
+        geom_histogram(bins=20, 
+                 boundary = 100,
+                 color="grey90", 
+                 fill="#4d5887") +
+        labs(x = "English Scores",
+             title = "Distribution of English Scores") +
+        theme(axis.title.y = element_blank())
+
+p1 + p2
+```
+
+### 3.2 Combining 3 graphs: '|', '/', '()'
+  
+::: {.focusbox .focus data-latex="focus"}
+**Use different operators to specify composition**  
+
+*   “|” operator to stack two ggplot2 graphs
+*   “/” operator to place the plots beside each other
+*   “()” operator defines the sequence of the plotting
+:::
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+p3 <- ggplot(data=exam_data, 
+       aes(x= MATHS, 
+           y=ENGLISH)) +
+      geom_point() +
+      geom_smooth(method=lm, 
+              linewidth=0.5,
+              formula = y~x) + 
+      stat_poly_line() +
+      stat_poly_eq() +
+      coord_cartesian(xlim=c(0,100),
+                      ylim=c(0,100)) +
+      labs(x="Math",
+           y="English",
+           title="Correlation between Math and English Scores")
+
+(p1/p2) | p3
+
+```
+
+### 3.3: Adding Annotations
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+((p1 / p2) | p3) + 
+  plot_annotation(tag_levels = 'I')
+```
+
+### Applying themes to composite 
+
+`theme_economist()`
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+patchwork <- ((p1 / p2) | p3) + 
+  plot_annotation(tag_levels = 'I')
+
+patchwork & theme_economist()
+```
+`theme_inrae()`
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+#| warning: false
+patchwork <- ((p1 / p2) | p3) + 
+  plot_annotation(tag_levels = 'I')
+
+patchwork & theme_inrae()
+```
+  
+`theme_solarized_2()`
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+#| warning: false
+patchwork <- ((p1 / p2) | p3) + 
+  plot_annotation(tag_levels = 'I')
+
+patchwork & theme_solarized_2()
+```
+
+**ggthemr: chalk**
+
+```{r}
+#| fig-width: 12
+#| fig-height: 8
+#| warning: false
+
+ggthemr("chalk")
+
+patchwork <- ((p1 / p2) | p3) + 
+  plot_annotation(tag_levels = 'I')
+
+patchwork
+```
+
+
+### 3.4: Inset Figures  
+  
+Using `inset_element()` to place a plot within another plot
+
+```{r}
+ggthemr_reset()
+
+p3 + inset_element(p2, 
+                   left = 0.02, 
+                   bottom = 0.7, 
+                   right = 0.5, 
+                   top = 1)
+```
