@@ -81,7 +81,7 @@
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html",
     "title": "Hands-on Exercise 3",
     "section": "",
-    "text": "code block\npacman::p_load(ggiraph, plotly, gganimate,\n               gifski, gapminder,\n               DT, tidyverse, patchwork,\n               urbnthemes, ggthemr, wesanderson)"
+    "text": "code block\npacman::p_load(ggiraph, plotly, gganimate,\n               gifski, gapminder,\n               DT, tidyverse, patchwork, readxl,\n               urbnthemes, ggthemr, wesanderson)"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#ggiraph-package",
@@ -158,14 +158,42 @@
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#gganimate-and-gifski-packages",
     "title": "Hands-on Exercise 3",
     "section": "gganimate and gifski packages",
-    "text": "gganimate and gifski packages\ngganimate provides a range of new grammar classes that can be added to the plot object in order to customise how it should change with time.\n\ntransition_*() defines how the data should be spread out and how it relates to itself across time\nview_*() defines how the positional scales should change along the animation\nshadow_*() defines how data from other points in time should be presented in the given point in time\nenter_*()/exit_*() defines how new data should appear and how old data should disappear during the course of the animation\nease_aes() defines how different aesthetics should be eased during transitions\n\ngifski converts video frames to GIF animations\nImporting Data\n\n\ncode block\ncol <- c(\"Ethnicity\")\n\nmsia_pop <- read_csv(\"data/Malaysia_demographics.csv\") %>%\n  mutate(Year = as.integer(Year))"
+    "text": "gganimate and gifski packages\ngganimate provides a range of new grammar classes that can be added to the plot object in order to customise how it should change with time.\n\ntransition_*() defines how the data should be spread out and how it relates to itself across time\nview_*() defines how the positional scales should change along the animation\nshadow_*() defines how data from other points in time should be presented in the given point in time\nenter_*()/exit_*() defines how new data should appear and how old data should disappear during the course of the animation\nease_aes() defines how different aesthetics should be eased during transitions\n\ngifski converts video frames to GIF animations\n*Importing Data**\n\n\ncode block\ncol <- c(\"Ethnicity\")\n\nmsia_pop <- read_csv(\"data/Malaysia_demographics.csv\") %>%\n  mutate(Year = as.integer(Year))"
   },
   {
-    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot",
-    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot",
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot-1",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot-1",
     "title": "Hands-on Exercise 3",
-    "section": "5.1: Animated Bubble Plot",
-    "text": "5.1: Animated Bubble Plot\n\nThis involves three steps:\n\nCreate a static Bubble Plot using ggplot\ntransition_time() of gganimate is used to create transition through distinct states in time (i.e. Year)\nease_aes() is used to control easing of aesthetics. The default is linear. Other methods are: quadratic, cubic, quartic, quintic, sine, circular, exponential, elastic, back, and bounce\n\n\n\n\ncode block\nggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young, \n                      size = Population, \n                      colour = Ethnicity)) +\n  geom_point(alpha = 0.7) +\n  scale_colour_manual(values = wes_palette(\"Darjeeling1\")) +\n  scale_size(range = c(5, 25)) +\n  labs(title = 'Malaysian Population by Ethnicity for Year: {frame_time}',\n       subtitle = \"Data Source: https://www.kaggle.com/datasets/jasonkwm/malaysia-demographic-20102019\",\n       x = '% Aged', \n       y = '% Young') +\n  guides(size = \"none\") +\n  theme(legend.position = \"bottom\",\n        plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\")) + \n  transition_time(Year) +       #<<\n  ease_aes('linear')"
+    "section": "5.1: Animated Bubble Plot 1",
+    "text": "5.1: Animated Bubble Plot 1\n\nThis involves three steps:\n\nCreate a static Bubble Plot using ggplot\ntransition_time() of gganimate is used to create transition through distinct states in time (i.e. Year)\nease_aes() is used to control easing of aesthetics. The default is linear. Other methods are: quadratic, cubic, quartic, quintic, sine, circular, exponential, elastic, back, and bounce\n\n\n\n\ncode block\nggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young, \n                      size = Population, \n                      colour = Ethnicity)) +\n  geom_point(alpha = 0.7) +\n  scale_colour_manual(values = wes_palette(\"Darjeeling1\")) +\n  scale_size(range = c(5, 25)) +\n  labs(title = 'Malaysian Population by Ethnicity for Year: {frame_time}',\n       subtitle = \"Data Source: https://www.kaggle.com/datasets/jasonkwm/malaysia-demographic-20102019\",\n       x = '% Aged', \n       y = '% Young') +\n  guides(size = \"none\") +\n  theme(legend.position = \"bottom\",\n        plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\")) + \n  transition_time(Year) +       #<<\n  ease_aes('linear')"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot-2",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#animated-bubble-plot-2",
+    "title": "Hands-on Exercise 3",
+    "section": "5.2: Animated Bubble Plot 2",
+    "text": "5.2: Animated Bubble Plot 2\n*Importing data**\n\n\ncode block\nglobalPop <- read_xls(\"data/GlobalPopulation.xls\",\n                      sheet=\"Data\") %>%\n  mutate(across(where(is.character), as.factor)) %>%\n  mutate(Year = as.integer(Year))\n\n\n\n\ncode block\nggplot(globalPop, aes(x = Old, y = Young, \n                      size = Population, \n                      colour = Country)) +\n  geom_point(alpha = 0.7, \n             show.legend = FALSE) +\n  scale_colour_manual(values = country_colors) +\n  scale_size(range = c(2, 12)) +\n  labs(title = 'Year: {frame_time}', \n       x = '% Aged', \n       y = '% Young') +\n  theme_gray() + \n  theme(plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\")) + \n  transition_time(Year) +       \n  ease_aes('linear')"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#plotly-frame-animations",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#plotly-frame-animations",
+    "title": "Hands-on Exercise 3",
+    "section": "Plotly Frame Animations",
+    "text": "Plotly Frame Animations"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#ggplotly-animated-bubble-plot",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#ggplotly-animated-bubble-plot",
+    "title": "Hands-on Exercise 3",
+    "section": "6.1: ggplotly Animated Bubble Plot",
+    "text": "6.1: ggplotly Animated Bubble Plot\nggplotly() is used to convert the R graphic object into an animated svg object.\n\n\ncode block\ngg <- ggplot(globalPop, \n       aes(x = Old, \n           y = Young, \n           size = Population, \n           colour = Country)) +\n  geom_point(aes(size = Population,\n                 frame = Year),  #<<\n             alpha = 0.7, \n             show.legend = FALSE) +\n  scale_colour_manual(values = country_colors) +\n  scale_size(range = c(2, 12)) +\n  labs(x = '% Aged', \n       y = '% Young') + \n  theme_gray() + \n  theme(plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\nggplotly(gg)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#plot_ly-animated-bubble-plot",
+    "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#plot_ly-animated-bubble-plot",
+    "title": "Hands-on Exercise 3",
+    "section": "6.2: plot_ly() Animated Bubble Plot",
+    "text": "6.2: plot_ly() Animated Bubble Plot\n\n\ncode block\nbp <- globalPop %>%\n  plot_ly(x = ~Old, \n          y = ~Young, \n          size = ~Population, \n          color = ~Continent, \n          frame = ~Year, \n          text = ~Country, \n          hoverinfo = \"text\",\n          type = 'scatter',\n          mode = 'markers'\n          )\nbp"
   },
   {
     "objectID": "index.html",
