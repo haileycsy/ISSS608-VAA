@@ -1,0 +1,40 @@
+---
+title: "Superstore Orders"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+---
+
+# Data
+
+Superstore Orders Open dataset from [Kaggle](https://www.kaggle.com/datasets/jr2ngb/superstore-data)
+
+```{r}
+#| message: false
+#| warning: false
+pacman::p_load(readxl, tidyverse,
+               arules, arulesViz)
+```
+
+```{r}
+order_data <- read_excel("data/Sample_Superstore.xls", sheet = "Orders") %>%
+              select("Order ID", "Order Date", "Customer ID", "Sub-Category",
+                     "Sales", "Quantity", "Profit") %>%
+              rename("Item" = "Sub-Category") %>%
+              mutate(across(where(is.character), as.factor)) %>%
+              mutate(across(where(is.numeric), as.integer)) %>%
+              group_by("Customer ID")
+
+              
+```
+
+Creating transaction class data using **arules** package:
+
+```{r}
+order_trans <- as(order_data, "transactions")
+```
+
+`dim()` shows that there are 9994 transactions and 13505 distinct items in the transaction data:
+
+```{r}
+dim(order_trans)
+```
+

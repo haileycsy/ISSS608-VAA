@@ -1,0 +1,11 @@
+---
+title: "In-class Exercise 3"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+edit: visual
+---
+
+*Links to Tableau Visualisations:*
+
+[Superstore Orders](https://public.tableau.com/views/SuperstoreOrdersHonEx3/SalesvsProfit?:language=en-US&:display_count=n&:origin=viz_share_link)
+
+[Exam Data](https://public.tableau.com/views/ExamDataICEx03/Dashboard1?:language=en-US&:display_count=n&:origin=viz_share_link)

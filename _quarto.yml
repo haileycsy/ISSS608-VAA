@@ -28,13 +28,15 @@ website:
             href: Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
-          - text: "In-class Ex"
+          - text: "In-class Ex 3"
+            href: In-Class_Ex/In-Class_Ex03/In-Class_Ex03.html
       - text: "{{< fa magnifying-glass-chart >}} Take-home Ex"
         menu:
           - text: "Take-home Ex 1"
       - text: "{{< fa laptop-code >}} Projects"
         menu:
-          - text: "Shiny"
+          - text: "Superstore Orders"
+            href: Projects/Superstore_Orders.html
     right:
       - icon: linkedin
         href: https://www.linkedin.com/in/hailey-sy-cheong/

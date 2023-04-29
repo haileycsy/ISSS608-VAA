@@ -196,10 +196,24 @@
     "text": "6.2: plot_ly() Animated Bubble Plot\n\n\ncode block\nbp <- globalPop %>%\n  plot_ly(x = ~Old, \n          y = ~Young, \n          size = ~Population, \n          color = ~Continent, \n          frame = ~Year, \n          text = ~Country, \n          hoverinfo = \"text\",\n          type = 'scatter',\n          mode = 'markers'\n          )\nbp"
   },
   {
+    "objectID": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
+    "href": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
+    "title": "In-class Exercise 3",
+    "section": "",
+    "text": "Links to Tableau Visualisations:\nSuperstore Orders\nExam Data"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "haileycsy",
     "section": "",
     "text": "ISSS608_VAA <- c( \"Data\", \"R\", \"Tableau\", \"Coffee\", \"Tears\", \"StackOverflow\", \"ChatGPT\" )"
+  },
+  {
+    "objectID": "Projects/Superstore_Orders.html",
+    "href": "Projects/Superstore_Orders.html",
+    "title": "Superstore Orders",
+    "section": "",
+    "text": "Data\nSuperstore Orders Open dataset from Kaggle\n\npacman::p_load(readxl, tidyverse,\n               arules, arulesViz)\n\n\norder_data <- read_excel(\"data/Sample_Superstore.xls\", sheet = \"Orders\") %>%\n              select(\"Order ID\", \"Order Date\", \"Customer ID\", \"Sub-Category\",\n                     \"Sales\", \"Quantity\", \"Profit\") %>%\n              rename(\"Item\" = \"Sub-Category\") %>%\n              mutate(across(where(is.character), as.factor)) %>%\n              mutate(across(where(is.numeric), as.integer)) %>%\n              group_by(\"Customer ID\")\n\nCreating transaction class data using arules package:\n\norder_trans <- as(order_data, \"transactions\")\n\nWarning: Column(s) 2, 5, 6, 7, 8 not logical or factor. Applying default\ndiscretization (see '? discretizeDF').\n\n\ndim() shows that there are 9994 transactions and 13505 distinct items in the transaction data:\n\ndim(order_trans)\n\n[1] 9994 7065"
   }
 ]
