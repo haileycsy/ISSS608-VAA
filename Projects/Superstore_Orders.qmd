@@ -99,6 +99,9 @@ dim(trans)
 summary(trans)
 ```
 
+`summary()` data reveals that the 2-itemset size is 1401, the largest amongst all k-itemsets. 
+
+
 # 2: Generating Item Frequency Plot
 
 `topN = 20` parameter specifies top 20 items by frequency
@@ -113,26 +116,58 @@ itemFrequencyPlot(trans,
                   main = "Item Frequency Plot",
                   xlab = "Absolute Frequency")
 ```
-# 3: Generating Frequent Items using `apriori()`
 
-`eclat()` and `apriori()` can both generate frequent itemsets.  
-However, `apriori()` can also generate association rules. 
+
+# 3: Generating Association Rules using `apriori()`
+
+Each basket can be represented as a vector containing Boolean values pertaining to whether an item is in the basket (1) or not (0). Analysing the baskets to find patterns in the most common items purchased together to form **association rules** can be useful. 
 
 ```{r}
-association.rules <- apriori(trans, parameter = list(supp=0.001,
+association_rules <- apriori(trans, parameter = list(supp=0.001,
                                                      conf=0.8,
                                                      maxlen=10))
 ```
 
+Display First 20 association rules by confidence:
+
 ```{r}
-inspect(association.rules[1:10])
+association_rules <- sort(association_rules,
+                          decreasing = TRUE,
+                          by = "confidence")
+
+inspect(association_rules[1:20])
 ```
+
+Display association rules by **lift value**:
+
+::: {.focusbox .focus data-latex="focus"}
+**Lift**  
+
+*   Lift value is the measure of importance of an association rule
+*   It is the ratio of the confidence of the rule / expected confidence of the rule
+*   **Lift value < 1**: negative dependence or substitution effect
+*   **Lift value > 1**: positive dependence or complementary effect
+*   **Lift value = 1**: implies almost no association between items
+
+:::
+\n
+\n 
+$$Lift = \frac{Confidence}{Expected\ Confidence} = \frac{P\left(A \cap B\right)}{P\left(A\right).P\left(B\right)}$$  
+\n
+\n
+$$Lift({X} -> {Y}) = \frac{(Transactions\ containing\ both\ X\ and\ Y)/(Transactions\ containing\ X)}{(Transactions\ containing\ Y)}$$  
+\n
+\n
+```{r}
+inspect(head(sort(association_rules, by = "lift")))
+```
+
 
 # 4: Filter rules 
 
-Select only association rules with confidence greater than 0.4 or 40%
+## 4.1: Select only association rules with confidence greater than 0.6 or 60%
 ```{r}
-subRules<-association.rules[quality(association.rules)$confidence>0.4]
+subRules<-association_rules[quality(association_rules)$confidence > 0.6]
 
 summary(subRules)
 ```
@@ -147,5 +182,42 @@ plot(subRules,
      max = 100,
      jitter = 0,
      engine = "plotly")
+```
+
+## 4.2 Generating rules for specific items 
+
+Suppose we would like to find out more about rules regarding most frequent item, "WHITE HANGING HEART T-LIGHT HOLDER":
+
+```{r}
+rules_frequent_item <- apriori (data=trans, 
+                                parameter=list (supp=0.001,conf = 0.6), 
+                                appearance = list (default="lhs",rhs="WHITE HANGING HEART T-LIGHT HOLDER"), 
+                                control = list (verbose=F))
+
+rules_frequent_item <-sort(rules_frequent_item,
+                               decreasing = TRUE,
+                               by = "confidence")
+
+# remove redundant rules that are subsets of larger rules
+subsetRules <- which(colSums(is.subset(rules_frequent_item, rules_frequent_item)) > 1) 
+#length(subsetRules) #> 584
+rules_frequent_item <- rules_frequent_item[-subsetRules]
+
+inspect(sort(rules_frequent_item[1:20], by = "lift"))
+```
+
+Plot top 10 rules for item by confidence:
+
+```{r}
+#| fig-height: 8
+rules_frequent_item <-sort(rules_frequent_item,
+                          decreasing = TRUE,
+                          by = "confidence")
+
+top10_rules <- rules_frequent_item[1:10]
+
+plot(top10_rules,
+     method = "graph",
+     engine = "htmlwidget")
 ```
 
