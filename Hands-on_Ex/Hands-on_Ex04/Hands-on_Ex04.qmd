@@ -1,5 +1,5 @@
 ---
-title: "Hands-on_Ex04"
+title: "Hands on Exercise 4"
 date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
 format:
   html:
@@ -36,7 +36,7 @@ gghistostats(
   theme_classic() +
   theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
 ```
-::: {.ideabox .idea data-latex="idea"}
+::: {.solvebox .solve data-latex="solve"}
 
 **Bayes factor** is the ratio of the likelihood of one particular hypothesis to the likelihood of another. It can be interpreted as a measure of the strength of evidence in favor of one theory among two competing theories.
 
