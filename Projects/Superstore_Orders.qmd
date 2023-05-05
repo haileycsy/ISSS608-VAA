@@ -2,9 +2,10 @@
 title: "Market Basket Analysis"
 date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
 ---
+
 **Frequent Pattern Mining: Market Basket Analysis**
 
-This project aims to discover links between items frequently purchased together through analysing transaction data. 
+This project aims to discover links between items frequently purchased together through analysing transaction data.
 
 [Link to reference article](https://medium.com/swlh/market-basket-analysis-using-rstudio-ba72ebe0c29)
 
@@ -23,20 +24,18 @@ pacman::p_load(readxl, tidyverse, plyr, dplyr,
 
 ## 1.2: Data Loading and Transformation
 
-This Project uses Online Retail dataset from [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/online+retail) 
+This Project uses Online Retail dataset from [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/online+retail)
 
 The dataset contains the following attributes:
 
 ::: {.solvebox .solve data-latex="solve"}
-
--   **InvoiceNo:** Invoice number. Nominal, a 6-digit integral number uniquely
-assigned to each transaction. If this code starts with letter 'c', it indicates a cancellation.  
--   **StockCode:** Product (item) code. Nominal, a 5-digit integral number uniquely assigned to each distinct product.  
--   **Description:** Product (item) name.  
--   **Quantity:** The quantities of each product (item) per transaction.  
--   **InvoiceDate:** Invoice Date and time. Numeric, the day and time when each transaction was generated.  
--   **UnitPrice:** Unit price. Numeric, Product price per unit in sterling.  
--   **CustomerID:** Customer number. Nominal, a 5-digit integral number uniquely assigned to each customer.  
+-   **InvoiceNo:** Invoice number. Nominal, a 6-digit integral number uniquely assigned to each transaction. If this code starts with letter 'c', it indicates a cancellation.\
+-   **StockCode:** Product (item) code. Nominal, a 5-digit integral number uniquely assigned to each distinct product.\
+-   **Description:** Product (item) name.\
+-   **Quantity:** The quantities of each product (item) per transaction.\
+-   **InvoiceDate:** Invoice Date and time. Numeric, the day and time when each transaction was generated.\
+-   **UnitPrice:** Unit price. Numeric, Product price per unit in sterling.\
+-   **CustomerID:** Customer number. Nominal, a 5-digit integral number uniquely assigned to each customer.\
 -   **Country:** Country name. Nominal, the name of the country where each customer resides.
 :::
 
@@ -51,11 +50,10 @@ order_data <- order_data[complete.cases(order_data), ]
 summary(order_data)
 ```
 
-*   `mutate()` character data types to factor using `as.factor()`
-*   Convert InvoiceNo to Numeric
-*   Store InvoiceDate as date in new variable, 'TransDate'
-*   Extract time from InvoiceDate and store in another variable, 'TransTime'
-
+-   `mutate()` character data types to factor using `as.factor()`
+-   Convert InvoiceNo to Numeric
+-   Store InvoiceDate as date in new variable, 'TransDate'
+-   Extract time from InvoiceDate and store in another variable, 'TransTime'
 
 ```{r}
 order_data %>%
@@ -93,14 +91,14 @@ trans <- read.transactions('data/market_basket_transactions.csv',
                            sep=',')
 dim(trans)
 ```
+
 `dim(data)` shows that there are 18,839 transactions (rows) and 4231 items (columns).
 
 ```{r}
 summary(trans)
 ```
 
-`summary()` data reveals that the 2-itemset size is 1401, the largest amongst all k-itemsets. 
-
+`summary()` data reveals that the 2-itemset size is 1401, the largest amongst all k-itemsets.
 
 # 2: Generating Item Frequency Plot
 
@@ -117,10 +115,9 @@ itemFrequencyPlot(trans,
                   xlab = "Absolute Frequency")
 ```
 
-
 # 3: Generating Association Rules using `apriori()`
 
-Each basket can be represented as a vector containing Boolean values pertaining to whether an item is in the basket (1) or not (0). Analysing the baskets to find patterns in the most common items purchased together to form **association rules** can be useful. 
+Each basket can be represented as a vector containing Boolean values pertaining to whether an item is in the basket (1) or not (0). Analysing the baskets to find patterns in the most common items purchased together to form **association rules** can be useful.
 
 ```{r}
 association_rules <- apriori(trans, parameter = list(supp=0.001,
@@ -141,31 +138,31 @@ inspect(association_rules[1:20])
 Display association rules by **lift value**:
 
 ::: {.focusbox .focus data-latex="focus"}
-**Lift**  
+**Lift**
 
-*   Lift value is the measure of importance of an association rule
-*   It is the ratio of the confidence of the rule / expected confidence of the rule
-*   **Lift value < 1**: negative dependence or substitution effect
-*   **Lift value > 1**: positive dependence or complementary effect
-*   **Lift value = 1**: implies almost no association between items
-
+-   Lift value is the measure of importance of an association rule
+-   It is the ratio of the confidence of the rule / expected confidence of the rule
+-   **Lift value \< 1**: negative dependence or substitution effect
+-   **Lift value \> 1**: positive dependence or complementary effect
+-   **Lift value = 1**: implies almost no association between items
 :::
-\n
-\n 
-$$Lift = \frac{Confidence}{Expected\ Confidence} = \frac{P\left(A \cap B\right)}{P\left(A\right).P\left(B\right)}$$  
-\n
-\n
-$$Lift({X} -> {Y}) = \frac{(Transactions\ containing\ both\ X\ and\ Y)/(Transactions\ containing\ X)}{(Transactions\ containing\ Y)}$$  
+
+```{=tex}
 \n
 \n
+```
+$$Lift = \frac{Confidence}{Expected\ Confidence} = \frac{P\left(A \cap B\right)}{P\left(A\right).P\left(B\right)}$$\
+\n \n $$Lift({X} -> {Y}) = \frac{(Transactions\ containing\ both\ X\ and\ Y)/(Transactions\ containing\ X)}{(Transactions\ containing\ Y)}$$\
+\n \n
+
 ```{r}
 inspect(head(sort(association_rules, by = "lift")))
 ```
 
-
-# 4: Filter rules 
+# 4: Filter rules
 
 ## 4.1: Select only association rules with confidence greater than 0.6 or 60%
+
 ```{r}
 subRules<-association_rules[quality(association_rules)$confidence > 0.6]
 
@@ -184,7 +181,7 @@ plot(subRules,
      engine = "plotly")
 ```
 
-## 4.2 Generating rules for specific items 
+## 4.2 Generating rules for specific items
 
 Suppose we would like to find out more about rules regarding most frequent item, "WHITE HANGING HEART T-LIGHT HOLDER":
 
@@ -220,4 +217,3 @@ plot(top10_rules,
      method = "graph",
      engine = "htmlwidget")
 ```
-

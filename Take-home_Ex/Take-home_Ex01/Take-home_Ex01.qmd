@@ -1,0 +1,606 @@
+---
+title: "Take-home Exercise 1"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: true
+    code-summary: "code block"
+---
+
+# Project Brief
+
+**Exploring Population Statistics of the City of Engagement**
+\
+Design a user-friendly and interactive solution that helps city managers and planners to explore complex population data in an engaging way and reveal hidden patterns. This project aims to reveal the **demographic and financial characteristics** of the City of Engagement, using appropriate static and interactive statistical graphics methods in R.
+
+# Project Objectives  
+
+The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received. **To support this process, the target metric of this study will be *joviality*, and the aim of this project will thus be to identify demographic gaps in joviality and areas for development through exploratory data analysis and visualisation.**  
+  
+  
+
+# 1: Data Preparation
+
+## 1.1: Installing R packages
+
+`pacman::p_load()` function from the `pacman` package is used in the following code chunk to install and call the libraries of multiple R packages:
+
+```{r}
+#| code-fold: false
+pacman::p_load(tidyverse, ggstatsplot, ggridges, plotly, patchwork, scales,
+               ggiraph, gganimate, gifski, 
+               Hmisc, vcd, knitr, kableExtra, DT,
+               urbnthemes)
+```
+
+## 1.2: Data Sets
+
+Two datasets are provided for the task: *Participants.csv* and *FinancialJournal.csv*.\
+These are uploaded as **demo_data** and **financial_data** respectively.
+
+## 1.2.1: Summary Statistics of *demo_data*
+
+```{r}
+#| message: false
+demo_data <- read_csv("data/Participants.csv")
+```
+
+::: panel-tabset
+## First 10 Rows
+
+**Displaying first 10 rows using `head()`:**
+
+```{r}
+#| code-fold: false
+head(demo_data,10) %>%
+  kbl() %>%
+  kable_material()
+```
+
+## Dataset Structure
+
+**Checking the structure of demo_data using `str()`:**
+
+```{r}
+#| code-fold: false
+str(demo_data)
+```
+There are a total of 1011 rows and 7 variables. The output reveals that variables **participantId** and **householdSize** have been read as numeric, continuous data types, but should be analysed as nominal data instead. 
+
+## Summary Statistics
+
+**Inspecting summary statistics of the dataset using `describe()` from Hmisc pacakage:**
+
+```{r}
+#| code-fold: false
+Hmisc::describe(demo_data)
+```
+
+From the output, there are zero missing values across all columns in **demo_data**. 
+:::  
+  
+::: {.focusbox .focus data-latex="focus"}
+**Initial Insights from Summary Statistics**  
+\
+There seems to be a fairly even distribution of participants across **joviality**, **householdSize**, **age** and **interestGroup**. There are more participants who do not have children, and approximately half of them have attained the highest education at high school or college level. The distributions and correlations of these variables will be investigated further in subsequent sections, after appropriate data wrangling techniques have been applied.
+  
+:::  
+
+\
+\
+**Changing Data Types**:
+
+-   **participantId** is classified as `<dbl>`, numerical continuous data, instead of nominal. This is cast as `<chr>` class using `as.character()`
+-   **educationLevel** is classified as `<chr>` categorical data, and consists of four levels, with inherent hierarchy. This variable is cast as factor type on an ordinal scale using the `ordered()` function
+-   **householdSize** and **interestGroup** are classified as `<dbl>` and `<chr>` respectively, but are categorical in nature with different levels. These variables are cast as factors using `as.factor()`
+
+  
+  
+```{r}
+demo_data_new <- demo_data %>%
+  # Changing participantId to character 
+  mutate(participantId = as.character(demo_data$participantId),
+
+  # Updating educationLevel with ordinal scale
+  educationLevel = ordered(demo_data$educationLevel, levels = c("Graduate", "Bachelors", "HighSchoolOrCollege", "Low")),
+
+  # Casting householdSize and interestGroup as factors
+  householdSize = as.factor(demo_data$householdSize),
+  interestGroup = as.factor(demo_data$interestGroup)
+  )
+```
+\
+\
+**demo_data_new:**
+
+```{r}
+head(demo_data_new, 10) %>%
+  kbl() %>%
+  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
+```
+
+## 1.2.2: Summary Statistics of *financial_data*
+
+```{r}
+#| message: false
+financial_data <- read_csv("data/FinancialJournal.csv")
+```
+
+::: panel-tabset
+## At a Glimpse
+
+```{r}
+#| code-fold: false
+glimpse(financial_data)
+```
+
+The dataset captures specific financial transactions by participants, with a single transaction recorded in each row. Participants may have multiple transactions over time.
+
+## Summary Statistics
+
+```{r}
+#| code-fold: false
+Hmisc::describe(financial_data)
+```
+
+From the output, there are zero missing values across all columns in **financial_data**. Summary statistics revealed that a total of 1,513,636 financial transactions were captured over a year from March 2022 to February 2023.
+
+## participantID no.0
+
+A summary of **financial_data** from only participantID no.0
+
+```{r}
+#| code-fold: false
+id_0 <- subset(financial_data, participantId == "0")
+
+head(id_0, 10) %>%
+  kbl() %>%
+  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
+```
+:::  
+  
+  
+::: {.focusbox .focus data-latex="focus"}
+**Initial Insights from Summary Statistics**  
+
+There seems to be a skewed distribution of transactions, with a higher proportion (0.522) falling under **category: Food** followed by **category: Wage.** Transaction **amount** has a wide range due to negative and positive values, and a skewed distribution due to large difference between 95th percentile value (159.561) and highest value (4096.526). The distributions and correlations of these variables will be investigated further in subsequent sections, after appropriate data wrangling and transformation techniques have been applied.  
+
+:::  
+  
+\
+\
+**Data Quality Issues**:
+
+-   **participantId** is classified as `<dbl>`, numerical continuous data, instead of nominal. This is cast as `<chr>` class using `as.character()`
+-   **category** is classified as `<chr>`, but is categorical in nature with six different levels. These is cast as factor type using `as.factor()`
+-   **timestamp** contains both Date and Time, which is not suitable for analysis. This is split into separate variables, **transDate** and **transTime**
+-   **amount** is reflected as a numeric value with 3 decimal places. This is rounded to 2 d.p. to reflect standard currency structure while maintaing accuracy.  
+
+
+```{r}
+financial_data_new <- financial_data %>%
+  # Changing participantId to character 
+  mutate(participantID = as.character(financial_data$participantId),
+
+  # Casting category as factor
+  category = as.factor(financial_data$category),
+
+  # Splitting DateTime variable into separate columns
+  transDate = as.character(format(as.Date(financial_data$timestamp))),
+  transTime = format(as.POSIXct(financial_data$timestamp), "%H:%M:%S"),
+  
+  # Rounding amount to 2 decimal places
+  amount = round(amount, digits = 2)
+  ) %>%
+  
+  # remove timestamp column
+  select(-timestamp) %>%
+  
+  # Sort by Participant ID
+  arrange(participantId)
+
+```
+  
+  
+  
+**financial_data_new:**
+
+```{r}
+head(financial_data_new, 10) %>%
+  kbl() %>%
+  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
+```
+\
+\
+
+
+# 2: Data Wrangling
+
+The flowchart below gives an overview of key variables used and derived for this study from both *demo_data* and *financial_data*:
+
+```{mermaid}
+%%| fig-width: 8
+flowchart TD
+A(Key Variables) --> B(Demographic)
+A --> C(Financial)
+B --- D[Age]
+B --- E[Household Size]
+B --- F[Interests]
+B --- G[Education]
+C --- H[Income Group]
+C --- J[Home Ownership]
+B & C --- K[Income Per Capita]
+```
+
+## 2.1: Banding of Age into Age Groups
+
+The range of participants' ages is rather wide, spanning from 18-60 years old:
+
+```{r}
+options(width = 100)
+describe(demo_data_new$age)
+```
+
+::: {.solvebox .solve data-latex="solve"}  
+
+These may be grouped together by percentile, and analysed as age groups instead to give a better overview of different demographics. Each band is approximately grouped into 10-year age ranges:  
+
+*   **25th Percentile: 18-29yo**
+*   **25-50th Percentile: 30-39yo**
+*   **50-75th Percentile: 40-50yo**
+*   **75th Percentile: 51-60yo**  
+  
+:::
+  
+```{r}
+#| fig-width: 8
+
+# Grouping Age into Age Groups
+demo_data_new$ageGroup <- as.factor(cut(demo_data_new$age,
+                                        breaks = c(0,29,39,50,60),
+                                        labels = c("18-29", "30-39", "40-50", "51-60")))
+
+# Setting default theme for all plots
+set_urbn_defaults(style = "print")
+
+# Barchart of ageGroup
+ggplot(demo_data_new, aes(x = ageGroup)) +
+  geom_bar() +
+  labs(title = "Participants are evenly distributed across Age Groups",
+       x = NULL,
+       y = NULL) +
+  geom_text(stat = "count",
+            aes(label = after_stat(count)),
+            vjust = -1) +
+  theme(text = element_text(size = 12),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+## 2.2: Computing New Variables based on financial transactions
+
+**financial_data_new** lists out individual transactions by participant, and records both cash inflows and outflows. A boxplot is used to visualise the range of values by category:
+
+```{r}
+#| fig-width: 8
+ggplot(financial_data_new, aes(x = amount,
+                               y = category)) +
+  stat_boxplot(geom = "errorbar", width = 0.2) +
+  geom_boxplot() +
+  labs(title = "Transaction Amount Range by Category",
+       x = NULL,
+       y = NULL) +
+  geom_vline(aes(xintercept = 0),
+             colour="#f53b5d", linewidth = 0.5, linetype = "dashed") +
+  theme(axis.ticks.y = element_blank(),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
+```
+
+::: {.focusbox .focus data-latex="focus"}
+**Insights from Boxplot**  
+
+-   Transactions are either outflows (-ve value) or inflows (+ve value)
+-   **Wage**, **Shelter** and **RentAdjustment** have a larger range of values compared to Recreation, Food and Education
+-   **Wage** seems to be made up of 'clusters' of points, with a gap in between higher wage groups and lower wage groups
+
+:::  
+\
+\
+New aggregate variables are computed based on this for further analysis:  
+
+*   **numTrans**: Total Number of transactions per participant
+*   **netAmount**: Net Total amount ($) of transactions per participant = (Inflow - Outflow) 
+*   **expenseRatio**: % of inflow that is spent (outflow) per participant
+*   **out_pctEdu, out_pctFood, out_pctRec, out_pctShelter**: % contribution to cash outflow by category
+*   **in_pctWage, in_pctRentAdj**: % contribution to cash inflow by category
+
+
+```{r}
+# Create new dataframe with transformed variables
+financial_agg <- financial_data_new %>%
+                  group_by(participantId) %>% 
+                  summarise(numTrans = n(), #< Count number of rows per participantId
+                            netAmount = sum(amount), #< Sum net total amount per participantId
+                            annualWage = sum(amount[category == "Wage"]), #< Sum total income per participantId
+                            
+                            totInflow = sum(amount[category == "Wage"]) + 
+                                        sum(amount[category == "RentAdjustment"]), #< Compute inflow value
+                            totOutflow = sum(abs(amount[category == "Education"])) + 
+                                         sum(abs(amount[category == "Food"])) +
+                                         sum(abs(amount[category == "Recreation"])) +
+                                         sum(abs(amount[category== "Shelter"])), #< Compute outflow value
+                            expenseRatio = round((totOutflow/totInflow), 2), #< Compute outflow/inflow ratio
+                        #< % of each category contribution to inflow
+                            in_pctWage = round((sum(amount[category == "Wage"])/totInflow), 2), 
+                            in_pctRentAdj = round((sum(amount[category == "RentAdjustment"])/totInflow), 2),
+                        #< % of each category contribution to outflow    
+                            out_pctEdu = round((sum(abs(amount[category == "Education"]))/totOutflow), 2), 
+                            out_pctFood = round((sum(abs(amount[category == "Food"]))/totOutflow), 2),
+                            out_pctRec = round((sum(abs(amount[category == "Recreation"]))/totOutflow), 2),
+                            out_pctShelter = round((sum(abs(amount[category == "Shelter"]))/totOutflow), 2) 
+                            ) %>%
+                  replace(is.na(.),0) %>%
+                  ungroup()
+                          
+```
+
+**financial_agg:**  
+
+```{r}
+head(financial_agg, 10) %>%
+  kbl() %>%
+  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
+```
+
+
+
+## 2.3: Banding of participants by Wage  
+  
+From the boxplot diagram in section 2.2, there is a large variation in wage range, and a segregation between lower and higher wage bands. 
+
+```{r}
+describe(financial_agg$annualWage)
+```
+ 
+::: {.solvebox .solve data-latex="solve"}  
+Based on the Mean and distribution of values across percentiles as shown above, participants are banded according to annual wage: 
+
+*   **Bottom 10th Percentile: low**
+*   **11-50th Percentile: mid-low**
+*   **50-90th Percentile: mid-high**
+*   **Top 10th Percentile: high**  
+:::  
+
+```{r}
+# Grouping Annual wage into income Groups
+financial_agg$incomeGroup <- as.factor(cut(financial_agg$annualWage,
+                                        breaks = c(0,2704,40995,79184,Inf),
+                                        labels = c("low", "mid-low", "mid-high", "high")))
+
+# Barchart of incomeGroup
+ggplot(financial_agg, aes(x = incomeGroup)) +
+  geom_bar() +
+  labs(title = "Higher concentration of Participants in Middle Income Groups",
+       x = NULL,
+       y = NULL) +
+  geom_text(stat = "count",
+            aes(label = after_stat(count)),
+            vjust = -1) +
+  theme(text = element_text(size = 12),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+## 2.4: Home Ownership
+
+To derive home ownership from financial transactions, we filter out participants with transactions in the *'RentAdjustment'* category. This is based on the assumption that *'RentAdjustment'* is additional rental income for the participant, who is the home owner. A new boolean variable, **homeOwner**, is created to reflect this. 
+
+```{r}
+# Create new column homeOwner with boolean values, true if participant gets income from rent adjustment
+financial_agg <- financial_agg %>%
+              mutate(homeOwner = if_else(in_pctRentAdj > 0, TRUE, FALSE))
+
+# Barchart of homeOwner
+ggplot(financial_agg, aes(x = homeOwner)) +
+  geom_bar() +
+  labs(title = "The City has a very small proportion of Home Owners",
+       x = "Home Owner?",
+       y = NULL) +
+  geom_text(stat = "count",
+            aes(label = after_stat(count)),
+            vjust = -1) +
+  theme(text = element_text(size = 12),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
+```
+
+## 2.5: Computing Annual Income per Capita
+
+The dataframes are first combined into **df_combined**:
+
+```{r}
+df_combined <- cbind(demo_data_new, financial_agg) %>%
+              select(unique(colnames(.)))
+
+DT::datatable(df_combined[c("participantId", "ageGroup", "incomeGroup", "householdSize", "educationLevel", "haveKids", "interestGroup", "joviality", "numTrans", "expenseRatio", "out_pctEdu", "out_pctFood", "out_pctRec", "out_pctShelter")],
+              class ="compact")
+
+```
+
+The formula used to determine Income per Capita for this study is as follows: \ 
+$$Income\ per\ Capita = \frac{Total\ Annual\ Wage}{Household\ Size}$$
+
+```{r}
+#| fig-width: 8
+#| warning: false
+df_combined <- df_combined %>%
+              mutate(incomePerCapita = round((annualWage/as.integer(householdSize)), 0))
+
+median_incomePC <- round(median(df_combined$incomePerCapita),0)
+
+ggplot(df_combined, aes(x = incomePerCapita)) +
+  geom_histogram(bins = 15,
+                 color = "#F8F3E6") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10),
+                     limits = c(500,140000),
+                     labels = label_dollar()) +
+  geom_vline(aes(xintercept = median_incomePC),
+          colour="grey40", linewidth = 0.8, linetype = "dashed") +
+  annotate(geom = "text", x = 45000, y = 250,
+           label = paste0("Median Income per Capita: $", median_incomePC)) +
+  labs(title = "Right-skewed Distribution of Income per Capita",
+       x = "Income Per Capita",
+       y = NULL) +
+  theme(axis.text.y = element_blank(),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+```{r}
+describe(df_combined$incomePerCapita)
+```
+
+# 3: Exploratory Data Analysis
+
+## 3.1: **Joviality** 
+ 
+### 3.1.1: Distribution
+
+```{r}
+#| warning: false
+#| fig-width: 8
+ggplot(df_combined, aes(x = joviality)) +
+  geom_histogram(bins = 15,
+                 color = "#F8F3E6") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10),
+                     limits = c(0,1)) +
+  geom_vline(aes(xintercept = mean(joviality)),
+             colour="#f53b5d", linewidth = 0.8, linetype = "dashed") +
+  geom_vline(aes(xintercept = median(joviality)),
+             colour="grey40", linewidth = 0.8, linetype = "dashed") +
+  labs(title = "How Jovial are the people in City of Engagement?",
+       x = "Joviality Score",
+       y = NULL) +
+  theme(axis.ticks.y = element_blank(),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+The <span style="color:#f53b5d;">mean</span> joviality score is close to the <span style="color:grey40;">median</span>, suggesting that joviality resembles a normal distribution. 
+
+
+```{r}
+# Across Age Groups
+p1 <- ggbetweenstats(data = df_combined,
+               x = homeOwner,
+               y = joviality,
+               type = "p",
+               mean.ci = TRUE, 
+              pairwise.comparisons = TRUE, 
+              pairwise.display = "s",
+              p.adjust.method = "fdr",
+              messages = FALSE
+              )
+
+## Across Income Groups
+p2 <- ggbetweenstats(data = df_combined,
+               x = incomeGroup,
+               y = joviality,
+               type = "p",
+               mean.ci = TRUE, 
+              pairwise.comparisons = TRUE, 
+              pairwise.display = "s",
+              p.adjust.method = "fdr",
+              messages = FALSE
+              )
+  
+```
+
+## Joviality Scores Across Income and Age Groups
+
+```{r}
+#| warning: false
+# Calculate mean joviality per tile
+gbcols <- c("ageGroup", "incomeGroup")
+
+cal_joviality <- df_combined %>% 
+  group_by(across(all_of(gbcols))) %>% 
+  summarise(mean_joviality = round(mean(joviality),2), .groups = "drop") %>%
+  ungroup()
+
+# Style tooltip
+tooltip_css <- "background-color:#3E4254; font-style:bold; color:#F8F3E6;" 
+
+# Tile Plot
+gg_tile <-ggplot(cal_joviality,
+                aes(x = ageGroup, y = incomeGroup)) +
+          geom_tile_interactive(aes(fill = mean_joviality,
+                                    tooltip = paste("Age Group: ", ageGroup, "<br>",
+                                             "Income Group: ", incomeGroup, "<br>",
+                                             "Mean Joviality Score: ", mean_joviality))) + 
+          scale_fill_gradient(low = "#0a4c6a",
+                              high = "#F8F3E6",
+                              space = "Lab",
+                              na.value = "grey50",
+                              guide = "colourbar",
+                              aesthetics = "fill") +         
+          theme(legend.position = "right",
+                legend.direction = "vertical",
+                axis.line.x = element_blank(),
+                panel.grid.major.y = element_blank()) +
+          remove_ticks() +
+          theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
+ggiraph::girafe(ggobj = gg_tile,
+                width_svg = 6,
+                height_svg = 6*0.618,
+                options = list(opts_tooltip(css = tooltip_css)))                   
+  
+```
+
+```{r}
+
+```
+
+## 3.2 Age:
+```{r}
+#| fig-height: 6
+#| fig-width: 8
+ggplot(demo_data_new, mapping = aes(x = age)) +
+  geom_dotplot(stackdir = "up", 
+               binwidth = 1,
+               stackratio = 1.2,
+               dotsize = 0.4,
+               fill = "#1696d2",
+               color = NA) +
+  geom_vline(aes(xintercept = mean(age)),
+             colour="#f53b5d", linewidth = 0.6, linetype = "dashed") +
+  geom_vline(aes(xintercept = median(age)),
+             colour="#3A3B60", linewidth = 0.6, linetype = "dashed") +
+  labs(x = "Age",
+       y = "Number of Participants") +
+  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+What is the mean amount of transactions in each category across all participants?
+
+```{r}
+cat_amount <- financial_data_new %>%
+                group_by(category) %>%
+                summarise(amount = mean(amount)) %>%
+                ungroup()
+
+ggplot(cat_amount, aes(category, amount)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = round(amount, 2)),
+            vjust = 1) +
+  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+```{r}
+ggplot(financial_agg, aes(x = incomeGroup,
+                          y = expenseRatio)) +
+  geom_boxplot() +
+  labs(title = "Expense Ratio is Higher in Middle Income Groups",
+       x = NULL,
+       y = NULL) +
+  theme(text = element_text(size = 12),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```

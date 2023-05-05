@@ -1,0 +1,103 @@
+---
+title: "Hands-on_Ex04"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: false
+    code-summary: "code block"
+---
+
+# Load and Install R Packages
+
+```{r}
+pacman::p_load(ggstatsplot, tidyverse)
+```
+
+# Importing the data
+
+```{r}
+#| message: false
+exam_data <- read_csv("data/Exam_data.csv")
+
+head(exam_data, 10)
+```
+
+# One-Sample Test: gghistostats()
+
+```{r}
+set.seed(1234)
+
+gghistostats(
+  data = exam_data,
+  x = ENGLISH,
+  type = "bayes",
+  test.value = 60,
+  xlab = "English scores") + 
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+```
+::: {.ideabox .idea data-latex="idea"}
+
+**Bayes factor** is the ratio of the likelihood of one particular hypothesis to the likelihood of another. It can be interpreted as a measure of the strength of evidence in favor of one theory among two competing theories.
+
+:::
+
+
+# Two-Sample Test of difference in means: ggbetweenstats()
+
+```{r}
+ggbetweenstats(
+  data = exam_data,
+  x = GENDER, 
+  y = MATHS,
+  type = "np",
+  messages = FALSE) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+```
+
+# One-way ANOVA Test of difference in means: ggbetweenstats()
+
+```{r}
+ggbetweenstats(
+  data = exam_data,
+  x = RACE, 
+  y = ENGLISH,
+  type = "p",
+  mean.ci = TRUE, 
+  pairwise.comparisons = TRUE, 
+  pairwise.display = "s",
+  p.adjust.method = "fdr",
+  messages = FALSE) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+  
+```
+# Correlation Test: ggscatterstats()
+
+```{r}
+ggscatterstats(
+  data = exam_data,
+  x = MATHS,
+  y = ENGLISH,
+  marginal = FALSE) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+```
+
+# Association Test (Dependence): ggbarstats()
+
+```{r}
+exam1 <- exam_data %>% 
+  mutate(MATHS_bins = 
+           cut(MATHS, 
+               breaks = c(0,60,75,85,100))
+)
+
+ggbarstats(exam1, 
+           x = MATHS_bins, 
+           y = GENDER) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+```

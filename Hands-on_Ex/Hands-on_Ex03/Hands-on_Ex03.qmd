@@ -496,7 +496,7 @@ crosstalk::bscols(gg,
 
 **gifski** converts video frames to GIF animations
 
-*Importing Data**
+\*Importing Data\*\*
 
 ```{r}
 #| message: false
@@ -536,7 +536,7 @@ ggplot(msia_pop, aes(x = Pct_Old, y = Pct_Young,
 
 ## 5.2: Animated Bubble Plot 2
 
-*Importing data**
+\*Importing data\*\*
 
 ```{r}
 globalPop <- read_xls("data/GlobalPopulation.xls",
@@ -588,6 +588,7 @@ gg <- ggplot(globalPop,
 
 ggplotly(gg)
 ```
+
 ## 6.2: plot_ly() Animated Bubble Plot
 
 ```{r}
