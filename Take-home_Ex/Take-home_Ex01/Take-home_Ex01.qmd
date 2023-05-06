@@ -465,7 +465,8 @@ box <- ggplot(df_combined, aes(y = incomePerCapita)) +
           annotate(geom = "text", x = 0.38, y = max_incomePC,
                   label = paste0("$", max_incomePC),
                   color = "salmon") + 
-          labs(y = "", x = "") + 
+          labs(title = "Right-skewed distribution of Income per Capita",
+               y = "", x = "") + 
           scale_y_continuous(limits = c(500,140000), 
                              labels = label_dollar()) +
           stat_boxplot(geom="errorbar", width=0.5) + 
@@ -499,20 +500,25 @@ The distribution of joviality scores is first visualised to determine the variat
 ```{r}
 #| warning: false
 #| fig-width: 8
+
+#mean_jov <- mean(df_combined$joviality)
+#std_jov <-
+  
 ggplot(df_combined, aes(x = joviality)) +
   geom_histogram(bins = 15,
                  color = "#F8F3E6") +
+  #stat_function(fun = dnorm, args = list(mean = mean_jov, sd = std_jov), col="#93c7c2", size = .7)+
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10),
                      limits = c(0,1)) +
   geom_vline(aes(xintercept = mean(joviality)),
              colour="#f53b5d", linewidth = 0.8, linetype = "dashed") +
   geom_vline(aes(xintercept = median(joviality)),
              colour="grey40", linewidth = 0.8, linetype = "dashed") +
-  labs(title = "How Jovial are the people in City of Engagement?",
-       x = "Joviality Score",
+  labs(x = "Joviality Score",
        y = NULL) +
   theme(axis.ticks.y = element_blank(),
         plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
 ```
 
 The <span style="color:#f53b5d;">mean</span> joviality score is close to the <span style="color:grey40;">median</span>, suggesting that joviality resembles a normal distribution. 
@@ -549,8 +555,8 @@ ggplot(df_combined, aes(x = joviality, fill = incomeGroup)) +
 ## Normality Test
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 8
+#| fig-width: 8
+#| fig-height: 5
 ggplot(df_combined, 
        mapping = aes(sample = joviality, 
                      fill = incomeGroup))+
@@ -602,7 +608,8 @@ ggbetweenstats(data = df_combined,
               messages = FALSE
               ) +
   theme_classic() +
-  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+  theme(legend.position = "none",
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
 The p-value is < significance level of 0.05, so we can reject the null hypothesis and conclude that median joviality differs among income groups. In fact, there is a large difference in mean joviality between low income and high income groups, **with participants in low income groups having greater joviality (median = 0.75) than higher income groups (median = 0.23).** 
@@ -661,7 +668,8 @@ ggbetweenstats(data = df_combined,
               messages = FALSE
               ) +
   theme_classic() +
-  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+  theme(legend.position = "none",
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 The p-value 0.08 is > significant level of 0.05, so we conclude that **there is no significant difference in mean joviality score across age groups.** 
 :::  
