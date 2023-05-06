@@ -67,3 +67,15 @@
 .solve {
   background-image: url("Images/solution.png");
 }
+
+.pencilbox {
+  padding: 1em 1em 1em 4em;
+  margin-bottom: 10px;
+  border: 1.5px solid #3A3B60;
+  border-radius: 10px;
+  background:  #dfdfeb 5px center/3em no-repeat;
+}
+
+.pencil {
+  background-image: url("Images/prototype.png");
+}

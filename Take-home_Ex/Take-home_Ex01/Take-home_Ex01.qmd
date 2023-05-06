@@ -15,7 +15,7 @@ Design a user-friendly and interactive solution that helps city managers and pla
 
 # Project Objectives  
 
-The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received. **To support this process, the target metric of this study will be *joviality*, and the aim of this project will thus be to identify demographic gaps in joviality and areas for development through exploratory data analysis and visualisation.**  
+The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received. **To support this process, the target metric of this study will be *joviality*, and the aim of this project will thus be to identify demographic gaps in joviality and areas for development through exploratory data analysis and visualisation. This would enable urban planners to focus their efforts on specific areas of the community to increase overall joviality of the population.**  
   
   
 
@@ -27,9 +27,10 @@ The city aims to use the data to assist with their major community revitalizatio
 
 ```{r}
 #| code-fold: false
+#| warning: false
 pacman::p_load(tidyverse, ggstatsplot, ggridges, plotly, patchwork, scales,
-               ggiraph, gganimate, gifski, 
-               Hmisc, vcd, knitr, kableExtra, DT,
+               ggiraph, gganimate, gifski, ggpubr, ggdist, qqplotr, gt,
+               Hmisc, vcd, knitr, kableExtra, DT, rstatix,
                urbnthemes)
 ```
 
@@ -145,18 +146,6 @@ Hmisc::describe(financial_data)
 
 From the output, there are zero missing values across all columns in **financial_data**. Summary statistics revealed that a total of 1,513,636 financial transactions were captured over a year from March 2022 to February 2023.
 
-## participantID no.0
-
-A summary of **financial_data** from only participantID no.0
-
-```{r}
-#| code-fold: false
-id_0 <- subset(financial_data, participantId == "0")
-
-head(id_0, 10) %>%
-  kbl() %>%
-  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
-```
 :::  
   
   
@@ -173,7 +162,7 @@ There seems to be a skewed distribution of transactions, with a higher proportio
 
 -   **participantId** is classified as `<dbl>`, numerical continuous data, instead of nominal. This is cast as `<chr>` class using `as.character()`
 -   **category** is classified as `<chr>`, but is categorical in nature with six different levels. These is cast as factor type using `as.factor()`
--   **timestamp** contains both Date and Time, which is not suitable for analysis. This is split into separate variables, **transDate** and **transTime**
+-   **timestamp** contains both Date and Time, which is not suitable for analysis. Year-Month is extracted and saved into a separate variable, **transDate**. 
 -   **amount** is reflected as a numeric value with 3 decimal places. This is rounded to 2 d.p. to reflect standard currency structure while maintaing accuracy.  
 
 
@@ -185,9 +174,8 @@ financial_data_new <- financial_data %>%
   # Casting category as factor
   category = as.factor(financial_data$category),
 
-  # Splitting DateTime variable into separate columns
-  transDate = as.character(format(as.Date(financial_data$timestamp))),
-  transTime = format(as.POSIXct(financial_data$timestamp), "%H:%M:%S"),
+  # Extracting Year-Month from timestamp
+  transDate = as.character(format(as.Date(financial_data$timestamp), "%Y-%m")),
   
   # Rounding amount to 2 decimal places
   amount = round(amount, digits = 2)
@@ -425,33 +413,73 @@ DT::datatable(df_combined[c("participantId", "ageGroup", "incomeGroup", "househo
               class ="compact")
 
 ```
+\  
+\  
 
-The formula used to determine Income per Capita for this study is as follows: \ 
+The formula used to determine Income per Capita for this study is as follows:
 $$Income\ per\ Capita = \frac{Total\ Annual\ Wage}{Household\ Size}$$
 
 ```{r}
 #| fig-width: 8
+#| fig-height: 5
 #| warning: false
+
+# Compute income per capita and save as new variable
 df_combined <- df_combined %>%
               mutate(incomePerCapita = round((annualWage/as.integer(householdSize)), 0))
 
+# Calculate min, max, 95th percentile and median values for annotations
+min_incomePC <- round(min(df_combined$incomePerCapita),0)
+max_incomePC <- round(max(df_combined$incomePerCapita),0)
+q_incomePC <- round(quantile(df_combined$incomePerCapita, probs = .95),0)
 median_incomePC <- round(median(df_combined$incomePerCapita),0)
 
-ggplot(df_combined, aes(x = incomePerCapita)) +
-  geom_histogram(bins = 15,
-                 color = "#F8F3E6") +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10),
-                     limits = c(500,140000),
-                     labels = label_dollar()) +
-  geom_vline(aes(xintercept = median_incomePC),
-          colour="grey40", linewidth = 0.8, linetype = "dashed") +
-  annotate(geom = "text", x = 45000, y = 250,
-           label = paste0("Median Income per Capita: $", median_incomePC)) +
-  labs(title = "Right-skewed Distribution of Income per Capita",
-       x = "Income Per Capita",
-       y = NULL) +
-  theme(axis.text.y = element_blank(),
-        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+# Histogram of income per capita
+h <- ggplot(df_combined, aes(x = incomePerCapita)) +
+      geom_histogram(bins = 15,
+                    color = "#F8F3E6") +
+      scale_x_continuous(breaks = scales::pretty_breaks(n = 10),
+                        limits = c(500,140000),
+                        labels = label_dollar()) +
+      geom_vline(aes(xintercept = median_incomePC),
+                    colour="grey40", linewidth = 0.8, linetype = "dashed") +
+      annotate(geom = "text", x = 50000, y = 250,
+              label = paste0("Median Income per Capita: $", median_incomePC)) +
+      labs(x = NULL, y = NULL) +
+      theme_minimal() +
+      theme(axis.text.y = element_blank(),
+           panel.grid.major = element_blank(),
+           plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
+#Boxplot of Income per capita
+box <- ggplot(df_combined, aes(y = incomePerCapita)) + 
+          geom_boxplot(outlier.colour="salmon", outlier.shape=16,
+                        outlier.size=1, notch=FALSE) + 
+          coord_flip() + 
+          annotate(geom = "text", x = 0.38, y = min_incomePC,
+                  label = paste0("$", min_incomePC),
+                  color = "grey30") + 
+          annotate(geom = "text", x = 0.38, y = q_incomePC,
+                  label = paste0("$", q_incomePC),
+                  color = "grey30") +
+          annotate(geom = "text", x = 0.38, y = max_incomePC,
+                  label = paste0("$", max_incomePC),
+                  color = "salmon") + 
+          labs(y = "", x = "") + 
+          scale_y_continuous(limits = c(500,140000), 
+                             labels = label_dollar()) +
+          stat_boxplot(geom="errorbar", width=0.5) + 
+          theme_minimal() +
+          theme(axis.text = element_blank(), 
+                axis.ticks = element_blank(),
+                panel.grid.major = element_blank(),
+                plot.background =
+                  element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
+hbox <- (box / h) + 
+        plot_layout(heights = c(0.8, 4))
+
+hbox
 ```
 
 ```{r}
@@ -461,8 +489,12 @@ describe(df_combined$incomePerCapita)
 # 3: Exploratory Data Analysis
 
 ## 3.1: **Joviality** 
+
+Each participant has a **joviality** score on a scale of 0 to 1. For the purpose of this study, we assume that the closer the score is to 1 (maximum), the more jovial the participant was recorded at the start of the survey. Joviality will thus be analysed across different demographic and financial variables, to find significant patterns and trends.
  
 ### 3.1.1: Distribution
+
+The distribution of joviality scores is first visualised to determine the variation of values across the sample population:
 
 ```{r}
 #| warning: false
@@ -485,35 +517,156 @@ ggplot(df_combined, aes(x = joviality)) +
 
 The <span style="color:#f53b5d;">mean</span> joviality score is close to the <span style="color:grey40;">median</span>, suggesting that joviality resembles a normal distribution. 
 
+### 3.1.2: **Are there differences in Joviality Scores Across Income and Age Groups?**
+
+We seek to find out if specific groups within the population have reported lower or higher joviality scores, and if this difference between factor levels in the sample is significant enough to represent the overall city population.  
+A normality assumption test is first conducted across factor levels for joviality score across income and age groups. At a confidence level of 95%, we test the following hypothesis:  
+\  
+$$H_0: Joviality\ is\ normally\ distributed\ across\ groups$$  
+$$H_1: Joviality\ is\ not\ normally\ distributed\ across\ groups$$  
+\  
+**Income Groups**
+
+::: {.panel-tabset}
+
+## Disribution
 
 ```{r}
-# Across Age Groups
-p1 <- ggbetweenstats(data = df_combined,
-               x = homeOwner,
-               y = joviality,
-               type = "p",
-               mean.ci = TRUE, 
-              pairwise.comparisons = TRUE, 
-              pairwise.display = "s",
-              p.adjust.method = "fdr",
-              messages = FALSE
-              )
-
-## Across Income Groups
-p2 <- ggbetweenstats(data = df_combined,
-               x = incomeGroup,
-               y = joviality,
-               type = "p",
-               mean.ci = TRUE, 
-              pairwise.comparisons = TRUE, 
-              pairwise.display = "s",
-              p.adjust.method = "fdr",
-              messages = FALSE
-              )
-  
+#| fig-width: 8
+ggplot(df_combined, aes(x = joviality, fill = incomeGroup)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Distribution of Joviality Score Across Income Groups") +
+  annotate(geom = "text", x = 0.2, y = 2.4,
+           label = "High income groups recorded lower joviality") +
+  annotate(geom = "text", x = 0.8, y = 2.05,
+           label = "Low income groups recorded higher joviality") +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        panel.grid.major = element_blank(),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
-## Joviality Scores Across Income and Age Groups
+## Normality Test
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+ggplot(df_combined, 
+       mapping = aes(sample = joviality, 
+                     fill = incomeGroup))+
+      stat_qq_band(alpha=0.15) +
+      stat_qq_line(alpha=0.15) +
+      stat_qq_point(size=0.5) + 
+      facet_wrap(~ incomeGroup, nrow = 1) +
+      labs(title = "Deviation from normality across Income Groups",
+           subtitle = "Q-Q plots visually indicate that the data is not normally distributed",
+           x = "", y = "") +
+      theme_bw() +
+      theme(legend.position = "none",
+            axis.text.y = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            panel.grid.minor = element_blank(),
+            plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+```{r}
+df_combined %>%
+      group_by(incomeGroup) %>%
+      shapiro_test(joviality) %>%
+      ungroup() %>%
+      kbl() %>%
+      kable_styling(full_width = F, bootstrap_options = "responsive")
+```
+
+
+Since the p-value across each income group is < significance level 0.05, we reject the null hypothesis, concluding that **joviality does not follow a normal distribution across income groups**. To test if there is a significant difference between groups, a non-parametric test will be used in subsequent analysis, with median value as measure of central tendency. 
+
+## ANOVA
+
+A non-parametric Kruskal-Wallis one-way ANOVA test is conducted to determine if there is a significant difference in joviality score between income groups. At a significance level of 0.05, we test the following hypothesis:  
+
+$$H_0: There\ is\ no\ difference\ in\ \mu\ between\ income\ groups$$
+$$H_0: There\ is\ a\ difference\ in\ \mu\ between\ two\ or\ more\ income\ groups$$  
+```{r}
+#| fig-width: 8
+ggbetweenstats(data = df_combined,
+               x = incomeGroup,
+               y = joviality,
+               type = "np",
+               mean.ci = TRUE, 
+              pairwise.comparisons = TRUE, 
+              pairwise.display = "s",
+              p.adjust.method = "fdr",
+              messages = FALSE
+              ) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+The p-value is < significance level of 0.05, so we can reject the null hypothesis and conclude that median joviality differs among income groups. In fact, there is a large difference in mean joviality between low income and high income groups, **with participants in low income groups having greater joviality (median = 0.75) than higher income groups (median = 0.23).** 
+
+:::  
+\  
+**Age Groups**
+
+::: {.panel-tabset}
+
+## Distribution
+
+```{r}
+#| fig-width: 8
+ggplot(df_combined, aes(x = joviality, fill = ageGroup)) +
+  geom_density(alpha = 0.4) +
+  facet_wrap(~ageGroup, nrow = 2, ncol = 2) +
+  remove_ticks() +
+  labs(title = "Distribution of Joviality Score Across Age Groups",
+       subtitle = "Older participants seem to have higher concentration of low joviality scores") +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        panel.grid.major = element_blank(),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+## Normality Test
+
+```{r}
+df_combined %>%
+  group_by(ageGroup) %>%
+  shapiro_test(joviality) %>%
+  ungroup() %>%
+  kbl() %>%
+  kable_styling(full_width = F, bootstrap_options = "responsive")
+```
+Since the p-value across each age group is < 0.05, we reject the null hypothesis, concluding that joviality does not follow a normal distribution across age groups either. To test if there is a significant difference between groups, a non-parametric test will be used in subsequent analysis. 
+
+## ANOVA  
+
+A non-parametric Kruskal-Wallis one-way ANOVA test is conducted to determine if there is a significant difference in mean joviality score between age groups. At a significance level of 0.05, we test the following hypothesis:  
+
+$$H_0: There\ is\ no\ difference\ in\ \mu\ between\ age\ groups$$
+$$H_0: There\ is\ a\ difference\ in\ \mu\ between\ two\ or\ more\ age\ groups$$  
+
+```{r}
+#| fig-width: 8
+ggbetweenstats(data = df_combined,
+               x = ageGroup,
+               y = joviality,
+               type = "np",
+               mean.ci = TRUE, 
+              pairwise.comparisons = TRUE, 
+              pairwise.display = "s",
+              p.adjust.method = "fdr",
+              messages = FALSE
+              ) +
+  theme_classic() +
+  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+The p-value 0.08 is > significant level of 0.05, so we conclude that **there is no significant difference in mean joviality score across age groups.** 
+:::  
+\  
+While the one-way ANOVA tests reported significant differences in joviality between income groups and not age groups, there are still trends that can be observed when comparing multiple groups and factor levels. This gives more specific insight into demographic patterns, as visualised in the following chart that compares joviality score across both Age and Income groups: 
 
 ```{r}
 #| warning: false
@@ -540,7 +693,10 @@ gg_tile <-ggplot(cal_joviality,
                               space = "Lab",
                               na.value = "grey50",
                               guide = "colourbar",
-                              aesthetics = "fill") +         
+                              aesthetics = "fill") +  
+          labs(title = "Joviality across Income and Age Groups",
+               x = "Age Group",
+               y = "Income Group") +
           theme(legend.position = "right",
                 legend.direction = "vertical",
                 axis.line.x = element_blank(),
@@ -551,9 +707,17 @@ gg_tile <-ggplot(cal_joviality,
 ggiraph::girafe(ggobj = gg_tile,
                 width_svg = 6,
                 height_svg = 6*0.618,
+                fonts = list(sans = "Lato Regular"),
                 options = list(opts_tooltip(css = tooltip_css)))                   
   
 ```
+::: {.pencilbox .pencil data-latex="pencil"}  
+
+**Design Considerations**  
+
+*   A heatmap was selected to visualise two categorical variables with tiles filled by the value of 
+:::
+
 
 ```{r}
 
@@ -561,22 +725,7 @@ ggiraph::girafe(ggobj = gg_tile,
 
 ## 3.2 Age:
 ```{r}
-#| fig-height: 6
-#| fig-width: 8
-ggplot(demo_data_new, mapping = aes(x = age)) +
-  geom_dotplot(stackdir = "up", 
-               binwidth = 1,
-               stackratio = 1.2,
-               dotsize = 0.4,
-               fill = "#1696d2",
-               color = NA) +
-  geom_vline(aes(xintercept = mean(age)),
-             colour="#f53b5d", linewidth = 0.6, linetype = "dashed") +
-  geom_vline(aes(xintercept = median(age)),
-             colour="#3A3B60", linewidth = 0.6, linetype = "dashed") +
-  labs(x = "Age",
-       y = "Number of Participants") +
-  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
 ```
 
 What is the mean amount of transactions in each category across all participants?
@@ -587,11 +736,17 @@ cat_amount <- financial_data_new %>%
                 summarise(amount = mean(amount)) %>%
                 ungroup()
 
-ggplot(cat_amount, aes(category, amount)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = round(amount, 2)),
-            vjust = 1) +
-  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+ggplot(cat_amount, aes(x = amount, y = category)) +
+  geom_bar(stat = "identity", 
+           aes(fill = ifelse(amount < 0, "Negative", "Positive"))) +
+  geom_text(aes(label = paste0(ifelse(amount < 0, "-$", "$"), abs(round(amount, 2)))),
+            vjust = -3, hjust = 0.5) +
+  scale_fill_manual(name = "Values", 
+                    values = c("Positive" = "#1696d2", "Negative" = "salmon")) +
+  labs(x = " Mean Amount ($)") +
+  theme(axis.title.y = element_blank(),
+        legend.position = "none",
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
 ```{r}

@@ -1,0 +1,111 @@
+---
+title: "In-Class Exercise 4"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+execute: 
+  warning: false
+  eval: true
+  echo: true
+---
+
+# Loading and Installing R Packages
+
+```{r}
+pacman::p_load(tidyverse, rstatix, gt, patchwork, webshot2)
+```
+
+# Importing Data
+
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+# Visualising the Normal Distribution
+
+::: panel-tabset  
+
+## The plot
+Q-Q Plot: quantile-quantile plot determines whether 
+
+```{r}
+#| echo: false
+#| fig-width: 5
+#| fig-height: 5
+ggplot(exam_data,
+       aes(sample = ENGLISH)) +
+  stat_qq() +
+  stat_qq_line()
+```
+## The Code
+
+```{r}
+#| eval: false
+# QQ plots use 'sample' argument instead of 'x' or 'y'
+ggplot(exam_data,
+       aes(sample = ENGLISH)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+:::
+
+::: {.callout-note}
+We can see that the points on the plot deviate significantly from the straight diagonal line. This is a clear indication that the set of data is not normally distributed.
+:::
+
+# Patchwork
+
+::: panel-tabset
+
+## The Plot
+
+```{r}
+#| echo: false
+#| message: false
+
+qq <- ggplot(exam_data,
+        aes(sample = ENGLISH)) +
+        stat_qq() +
+        stat_qq_line()
+
+sw_t <- exam_data %>%
+          shapiro_test(ENGLISH) %>%
+          gt() #< save as gt table (static)
+
+#create a temp folder to save tibble as an image
+tmp <- tempfile(fileext = ".png")
+gtsave(sw_t, tmp)
+
+# Assign table image to a variable name to call into patchwork
+table_png <- png::readPNG(tmp,
+                          native = TRUE)
+
+qq + table_png
+```
+
+## The Code
+
+```{r}
+#| eval: false
+#| message: false
+
+qq <- ggplot(exam_data,
+        aes(sample = ENGLISH)) +
+        stat_qq() +
+        stat_qq_line()
+
+sw_t <- exam_data %>%
+          shapiro_test(ENGLISH) %>%
+          gt() #< save as gt table (static)
+
+#create a temp folder to save tibble as an image
+tmp <- tempfile(fileext = ".png")
+gtsave(sw_t, tmp)
+
+# Assign table image to a variable name to call into patchwork
+table_png <- png::readPNG(tmp,
+                          native = TRUE)
+
+qq + table_png
+```
+
+:::

@@ -32,6 +32,8 @@ website:
         menu:
           - text: "In-class Ex 3"
             href: In-Class_Ex/In-Class_Ex03/In-Class_Ex03.html
+          - text: "In-class Ex 4"
+            href: In-Class_Ex/In-Class_Ex04/In-Class_Ex04.html
       - text: "{{< fa magnifying-glass-chart >}} Take-home Ex"
         menu:
           - text: "Take-home Ex 1"
