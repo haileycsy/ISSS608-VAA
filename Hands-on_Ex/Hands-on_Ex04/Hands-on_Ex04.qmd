@@ -36,12 +36,10 @@ gghistostats(
   theme_classic() +
   theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
 ```
+
 ::: {.solvebox .solve data-latex="solve"}
-
 **Bayes factor** is the ratio of the likelihood of one particular hypothesis to the likelihood of another. It can be interpreted as a measure of the strength of evidence in favor of one theory among two competing theories.
-
 :::
-
 
 # Two-Sample Test of difference in means: ggbetweenstats()
 
@@ -74,6 +72,7 @@ ggbetweenstats(
   theme(plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
   
 ```
+
 # Correlation Test: ggscatterstats()
 
 ```{r}

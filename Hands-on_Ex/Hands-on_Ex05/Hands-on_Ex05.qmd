@@ -114,6 +114,57 @@ th_foreground(
   border = FALSE)
 ```
 
+## 3.2: Playing with Themes and Colors
+
 ```{r}
+#| warning: false
+g <- ggraph(
+  GAStech_graph
+  ) + 
+  geom_edge_link(
+    aes(colour = 'grey50')
+  ) +
+  geom_node_point(
+    aes(colour = 'grey40'))
+
+g + theme_graph(background = 'grey10',
+                text_colour = 'white')
+```
+
+## 3.3: Playing with Graph Layouts
+
+**Fruchterman and Reingold layout**
+
+```{r}
+g <- ggraph(
+  GAStech_graph, 
+    layout = "fr"
+  ) +
+  geom_edge_link(
+    aes()
+  ) +
+  geom_node_point(
+    aes())
+
+g + theme_graph()
+
+```
+
+**Adding color codes to nodes**
+
+```{r}
+#| warning: false
+g <- ggraph(
+    GAStech_graph, 
+    layout = "nicely"
+  ) + 
+  geom_edge_link(
+    aes()
+  ) +
+  geom_node_point(
+    aes(colour = Department, 
+    size = 3))
+
+g + theme_graph()
 
 ```

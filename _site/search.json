@@ -389,6 +389,20 @@
     "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#basic-network-graph",
     "title": "Hands on Exercise 5",
     "section": "3.1: Basic Network Graph",
-    "text": "3.1: Basic Network Graph\n\n\ncode block\nggraph(GAStech_graph) +\n  geom_edge_link() +\n  geom_node_point()\n\n\n\n\n\ncode block\nth_foreground(\n  foreground = \"#F8F3E6\", \n  border = FALSE)\n\n\nList of 2\n $ panel.border    : list()\n  ..- attr(*, \"class\")= chr [1:2] \"element_blank\" \"element\"\n $ strip.background:List of 5\n  ..$ fill         : chr \"#F8F3E6\"\n  ..$ colour       : chr \"#F8F3E6\"\n  ..$ linewidth    : NULL\n  ..$ linetype     : NULL\n  ..$ inherit.blank: logi FALSE\n  ..- attr(*, \"class\")= chr [1:2] \"element_rect\" \"element\"\n - attr(*, \"class\")= chr [1:2] \"theme\" \"gg\"\n - attr(*, \"complete\")= logi FALSE\n - attr(*, \"validate\")= logi TRUE"
+    "text": "3.1: Basic Network Graph\n\n\ncode block\nggraph(GAStech_graph) +\n  geom_edge_link() +\n  geom_node_point() +\n  theme_graph(background = NA)\n\n\n\n\n\ncode block\nth_foreground(\n  foreground = \"#F8F3E6\", \n  border = FALSE)\n\n\nList of 2\n $ panel.border    : list()\n  ..- attr(*, \"class\")= chr [1:2] \"element_blank\" \"element\"\n $ strip.background:List of 5\n  ..$ fill         : chr \"#F8F3E6\"\n  ..$ colour       : chr \"#F8F3E6\"\n  ..$ linewidth    : NULL\n  ..$ linetype     : NULL\n  ..$ inherit.blank: logi FALSE\n  ..- attr(*, \"class\")= chr [1:2] \"element_rect\" \"element\"\n - attr(*, \"class\")= chr [1:2] \"theme\" \"gg\"\n - attr(*, \"complete\")= logi FALSE\n - attr(*, \"validate\")= logi TRUE"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#playing-with-themes-and-colors",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#playing-with-themes-and-colors",
+    "title": "Hands on Exercise 5",
+    "section": "3.2: Playing with Themes and Colors",
+    "text": "3.2: Playing with Themes and Colors\n\n\ncode block\ng <- ggraph(\n  GAStech_graph\n  ) + \n  geom_edge_link(\n    aes(colour = 'grey50')\n  ) +\n  geom_node_point(\n    aes(colour = 'grey40'))\n\ng + theme_graph(background = 'grey10',\n                text_colour = 'white')"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#playing-with-graph-layouts",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#playing-with-graph-layouts",
+    "title": "Hands on Exercise 5",
+    "section": "3.3: Playing with Graph Layouts",
+    "text": "3.3: Playing with Graph Layouts\nFruchterman and Reingold layout\n\n\ncode block\ng <- ggraph(\n  GAStech_graph, \n    layout = \"fr\"\n  ) +\n  geom_edge_link(\n    aes()\n  ) +\n  geom_node_point(\n    aes())\n\ng + theme_graph()\n\n\n\n\n\nAdding color codes to nodes\n\n\ncode block\ng <- ggraph(\n    GAStech_graph, \n    layout = \"nicely\"\n  ) + \n  geom_edge_link(\n    aes()\n  ) +\n  geom_node_point(\n    aes(colour = Department, \n    size = 3))\n\ng + theme_graph()"
   }
 ]

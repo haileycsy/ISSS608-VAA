@@ -44,9 +44,9 @@ demo_data <- read_csv("data/Participants.csv")
 ```
 
 ::: panel-tabset
-## **First 10 Rows**
+## **First 5 Rows**
 
-**Displaying first 10 rows using `head()`:**
+**Displaying first 5 rows using `head()`:**
 
 ```{r}
 #| code-fold: false
@@ -230,11 +230,11 @@ glimpse(financial_data)
 
 The dataset captures specific financial transactions by participants, with a single transaction recorded in each row. Participants may have multiple transactions over time.
 
-## **Summary Statistics**
+## **Checking for Duplicates**
 
 ```{r}
 #| code-fold: false
-Hmisc::describe(financial_data)
+financial_data[duplicated(financial_data),]
 ```
 
 From the output, there are zero missing values across all columns in **financial_data**. Summary statistics revealed that a total of 1,513,636 financial transactions were captured over a year from March 2022 to February 2023.
@@ -258,6 +258,7 @@ The distributions and correlations of these variables will be investigated furth
 -   **timestamp** contains both Date and Time, which is not suitable for analysis. Year-Month is extracted and saved into a separate variable, **transDate**.
 -   **amount** is reflected as a numeric value with 3 decimal places. This is rounded to 2 d.p. to reflect standard currency structure while maintaing accuracy.\
 -   Data format is unsuitable for analysis: pivot table with individual columns per **category** would give a better monthly summary of financial transactions by participant.\
+-   
        
 
 **Altering table format of financial_data:**
@@ -337,24 +338,29 @@ head(financial_pivot,5) %>%
 #| fig-width: 8
 # Calculating mean amount per category
 monthly_mean <- financial_pivot %>%
-                  group_by(transDate) %>%
-                  summarise(num_people = n_distinct(participantId),
-                            Education = abs(round((sum(Education)/num_people),2)),
-                            Food = abs(round((sum(Food)/num_people),2)),
-                            Recreation = abs(round((sum(Recreation)/num_people),2)),
-                            Shelter = abs(round((sum(Shelter)/num_people),2)),
-                            RentAdj = round((sum(RentAdj)/num_people),2),
-                            Wage = round((sum(Wage)/num_people),2)) %>%
-                  mutate(transDate = ymd(paste(transDate, "01", sep = "-"))) %>% 
-                  ungroup()
+    group_by(transDate) %>%
+    summarise(
+      num_people = n_distinct(participantId),
+      Education = abs(round((sum(Education)/num_people),2)),
+      Food = abs(round((sum(Food)/num_people),2)),
+      Recreation = abs(round((sum(Recreation)/num_people),2)),
+      Shelter = abs(round((sum(Shelter)/num_people),2)),
+      RentAdj = round((sum(RentAdj)/num_people),2),
+      Wage = round((sum(Wage)/num_people),2)) %>%
+    mutate(
+      transDate = ymd(paste(transDate, "01", sep = "-"))) %>% 
+    ungroup()
 
 # Extracting only expenditure categories
 monthly_exp <- monthly_mean %>%
-                  select(-num_people, -Wage, -RentAdj) %>%
-                  pivot_longer(cols = !transDate, 
-                            names_to = "category",
-                            values_to = "amount") %>%
-                  mutate(category = as.factor(category))
+    select(
+      -num_people, -Wage, -RentAdj) %>%
+    pivot_longer(
+      cols = !transDate, 
+      names_to = "category",
+      values_to = "amount") %>%
+    mutate(
+      category = as.factor(category))
   
 # Line plot to show 
 ggplot(
@@ -448,9 +454,14 @@ B & C --- K[Income Per Capita]
 :::
 
 ```{r}
+
+
+```
+```{r}
 #| fig-width: 8
 exp_range <- financial_data_new %>%
-              filter(category %in% c("Education", "Food", "Recreation", "Shelter")) %>%
+    filter(
+      category %in% c("Education", "Food", "Recreation", "Shelter")) %>%
                 
               ggplot(
                 aes(x = category, 
@@ -825,42 +836,66 @@ Each participant has a **joviality** score on a scale of 0 to 1. For the purpose
 The distribution of joviality scores is first visualised to determine the variation of values across the sample population:
 
 ```{r}
-#| warning: false
-mean_jov <- mean(df_combined$joviality)
+#| fig-width: 8
 med_jov <- median(df_combined$joviality)
+mean_jov <- mean(df_combined$joviality)
 std_jov <- sd(df_combined$joviality)
 
-ggplot(df_combined, aes(x = joviality)) + 
-      geom_histogram(aes(y = ..density..),
-                    bins = 25,
-                    color = "#F8F3E6") +
-      stat_function(fun = dnorm,
-                args = list(mean = mean_jov,
-                            sd = std_jov),
-                col = "salmon",
-                size = 1) +
-      geom_vline(aes(xintercept = mean_jov),
-                colour="#4d5887", linewidth = 0.8, linetype = "dashed") +
-      annotate(geom = "text", x = mean_jov + 0.1, y = 1.5,
-                  label = paste0("Mean Joviality: ", round((mean_jov),2)),
-                  color = "#4d5887") +
-      geom_vline(aes(xintercept = med_jov),
-                colour="grey20", linewidth = 0.8, linetype = "dashed") +
-      annotate(geom = "text", x = med_jov - 0.1, y = 1.5,
-                  label = paste0("Median Joviality: ", round((med_jov),2)),
-                  color = "grey20") +
-      scale_x_continuous(breaks = scales::pretty_breaks(n = 10),
-                         limits = c(0,1)) +
-      labs(title = "Uneven Distribution of Joviality Score across Participants",
-           subtitle = "Median joviality score is close to Mean score, but histogram reveals multiple peaks and troughs") +
-      theme(axis.text.y = element_blank(),
-            axis.title.y = element_blank(),
-            panel.grid.major = element_blank(),
-            plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
-            
+ggplot(
+    df_combined, 
+    aes(x = joviality)
+  ) +
+  geom_density(
+    color = "#1696d2",
+    adjust = .2,
+    alpha = .6
+  ) +
+  stat_function(
+    fun = dnorm,
+    args = list(mean = mean_jov,
+                sd = std_jov),
+    col = "grey30",
+    size = .6
+  ) +
+  geom_vline(
+    aes(xintercept = mean_jov),
+    colour="#4d5887", 
+    linewidth = .6, 
+    linetype = "dashed"
+  ) +
+  annotate(
+    geom = "text", 
+    x = mean_jov + 0.12, 
+    y = 1.5,
+    label = paste0("Mean Joviality: ", round((mean_jov),2)),
+    color = "#4d5887"
+  ) +
+  geom_vline(
+    aes(xintercept = med_jov),
+    colour = "#00AFBB", 
+    linewidth = .6, 
+    linetype = "dashed") +
+  annotate(
+    geom = "text", 
+    x = med_jov - 0.12, 
+    y = 1.5,
+    label = paste0("Median Joviality: ", round((med_jov),2)),
+    color = "#00AFBB"
+  ) +
+  labs(
+    title = "Uneven Distribution of Joviality Score across Participants",
+    subtitle = "Median joviality score is close to Mean score, but distribution density reveals multiple peaks and troughs",
+    x = "Joviality Score",
+    y = "Density"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+  
 ```
 
- 
 
 ### 3.1.2: **Are there differences in Joviality Across Income and Age Groups?**
 
@@ -885,17 +920,35 @@ $$H_1: Joviality\ is\ not\ normally\ distributed\ across\ groups$$\
 
 ```{r}
 #| fig-width: 8
-ggplot(df_combined, aes(x = joviality, fill = incomeGroup)) +
-  geom_density(adjust = 1/4, alpha = 0.4) +
-  labs(title = "Distribution of Joviality Score Across Income Groups") +
-  annotate(geom = "text", x = 0.25, y = 3.1,
-           label = "High income groups recorded peaks in lower joviality") +
-  annotate(geom = "text", x = 0.8, y = 2.4,
-           label = "Low income groups recorded peaks in higher joviality") +
-  theme(axis.text.y = element_blank(),
-        axis.title.y = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+ggplot(
+    df_combined, 
+    aes(x = joviality, 
+        fill = incomeGroup)
+  ) +
+  geom_density(
+    adjust = 1/4, 
+    alpha = .4
+  ) +
+  labs(
+    title = "Distribution of Joviality Score Across Income Groups"
+  ) +
+  annotate(
+    geom = "text", 
+    x = .25, 
+    y = 3.1,
+    label = "High income groups recorded peaks in lower joviality"
+  ) +
+  annotate(
+    geom = "text", 
+    x = 0.8, y = 2.4,
+    label = "Low income groups recorded peaks in higher joviality"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
 ```
 
 ## **Normality Test**
@@ -903,24 +956,35 @@ ggplot(df_combined, aes(x = joviality, fill = incomeGroup)) +
 ```{r}
 #| fig-width: 8
 #| fig-height: 5
-ggplot(df_combined, 
-       mapping = aes(sample = joviality, 
-                     fill = incomeGroup))+
-      stat_qq_band(alpha=0.15) +
-      stat_qq_line(alpha=0.15) +
-      stat_qq_point(size=0.5) + 
-      facet_wrap(~ incomeGroup, nrow = 1) + #< nrow used to fit all plots into a line
-      labs(title = "Deviation from Normality across Income Groups",
-           subtitle = "Q-Q plots visually indicate that points diverge from diagonal",
-           x = "", y = "") +
-      theme_bw() + #< theme selected as the border and colored title bar makes it easier to differentiate
-      theme(legend.position = "none", #< legend removed as it was unnecessary
-            axis.text.y = element_blank(),
-            axis.text.x = element_blank(),
-            axis.ticks.y = element_blank(),
-            axis.ticks.x = element_blank(),
-            panel.grid.minor = element_blank(),
-            plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+ggplot(
+    df_combined, 
+    mapping = aes(sample = joviality, 
+                  fill = incomeGroup)
+  )+
+  stat_qq_band(alpha=0.15) +
+  stat_qq_line(alpha=0.15) +
+  stat_qq_point(size=0.5) + 
+  facet_wrap(
+    ~ incomeGroup, 
+    nrow = 1 #<nrow used to fit all plots into a line
+  ) + 
+  labs(
+    title = "Deviation from Normality across Income Groups",
+    subtitle = "Q-Q plots visually indicate that points diverge from diagonal",
+    x = "", 
+    y = ""
+  ) +
+  # theme selected as the border and colored title bar makes it easier to differentiate
+  theme_bw() + 
+  remove_ticks() +
+  theme(
+    # legend removed as it was unnecessary
+    legend.position = "none", 
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
 ```
 
 ```{r}
@@ -968,15 +1032,29 @@ The p-value is \< significance level of 0.05, so we can reject the null hypothes
 
 ```{r}
 #| fig-width: 8
-ggplot(df_combined, aes(x = joviality, fill = ageGroup, color = ageGroup)) +
-  geom_density(adjust = 1/4, alpha = 0.1) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n=5)) +
-  labs(title = "Distribution of Joviality Score Across Age Groups",
-       subtitle = "Variation of joviality across all age groups -- suggests possible influence of multiple factors") +
-  theme(axis.text.y = element_blank(),
-        axis.title.y = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+ggplot(
+    df_combined, 
+    aes(x = joviality, 
+      fill = ageGroup, 
+      color = ageGroup)
+  ) +
+  geom_density(
+    adjust = 1/4, 
+    alpha = .1
+  ) +
+  scale_x_continuous(
+    breaks = scales::pretty_breaks(n = 5)
+  ) +
+  labs(
+    title = "Distribution of Joviality Score Across Age Groups",
+    subtitle = "Variation of joviality across all age groups -- suggests possible influence of multiple factors"
+  ) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
 ```
 
 ## **Normality Test**
