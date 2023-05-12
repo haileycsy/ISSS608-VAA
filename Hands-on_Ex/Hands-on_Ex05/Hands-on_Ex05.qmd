@@ -1,0 +1,119 @@
+---
+title: "Hands on Exercise 5"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: true
+    code-summary: "code block"
+---
+
+**Modelling, Visualising and Analysing Network Data with R**
+
+# Load and Install R Packages
+
+```{r}
+pacman::p_load(igraph, tidygraph, ggraph, 
+               visNetwork, lubridate, clock,
+               tidyverse, graphlayouts)
+```
+
+# Import the Data
+
+```{r}
+GAStech_nodes <- read_csv("data/GAStech_email_node.csv")
+GAStech_edges <- read_csv("data/GAStech_email_edge-v2.csv")
+```
+
+```{r}
+glimpse(GAStech_edges)
+```
+# 1: Data Wrangling 
+
+## 1.1: Changing Date and Time formats  
+
+::: {.pinbox .pin data-latex="pin"}  
+
+*   `dmy()` transforms the SentDate to Date data type.  
+*   `wday()` returns the day of the week as a decimal number or an ordered factor if label is TRUE.
+
+:::
+ 
+```{r}
+GAStech_edges <- GAStech_edges %>%
+  mutate(SendDate = dmy(SentDate)) %>%
+  mutate(Weekday = wday(SentDate,
+                        label = TRUE,
+                        abbr = FALSE))
+glimpse(GAStech_edges)
+```
+## 1.2 Aggregating Attributes
+
+GAStech_edges data.frame consists of individual e-mail flow records, which is not very useful for visualisation.
+
+In view of this, data will be aggregated by date, senders, receivers, main subject and day of the week.
+
+
+```{r}
+#| message: false
+GAStech_edges_aggregated <- GAStech_edges %>%
+  filter(MainSubject == "Work related") %>%
+  group_by(source, target, Weekday) %>%
+    summarise(Weight = n()) %>%
+  filter(source!=target) %>%
+  filter(Weight > 1) %>%
+  ungroup()
+
+glimpse(GAStech_edges_aggregated)
+```
+# 2: Creating network objects using **tidygraph**
+
+## 2.1: Using **tbl_graph()** to build a network graph dataframe  
+
+*   `tbl_graph()` creates a tbl_graph network object from nodes and edges data  
+*   `as_tbl_graph()` converts network data and objects to a tbl_graph network
+
+```{r}
+GAStech_graph <- tbl_graph(nodes = GAStech_nodes,
+                           edges = GAStech_edges_aggregated, 
+                           directed = TRUE)
+
+GAStech_graph
+```  
+  
+
+::: {.focusbox .focus data-latex="focus"}  
+
+*   The output above reveals that GAStech_graph is a tbl_graph object with 54 nodes and 4541 edges.  
+*   The command also prints the first six rows of “Node Data” and the first three of “Edge Data”.It states that the Node Data is active -- this makes it possible to manipulate the data in one tibble at a time.
+
+:::
+
+## 2.2: Using `activate()` to change the activate object
+
+The nodes tibble data frame is activated by default, but you can change which tibble data frame is active with the `activate()` function. Thus, if we wanted to rearrange the rows in the edges tibble to list those with the highest “weight” first, we could use `activate()` and then `arrange()`.
+
+```{r}
+GAStech_graph %>%
+  activate(edges) %>%
+  arrange(desc(Weight))
+```
+# 3: Plotting Static Network Graphs with **ggraph** package
+
+## 3.1: Basic Network Graph
+
+```{r}
+#| warning: false
+#| message: false
+ggraph(GAStech_graph) +
+  geom_edge_link() +
+  geom_node_point() +
+  theme_graph(background = NA)
+
+th_foreground(
+  foreground = "#F8F3E6", 
+  border = FALSE)
+```
+
+```{r}
+
+```

@@ -114,64 +114,93 @@ set_urbn_defaults("print", base_family = "Lato")
 # Assigning each plot to a variable name to patch together
 demo_p1 <- ggplot(demo_data_new, aes(x = householdSize)) +
   geom_bar() +
-  labs(title = "Household Size",
-       x = NULL,
-       y = NULL) +
-  ylim(0,420) + #< Set limit to ensure that geom_text annotation is not cut off
-  geom_text(stat = "count",
-            aes(label = after_stat(count)),
-            vjust = -1) #< Set count annotations above bar
+  labs(
+    title = "Household Size",
+    x = NULL,
+    y = NULL
+  ) +
+  # Set limit to ensure that geom_text annotation is not cut off
+  ylim(0,420
+  ) + 
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1) #< Set count annotations above bar
 
 demo_p2 <- ggplot(demo_data_new, aes(x = haveKids)) +
   geom_bar() +
-  labs(title = "Households with Children",
-       x = NULL,
-       y = NULL) +
-  ylim(0,800) +
-  geom_text(stat = "count",
-            aes(label = after_stat(count)),
-            vjust = -1)
+  labs(
+    title = "Households with Children",
+    x = NULL,
+    y = NULL
+  ) +
+  ylim(0,800
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1)
 
 demo_p3 <- ggplot(demo_data_new, aes(x = age)) +
-  geom_dotplot(binwidth = 1,
-               stackratio = 1.2,
-               stackdir = "up",
-               fill = "#1696d2", #< Fill colour same as bar charts
-               color = NA,
-               dotsize = 0.6) +
-  labs(title = "Age",
-       x = NULL,
-       y = NULL)
+  geom_dotplot(
+    binwidth = 1,
+    stackratio = 1.2,
+    stackdir = "up",
+    fill = "#1696d2", #< Fill colour same as bar charts
+    color = NA,
+    dotsize = 0.6
+  ) +
+  labs(
+    title = "Age",
+    x = NULL,
+    y = NULL)
 
 demo_p4 <- ggplot(demo_data_new, aes(x = educationLevel)) +
   geom_bar() +
-  labs(title = "Highest Education",
-       x = NULL,
-       y = NULL) +
-  ylim(0,600) +
-  geom_text(stat = "count",
-            aes(label = after_stat(count)),
-            vjust = -1)
+  labs(
+    title = "Highest Education",
+    x = NULL,
+    y = NULL
+  ) +
+  ylim(0,600
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1)
 
 demo_p5 <- ggplot(demo_data_new, aes(x = interestGroup)) +
   geom_bar() +
-  labs(title = "Interest Group",
-       x = NULL,
-       y = NULL) +
-  ylim(0,150) +
-  geom_text(stat = "count",
-            aes(label = after_stat(count)),
-            vjust = -1)
+  labs(
+    title = "Interest Group",
+    x = NULL,
+    y = NULL
+  ) +
+  ylim(0,150
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1)
 
 # Patch all summary plots together
 house_patch <- demo_p1 + demo_p2 #< patch together first so that age plot takes up larger width
-demo_patch <- ((demo_p3 + house_patch) / (demo_p5 + demo_p4)) +
-              plot_layout(heights = c(3,2.5)) + 
-              plot_annotation(title = "Summary Statistics of Demographic Data")
+demo_patch <- ((demo_p3 + house_patch) / (demo_p5 + demo_p4)
+              ) +
+              plot_layout(heights = c(3,2.5)
+              ) + 
+              plot_annotation(
+                title = "Summary Statistics of Demographic Data")
 
-demo_patch & theme(axis.text.y = element_blank(), #< Remove y axis since annotations already show count
-                   panel.grid.major = element_blank(), #< Remove lines in panel background for cleaner design
-                   plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")) #< Same colour as webpage
+demo_patch & 
+  theme(
+  # Remove y axis since annotations already show count
+  axis.text.y = element_blank(), 
+  # Remove lines in panel background for cleaner design
+  panel.grid.major = element_blank(), 
+  # Same colour as webpage
+  plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) 
 ```
 
 ::: {.focusbox .focus data-latex="focus"}
@@ -328,22 +357,49 @@ monthly_exp <- monthly_mean %>%
                   mutate(category = as.factor(category))
   
 # Line plot to show 
-ggplot(monthly_exp, 
-       aes(x = transDate, y= amount, color = category)) + #< Ensure that each category is color coded
-  geom_line(linewidth = 1) + #< Make line thicker
-  geom_point(aes(x = transDate, y= amount, color = category),
-             size = 1.5) +
-  scale_color_manual(values = c("Shelter" = "salmon", 
-                                "Education" = "#1696d2", 
-                                "Food" = "#fdbf11", 
-                                "Recreation" = "grey10")) +
-  scale_x_date(date_labels = "%Y-%m", date_breaks = "1 month") +
-  scale_y_continuous(labels = scales::dollar) + #< Ensuring that units were added to y-axis 
-  guides(color = guide_legend(reverse = TRUE)) + 
-  labs(title = "Sudden Dip in Expenditure on Shelter and Recreation from Mar-Apr 2022",
-       x = NULL,
-       y = "Expenditure Amount") +
-  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+ggplot(
+  monthly_exp, 
+  aes(x = transDate, 
+      y= amount, 
+      color = category) #< Ensure that each category is color coded
+  ) + 
+  geom_line(
+    # Make line thicker
+    linewidth = 1
+  ) + 
+  geom_point(
+    aes(
+      x = transDate, 
+      y = amount, 
+      color = category),
+    size = 1.5
+  ) +
+  scale_color_manual(
+    values = c("Shelter" = "salmon", 
+              "Education" = "#1696d2", 
+              "Food" = "#fdbf11", 
+              "Recreation" = "grey10")
+  ) +
+  scale_x_date(
+    date_labels = "%Y-%m", 
+    date_breaks = "1 month"
+  ) +
+  scale_y_continuous(
+    # Ensuring that units were added to y-axis 
+    labels = scales::dollar
+  ) + 
+  guides(
+    color = guide_legend(reverse = TRUE)
+  ) + 
+  labs(
+    title = "Sudden Dip in Expenditure on Shelter and Recreation from Mar-Apr 2022",
+    x = NULL,
+    y = "Expenditure Amount"
+  ) +
+  theme(
+    plot.background = element_rect(
+      fill="#F8F3E6",colour="#F8F3E6")
+  )
 
 ```
 
@@ -394,32 +450,60 @@ B & C --- K[Income Per Capita]
 ```{r}
 #| fig-width: 8
 exp_range <- financial_data_new %>%
-                filter(category %in% c("Education", "Food", "Recreation", "Shelter")) %>%
+              filter(category %in% c("Education", "Food", "Recreation", "Shelter")) %>%
                 
-              ggplot(aes(x = category, y = amount)) +
-              stat_boxplot(geom = "errorbar", width = 0.2) +
-              geom_boxplot(fill = "salmon") +
-              scale_y_continuous(labels = scales::dollar) +
-              labs(title = "Expenditure Range by Category",
-                   subtitle = "Largest variation in rental expenditure",
-                  x = NULL,
-                  y = NULL) +
-              theme(axis.ticks.y = element_blank(),
-              plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+              ggplot(
+                aes(x = category, 
+                    y = amount)
+                ) +
+              stat_boxplot(
+                geom = "errorbar", 
+                width = 0.2
+                ) +
+              geom_boxplot(
+                fill = "salmon"
+                  ) +
+              scale_y_continuous(
+                labels = scales::dollar
+                ) +
+              labs(
+                title = "Expenditure Range by Category",
+                subtitle = "Largest variation in rental expenditure",
+                x = NULL,
+                y = NULL
+                ) +
+              theme(
+                axis.ticks.y = element_blank(),
+                plot.background = element_rect(
+                  fill="#F8F3E6",
+                  colour="#F8F3E6"))
 
 inc_range <- financial_data_new %>%
                 filter(category %in% c("RentAdjustment", "Wage")) %>%
                 
-              ggplot(aes(x = category, y = amount)) +
-              stat_boxplot(geom = "errorbar", width = 0.2) +
+              ggplot(
+                aes(x = category, 
+                    y = amount)
+                ) +
+              stat_boxplot(
+                geom = "errorbar", 
+                width = 0.2
+                ) +
               geom_boxplot() +
-              scale_y_continuous(labels = scales::dollar) +
-              labs(title = "Income Range by Category",
-                   subtitle = "Largest variation in Wage suggests wide income gap",
-                  x = NULL,
-                  y = NULL) +
-              theme(axis.ticks.y = element_blank(),
-              plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+              scale_y_continuous(
+                labels = scales::dollar
+                ) +
+              labs(
+                title = "Income Range by Category",
+                subtitle = "Largest variation in Wage suggests wide income gap",
+                x = NULL,
+                y = NULL
+                ) +
+              theme(
+                axis.ticks.y = element_blank(),
+                plot.background = element_rect(
+                  fill="#F8F3E6",
+                  colour="#F8F3E6"))
 
 range_combined <- exp_range + inc_range
 range_combined & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
@@ -585,7 +669,7 @@ fin_incgrp<- ggplot(financial_agg, aes(x = incomeGroup)) +
 (demo_agegrp + fin_incgrp) & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
-## 2.3: Combining Datasets and Computing Annual Income per Capita
+## 2.3: Combining Datasets and Computing Monthly Income per Capita
 
 The dataframes are first combined into **df_combined**:
 
@@ -620,47 +704,99 @@ q_incomePC <- round(quantile(df_combined$incomePerCapita, probs = .95),0)
 median_incomePC <- round(median(df_combined$incomePerCapita),0)
 
 # Histogram of income per capita
-h <- ggplot(df_combined, aes(x = incomePerCapita)) +
-      geom_histogram(bins = 25,
-                    color = "#F8F3E6") +
-      scale_x_continuous(breaks = scales::pretty_breaks(n = 5),
-                        limits = c(500,12000), #< Set same limits for both plots to ensure justification
-                        labels = label_dollar()) + #< Label with $ unit
-      geom_vline(aes(xintercept = median_incomePC),
-                    colour="grey20", linewidth = 0.7, linetype = "dashed") +
-      annotate(geom = "text", x = 3800, y = 290,
-              label = paste0("Median Income per Capita: $", median_incomePC)) +
-      labs(x = NULL, y = NULL) +
-      theme_minimal() +
-      theme(axis.text.y = element_blank(),
-           panel.grid.major = element_blank(),
-           plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+h <- 
+  ggplot(
+    df_combined, 
+    aes(x = incomePerCapita)
+  ) +
+  geom_histogram(
+    bins = 25,
+    color = "#F8F3E6"
+  ) +
+  scale_x_continuous(
+    breaks = scales::pretty_breaks(n = 5),
+    # Set same limits for both plots to ensure justification
+    limits = c(500,12000), 
+    # Label with $ unit
+    labels = label_dollar()
+  ) + 
+  geom_vline(
+    aes(xintercept = median_incomePC),
+    colour="grey20", 
+    linewidth = 0.7, 
+    linetype = "dashed"
+  ) +
+  annotate(
+    geom = "text", 
+    x = 3800, 
+    y = 290,
+    label = paste0("Median Income per Capita: $", median_incomePC)
+  ) +
+  labs(x = NULL, y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
 
 #Boxplot of Income per capita
-box <- ggplot(df_combined, aes(y = incomePerCapita)) + 
-          geom_boxplot(outlier.colour="salmon", outlier.shape=16,
-                        outlier.size=1, notch=FALSE) + 
-          coord_flip() + 
-          #Annotate with amounts to show range of income on boxplot diagram
-          annotate(geom = "text", x = 0.38, y = min_incomePC,
-                  label = paste0("$", min_incomePC),
-                  color = "grey20") + 
-          annotate(geom = "text", x = 0.38, y = q_incomePC,
-                  label = paste0("$", q_incomePC),
-                  color = "grey20") +
-          annotate(geom = "text", x = 0.38, y = max_incomePC,
-                  label = paste0("$", max_incomePC),
-                  color = "salmon") + 
-          labs(title = "Right-skewed distribution of Income per Capita",
-               y = "", x = "") + 
-          scale_y_continuous(limits = c(500,12000), 
-                             labels = label_dollar()) +
-          stat_boxplot(geom="errorbar", width=0.5) + 
-          theme_minimal() +
-          theme(axis.text = element_blank(), 
-                axis.ticks = element_blank(),
-                panel.grid.major = element_blank(),
-                plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+box <- 
+  ggplot(
+    df_combined, 
+    aes(y = incomePerCapita)
+  ) + 
+  geom_boxplot(
+    outlier.colour="salmon", 
+    outlier.shape=16,
+    outlier.size=1, 
+    notch=FALSE
+  ) + 
+  coord_flip() + 
+    #Annotate with amounts to show range of income on boxplot diagram
+  annotate(
+    geom = "text", 
+    x = 0.38, 
+    y = min_incomePC,
+    label = paste0("$", min_incomePC),
+    color = "grey20"
+  ) + 
+   annotate(
+    geom = "text", 
+    x = 0.38, 
+    y = q_incomePC,
+    label = paste0("$", q_incomePC),
+    color = "grey20"
+  ) +
+  annotate(
+    geom = "text", 
+    x = 0.38, 
+    y = max_incomePC,
+    label = paste0("$", max_incomePC),
+    color = "salmon"
+  ) + 
+  labs(
+    title = "Right-skewed distribution of Income per Capita",
+     y = "", 
+    x = ""
+  ) + 
+   scale_y_continuous(
+    limits = c(500,12000), 
+    labels = label_dollar()
+  ) +
+  stat_boxplot(
+    geom="errorbar", 
+    width=0.5
+  ) + 
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(), 
+    axis.ticks = element_blank(),
+    panel.grid.major = element_blank(),
+     plot.background = element_rect(
+       fill="#F8F3E6",colour="#F8F3E6")
+  )
 
 hbox <- (box / h) + 
         plot_layout(heights = c(1, 3.5)) #< Scale layout to keep boxplot height shorter
@@ -944,29 +1080,44 @@ cal_joviality <- df_combined %>%
 tooltip_css <- "background-color:#3E4254; font-style:bold; color:#F8F3E6;" 
 
 # Tile Plot
-gg_tile <-ggplot(cal_joviality,
-                aes(x = ageGroup, y = incomeGroup)) +
-          geom_tile_interactive(aes(fill = mean_joviality,
-                                    tooltip = paste("Age Group: ", ageGroup, "<br>",
-                                             "Income Group: ", incomeGroup, "<br>",
-                                             "Mean Joviality Score: ", mean_joviality))) + 
-          scale_fill_gradient(low = "#0a4c6a",
-                              high = "#fdd870",
-                              space = "Lab",
-                              na.value = "grey50",
-                              guide = "colourbar",
-                              aesthetics = "fill") +  
-          labs(title = "Joviality across Income and Age Groups",
-               subtitle = "Younger People from lower Income Groups had the highest joviality scores",
-               x = "Age Group",
-               y = "Income Group") +
-          theme(legend.position = "right",
-                legend.direction = "vertical",
-                axis.line.x = element_blank(),
-                panel.grid.major.y = element_blank(),
-                text = element_text(family = "Lato Regular")) +
-          remove_ticks() +
-          theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+gg_tile <-
+  ggplot(
+    cal_joviality,
+    aes(x = ageGroup, 
+        y = incomeGroup)
+  ) +
+  geom_tile_interactive(
+    aes(fill = mean_joviality,
+        tooltip = paste("Age Group: ", ageGroup, "<br>",
+                        "Income Group: ", incomeGroup, "<br>",
+                        "Mean Joviality Score: ", mean_joviality))
+  ) + 
+  scale_fill_gradient(
+    low = "#0a4c6a",
+    high = "#fdd870",
+    space = "Lab",
+    na.value = "grey50",
+    guide = "colourbar",
+    aesthetics = "fill"
+  ) +  
+ labs(
+   title = "Joviality across Income and Age Groups",
+    subtitle = "Younger People from lower Income Groups had the highest joviality scores",
+    x = "Age Group",
+    y = "Income Group"
+  ) +
+  theme(
+    legend.position = "right",
+    legend.direction = "vertical",
+    axis.line.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    text = element_text(family = "Lato Regular")
+  ) +
+  remove_ticks() +
+  theme(
+    plot.background = element_rect(
+      fill="#F8F3E6",colour="#F8F3E6")
+  )
 
 ggiraph::girafe(ggobj = gg_tile,
                 width_svg = 6,
@@ -1016,7 +1167,7 @@ $$H_0: There\ is\ no\ association\ between\ groups$$ $$H_1: There\ is\ an\ assoc
 A Summary of results from Chi-Square Tests of Association:
 
 | Significant <br>Association? | **Education** | **Interest Groups** | **Household Size** | **Children** |
-|:---------------:|:------------:|:------------:|:------------:|:------------:|
+|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
 |       **Income Group**       |      Yes      |         No          |        Yes         |     Yes      |
 |           p-value            |   4.15e-44    |        0.42         |      2.18e-07      |   4.20e-04   |
 
