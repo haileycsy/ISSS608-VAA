@@ -406,7 +406,7 @@ ggplot(
 ::: {.focusbox .focus data-latex="focus"}
 **Initial Insights from Line Chart**
 
--   There were transactions from all 1011 participants in Mar-2023, but only 880 in Apr-2024. This suggests that the transactions from those 31 participants could have been skewing the data. financial data from 2022-03 will thus be excluded from further analysis.
+-   There were transactions from all 1011 participants in Mar-2022, but only 880 in Apr-2022. This suggests that the transactions from those 31 participants could have been skewing the data. financial data from 2022-03 will thus be excluded from further analysis.
 -   Expenditure on education is the lowest, and has remained constant \> probably refers to school fees
 -   Expenditure on recreation and food has some variation, but are within the same range
 -   Expenditure on Shelter is significantly higher that other categories, and also remains constant \> probably refers to rent
