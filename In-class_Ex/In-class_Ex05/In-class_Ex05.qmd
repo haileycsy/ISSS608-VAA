@@ -1,0 +1,42 @@
+---
+title: "In-class Exercise 5"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: false
+    code-summary: "code block"
+---
+
+**VAST Challenge - MC1**
+
+# Installing R Packages  
+
+*   `jsonlite` package is needed to read json files  
+*   `visNetwork` for visualising networks 
+
+```{r}
+pacman::p_load(jsonlite, tidygraph, ggraph, visNetwork, tidyverse)
+```
+
+# Loading the json Data 
+
+```{r}
+MC1 <- jsonlite::fromJSON("data/MC1.json")
+```
+
+```{r}
+glimpse(MC1)
+```
+
+# Create separate tibbles for nodes and edges
+
+```{r}
+MC1_nodes <- as_tibble(MC1$nodes) %>%
+    # Select can be used to reorder dataframe columns
+  select(id, type, country)
+
+MC1_edges <- as_tibble(MC1$links) %>%
+  # Move Source and Target to the front
+  select(source, target, type, weight, key)
+```
+

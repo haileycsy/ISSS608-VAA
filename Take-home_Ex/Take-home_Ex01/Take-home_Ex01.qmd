@@ -25,10 +25,13 @@ The city aims to use the data to assist with their major community revitalizatio
 ```{r}
 #| code-fold: false
 #| warning: false
-pacman::p_load(tidyverse, ggstatsplot, ggridges, plotly, patchwork, scales, paletteer, viridis,
-               ggiraph, gganimate, gifski, ggpubr, ggdist, qqplotr, gt, ggpmisc, transformr,
-               Hmisc, vcd, knitr, kableExtra, DT, rstatix,
-               urbnthemes)
+pacman::p_load(tidyverse, ggstatsplot, ggridges, plotly, 
+               patchwork, scales, paletteer, viridis,
+               ggiraph, ggiraphExtra, gganimate, ggmosaic, 
+               gifski, ggpubr, ggdist, ggrain, 
+               qqplotr, gt, ggpmisc, 
+               transformr, Hmisc, vcd, knitr, 
+               kableExtra, DT, rstatix, urbnthemes)
 ```
 
 ## 1.2: Data Sets
@@ -66,13 +69,22 @@ str(demo_data)
 
 There are a total of 1011 rows and 7 variables. The output reveals that variables **participantId** and **householdSize** have been read as numeric, continuous data types, but should be analysed as nominal data instead.
 
-## **Summary Statistics**
+## **Data Health**
 
-**Inspecting summary statistics of the dataset using `describe()` from Hmisc pacakage:**
+**Checking for duplicates:**
 
 ```{r}
 #| code-fold: false
-Hmisc::describe(demo_data)
+demo_data[duplicated(demo_data),]
+```
+
+From the output, there are no duplicated rows found in *demo_data*.
+
+**Checking for missing values:**
+
+```{r}
+#| code-fold: false
+sum(is.na(demo_data))
 ```
 
 From the output, there are zero missing values across all columns in **demo_data**.
@@ -105,8 +117,9 @@ demo_data_new <- demo_data %>%
 **Visual Summary of demo_data_new:**
 
 ```{r}
-#| fig-width: 10
-#| fig-height: 8
+#| fig-height: 4
+#| message: false
+#| warning: false
 
 # Setting default theme for all plots
 set_urbn_defaults("print", base_family = "Lato")
@@ -183,7 +196,35 @@ demo_p5 <- ggplot(demo_data_new, aes(x = interestGroup)) +
     aes(label = after_stat(count)),
     vjust = -1)
 
-# Patch all summary plots together
+demo_jov <- ggplot(
+    demo_data_new, 
+    aes(x = joviality)
+  ) +
+  geom_dotplot(
+    stackratio = 1.2,
+    stackdir = "up",
+    fill = "#1696d2", #< Fill colour same as bar charts
+    color = NA,
+    dotsize = .3
+  ) +
+  labs(
+    title = "Joviality",
+    x = NULL,
+    y = NULL
+  ) +
+  theme(
+    axis.text.y = element_blank(), 
+    panel.grid.major = element_blank(), 
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+demo_jov
+```
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+# Patch all other summary plots together
 house_patch <- demo_p1 + demo_p2 #< patch together first so that age plot takes up larger width
 demo_patch <- ((demo_p3 + house_patch) / (demo_p5 + demo_p4)
               ) +
@@ -206,7 +247,7 @@ demo_patch &
 ::: {.focusbox .focus data-latex="focus"}
 **Initial Insights from Summary Statistics**
 
--   There seems to be a fairly even distribution of participants across **joviality**, **householdSize**, **age** and **interestGroup**.
+-   There seems to be a fairly even distribution of participants across **householdSize** and **interestGroup**. However, there is are uneven disributions across **joviality score** and **age**, with multimodal peaks in the dotplots.
 -   The proportion of participants without children is more than twice that of those without children
 -   Approximately half of the participants have attained the highest education at high school or college level.
 
@@ -230,36 +271,37 @@ glimpse(financial_data)
 
 The dataset captures specific financial transactions by participants, with a single transaction recorded in each row. Participants may have multiple transactions over time.
 
-## **Checking for Duplicates**
+## **Data Health**
+
+**Checking for duplicates:**
 
 ```{r}
 #| code-fold: false
 financial_data[duplicated(financial_data),]
 ```
 
-From the output, there are zero missing values across all columns in **financial_data**. Summary statistics revealed that a total of 1,513,636 financial transactions were captured over a year from March 2022 to February 2023.
-:::
+From the output, there are 1113 duplicated rows found in *financial_data*.
 
-::: {.focusbox .focus data-latex="focus"}
-**Initial Insights from Summary Statistics**
+**Checking for missing values:**
 
--   There seems to be a skewed distribution of transactions, with a higher proportion (0.522) falling under **category: Food** followed by **category: Wage.**
--   Transaction **amount** has a wide range due to negative and positive values, and a skewed distribution due to large difference between 95th percentile value (159.561) and highest value (4096.526).
+```{r}
+#| code-fold: false
+sum(is.na(financial_data))
+```
 
-The distributions and correlations of these variables will be investigated further in subsequent sections, after appropriate data wrangling and transformation techniques have been applied.
+From the output, there are zero missing values across all columns in **financial_data**.
 :::
 
 \
 \
 {{< fa gear >}} **Data Quality Issues**:
 
+-   `duplicated()` revealed that there were 1113 duplicated entries in the financial data. These are removed from the dataframe. These will be removed using `dplyr::unique()` function
 -   **participantId** is classified as `<dbl>`, numerical continuous data, instead of nominal. This is cast as `<chr>` class using `as.character()`
--   **category** is classified as `<chr>`, but is categorical in nature with six different levels. These is cast as factor type using `as.factor()`
--   **timestamp** contains both Date and Time, which is not suitable for analysis. Year-Month is extracted and saved into a separate variable, **transDate**.
+-   **category** is classified as `<chr>`, but is categorical in nature with six different levels. This is cast as factor type using `as.factor()`
+-   **timestamp** contains both Date and Time, which is not suitable for analysis. Year-Month is extracted and saved into a separate variable, **transDate**, and cast as factor (categorical).
 -   **amount** is reflected as a numeric value with 3 decimal places. This is rounded to 2 d.p. to reflect standard currency structure while maintaing accuracy.\
 -   Data format is unsuitable for analysis: pivot table with individual columns per **category** would give a better monthly summary of financial transactions by participant.\
--   
-       
 
 **Altering table format of financial_data:**
 
@@ -268,6 +310,10 @@ The distributions and correlations of these variables will be investigated furth
 
 ```{r}
 #| code-fold: false
+# Ensuring that duplicates are removed
+financial_data <- unique(financial_data)
+
+
 financial_data_new <- financial_data %>%
   # Changing participantId to character 
   mutate(participantId = as.character(financial_data$participantId),
@@ -275,12 +321,11 @@ financial_data_new <- financial_data %>%
   # Casting category as factor
   category = as.factor(financial_data$category),
 
-  # Extracting Year-Month from timestamp
-  transDate = paste0(year(timestamp), "-", sprintf("%02d", month(timestamp))),
+  # Extracting Month-Year from timestamp and casting as factor
+  transDate = as.factor(format(parse_date_time(timestamp, "YmdHMS"), "%Y-%m")),
   
   # Rounding amount to 2 decimal places
-  amount = as.integer(round(amount, digits = 2))
-  ) %>%
+  amount = as.integer(round(amount, digits = 2))) %>%
   
   # remove timestamp column
   select(-timestamp) %>%
@@ -299,12 +344,13 @@ financial_pivot <- financial_data_new %>%
                     group_by(participantId, transDate) %>%
   
                     # Sum total amount per category for each month
-                    summarise(Education = sum(amount[category == "Education"]),
-                           Food = sum(amount[category == "Food"]),
-                           Recreation = sum(amount[category == "Recreation"]),
-                           Shelter = sum(amount[category == "Shelter"]),
-                           RentAdj = sum(amount[category == "RentAdjustment"]),
-                           Wage = sum(amount[category == "Wage"])) %>%
+                    summarise(
+                      Education = sum(amount[category == "Education"]),
+                      Food = sum(amount[category == "Food"]),
+                      Recreation = sum(amount[category == "Recreation"]),
+                      Shelter = sum(amount[category == "Shelter"]),
+                      RentAdj = sum(amount[category == "RentAdjustment"]),
+                      Wage = sum(amount[category == "Wage"])) %>%
                     ungroup()
 ```
 :::
@@ -312,7 +358,9 @@ financial_pivot <- financial_data_new %>%
 ```{r}
 head(financial_pivot,5) %>%
   kbl() %>%
-  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
+  kable_styling(
+    full_width = F, 
+    bootstrap_options = c("condensed", "responsive"))
 ```
 
    
@@ -326,8 +374,6 @@ head(financial_pivot,5) %>%
 -   Separate lines were used for each expenditure category in order to show trend and amount differences\
 -   `geom_point()` dots were added to the trend lines to identify points in time, to visualise month-on-month changes
 :::
-
-   
 
 {{< fa gear >}} Average expenditure per category is calculated from financial_pivot:
 
@@ -346,15 +392,39 @@ monthly_mean <- financial_pivot %>%
       Recreation = abs(round((sum(Recreation)/num_people),2)),
       Shelter = abs(round((sum(Shelter)/num_people),2)),
       RentAdj = round((sum(RentAdj)/num_people),2),
-      Wage = round((sum(Wage)/num_people),2)) %>%
+      Wage = round((sum(Wage)/num_people),2)) %>% 
+  # change transDate to ymd format to arrange by date in lineplot
     mutate(
       transDate = ymd(paste(transDate, "01", sep = "-"))) %>% 
     ungroup()
 
-# Extracting only expenditure categories
-monthly_exp <- monthly_mean %>%
-    select(
-      -num_people, -Wage, -RentAdj) %>%
+monthly_mean %>%
+  kbl() %>%
+  kable_styling(full_width = F, bootstrap_options = c("condensed", "responsive"))
+```
+
+From the table output, there were transactions from all 1011 participants in Mar-2022, but only 880 from Apr-2022 onwards. This suggests that the transactions from those 31 participants could have been skewing the data. financial data from 2022-03 will thus be excluded from datasets for further analysis using `filter()` function.
+
+```{r}
+# Removing records from transDate 
+financial_data_new <- financial_data_new %>%
+                        filter(transDate != "2022-03")
+
+financial_pivot <- financial_pivot %>%
+                    filter(transDate != "2022-03")
+
+monthly_mean <- monthly_mean %>%
+                  filter(transDate != "2022-03-01")
+```
+
+**Visual Summary of financial data: monthly_mean:**
+
+```{r}
+#| fig-width: 8
+#| fig-height: 6
+# Extracting only expenditure on food and recreation
+food_rec <- monthly_mean %>%
+    select(transDate, Food, Recreation) %>%
     pivot_longer(
       cols = !transDate, 
       names_to = "category",
@@ -362,9 +432,8 @@ monthly_exp <- monthly_mean %>%
     mutate(
       category = as.factor(category))
   
-# Line plot to show 
-ggplot(
-  monthly_exp, 
+# Line plot to show variations in food and recreation
+food_recplot <- ggplot(food_rec, 
   aes(x = transDate, 
       y= amount, 
       color = category) #< Ensure that each category is color coded
@@ -381,9 +450,7 @@ ggplot(
     size = 1.5
   ) +
   scale_color_manual(
-    values = c("Shelter" = "salmon", 
-              "Education" = "#1696d2", 
-              "Food" = "#fdbf11", 
+    values = c("Food" = "#fdbf11", 
               "Recreation" = "grey10")
   ) +
   scale_x_date(
@@ -394,37 +461,87 @@ ggplot(
     # Ensuring that units were added to y-axis 
     labels = scales::dollar
   ) + 
-  guides(
-    color = guide_legend(reverse = TRUE)
-  ) + 
   labs(
-    title = "Sudden Dip in Expenditure on Shelter and Recreation from Mar-Apr 2022",
+    title = "Decreasing Trend in Monthly Expenditure on Recreation",
+    subtitle = "Variations in expenditure on Food, with sharp decline in Feb 2023",
     x = NULL,
-    y = "Expenditure Amount"
+    y = NULL
   ) +
   theme(
     plot.background = element_rect(
       fill="#F8F3E6",colour="#F8F3E6")
   )
 
+# Extracting only expenditure on Shelter and Education
+rent_edu <- monthly_mean %>%
+    select(transDate, Shelter, Education) %>%
+    pivot_longer(
+      cols = !transDate, 
+      names_to = "category",
+      values_to = "amount") %>%
+    mutate(
+      category = as.factor(category))
+
+# Faceted line plot to show little variations in Shelter and Education
+rent_eduplot <- ggplot(rent_edu, 
+  aes(x = transDate, 
+      y= amount, 
+      color = category) #< Ensure that each category is color coded
+  ) +
+  geom_line(
+    # Make line thicker
+    linewidth = 1
+  ) + 
+  geom_point(
+    aes(
+      x = transDate, 
+      y = amount, 
+      color = category),
+    size = 1.5
+  ) +
+  annotate(
+    geom = "text",
+    # format x-axis value as date to specify coordinates
+    x = as.Date("2022-09-01"),
+    y = 400,
+    label = "Large gap in monthly expenditure on both categories"
+  ) +
+  scale_color_manual(
+    values = c("Shelter" = "salmon", 
+              "Education" = "#1696d2")
+  ) +
+  scale_x_date(
+    date_labels = "%Y-%m", 
+    date_breaks = "1 month"
+  ) +
+  scale_y_continuous(
+    # Ensuring that units were added to y-axis 
+    labels = scales::dollar
+  ) + 
+  labs(
+    title = "Little Variation in Monthly Expenditure on Education and Shelter",
+    x = NULL,
+    y = NULL
+  ) +
+  theme(
+    plot.background = element_rect(
+      fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+# Patchwork both plots together
+expatch <- (food_recplot / rent_eduplot) + 
+  plot_layout(heights = c(3,2)) #< Allocate more space to top graph 
+
+expatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
 ::: {.focusbox .focus data-latex="focus"}
-**Initial Insights from Line Chart**
+**Initial Insights from Line Chart and Table**
 
--   There were transactions from all 1011 participants in Mar-2022, but only 880 in Apr-2022. This suggests that the transactions from those 31 participants could have been skewing the data. financial data from 2022-03 will thus be excluded from further analysis.
--   Expenditure on education is the lowest, and has remained constant \> probably refers to school fees
--   Expenditure on recreation and food has some variation, but are within the same range
+-   Expenditure on education is the lowest, and has remained constant \> probably refers to school fees, which is normally a fixed monthly amount
+-   Expenditure on recreation and food shows monthly variation, and have decreased from Apr 2022 to Feb 2023
 -   Expenditure on Shelter is significantly higher that other categories, and also remains constant \> probably refers to rent
 :::
-
-```{r}
-financial_data_new <- financial_data_new %>%
-                        filter(transDate != "2022-03")
-
-financial_pivot <- financial_pivot %>%
-                    filter(transDate != "2022-03")
-```
 
 # 2: Data Wrangling
 
@@ -449,79 +566,174 @@ B & C --- K[Income Per Capita]
 ::: {.pencilbox .pencil data-latex="pencil"}
 **Visual Considerations**
 
--   Boxplots are used to capture the range of values by expense, including quartile information and spread of values\
--   Separate plots were coded for -ve and +ve transactions, as the wide scale of y-axis values made the smaller boxplots too condensed
+-   Raincloud plots are used to capture the density and range of values by expense, with dotplots beneath the half-density plots revealing patterns in consistency\
+-   Separate plots were coded for -ve and +ve transactions, with Food & Recreation and Shelter & Education separated as well. This is due to the wide scale of y-axis values, which made the narrower density plots too condensed for the distribution to be viewed in full.\
+-   `patchwork` package was used to group the plots together in a single figure, using `plot_layout(heights)` to configure height ratio of the overall patched plots
 :::
 
 ```{r}
-
-
-```
-```{r}
+#| message: false
 #| fig-width: 8
-exp_range <- financial_data_new %>%
+#| fig-height: 8
+
+# Filtering Food and Recreation from data
+fr_range <- financial_data_new %>%
     filter(
-      category %in% c("Education", "Food", "Recreation", "Shelter")) %>%
-                
-              ggplot(
-                aes(x = category, 
-                    y = amount)
-                ) +
-              stat_boxplot(
-                geom = "errorbar", 
-                width = 0.2
-                ) +
-              geom_boxplot(
-                fill = "salmon"
-                  ) +
-              scale_y_continuous(
-                labels = scales::dollar
-                ) +
-              labs(
-                title = "Expenditure Range by Category",
-                subtitle = "Largest variation in rental expenditure",
-                x = NULL,
-                y = NULL
-                ) +
-              theme(
-                axis.ticks.y = element_blank(),
-                plot.background = element_rect(
-                  fill="#F8F3E6",
-                  colour="#F8F3E6"))
+      category %in% c("Food", "Recreation")) %>%
+  # Getting Average amount per participant
+    group_by(
+      participantId, category) %>%
+    summarise(
+      num = n(),
+      avgamount = round((sum(amount)/num),2)) %>%
+  ungroup()
 
+# Food and Recreation Plot
+fr <- ggplot(fr_range, 
+       aes(1, 
+           y = avgamount, 
+           fill = category,
+          color = category)
+  ) +
+  # Raincloud Plot
+  geom_rain(
+    alpha = .7,
+    # Adding outline to boxplot
+    boxplot.args = list(
+              color = "grey20", outlier.shape = NA),
+    violin.args = list(alpha = .7)
+  ) +
+  # Specifying colors, to match previous graph
+  scale_fill_manual(
+    values = c("#fdbf11","grey10")
+  ) +
+  scale_color_manual(
+    values = c("#fdbf11","grey10")
+  ) +
+  scale_y_continuous(
+    breaks = scales::pretty_breaks(n = 5),
+    labels = scales::dollar
+  ) +
+  labs(
+    title = "Wider Range of Amount Spent on Recreation Compared to Food"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) + 
+  coord_flip() 
+
+# Filtering Education amounts and computing average
+es_range <- financial_data_new %>%
+    filter(
+      category %in% c("Education", "Shelter")) %>%
+    group_by(
+      participantId, category) %>%
+    summarise(
+      num = n(),
+      avgamount = round((sum(amount)/num),2)) %>%
+  ungroup()
+
+# Education plot
+es <- ggplot(es_range, 
+       aes(1, 
+           y = avgamount, 
+           fill = category,
+           color = category)
+  ) +
+  geom_rain(
+    alpha = .7,
+    boxplot.args = list(
+              color = "grey20", outlier.shape = NA),
+    violin.args = list(alpha = .7)
+  ) +
+  scale_y_continuous(
+    breaks = scales::pretty_breaks(n = 5),
+    labels = scales::dollar
+  ) +
+  scale_fill_manual(
+    values = c("#1696d2","salmon")
+  ) +
+  scale_color_manual(
+    values = c("#1696d2","salmon")
+  ) +
+  labs(
+    title = "Dot Patterns Reveal Consistent Amounts Spent on Education, \nwith Wider Variations in Amount Spent on Rent",
+  ) + 
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) + 
+  coord_flip() 
+
+# Filtering out +ve transactions
 inc_range <- financial_data_new %>%
-                filter(category %in% c("RentAdjustment", "Wage")) %>%
-                
-              ggplot(
-                aes(x = category, 
-                    y = amount)
-                ) +
-              stat_boxplot(
-                geom = "errorbar", 
-                width = 0.2
-                ) +
-              geom_boxplot() +
-              scale_y_continuous(
-                labels = scales::dollar
-                ) +
-              labs(
-                title = "Income Range by Category",
-                subtitle = "Largest variation in Wage suggests wide income gap",
-                x = NULL,
-                y = NULL
-                ) +
-              theme(
-                axis.ticks.y = element_blank(),
-                plot.background = element_rect(
-                  fill="#F8F3E6",
-                  colour="#F8F3E6"))
+                filter(category %in% c("RentAdj", "Wage")) %>%
+      group_by(
+      participantId, category) %>%
+    summarise(
+      num = n(),
+      avgamount = round((sum(amount)/num),2)) %>%
+  ungroup()
 
-range_combined <- exp_range + inc_range
-range_combined & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+inc <- ggplot(inc_range, 
+       aes(1, 
+           y = avgamount, 
+           fill = category,
+          color = category)
+  ) +
+  geom_rain(
+    adjust = 1/6,
+    alpha = .7,
+    boxplot.args = list(
+              color = "grey20", outlier.shape = NA),
+    violin.args = list(alpha = .7)
+  ) +
+  # Specifying colors
+  scale_fill_manual(
+    values = c("#98cf90","salmon")
+  ) +
+  scale_color_manual(
+    values = c("#98cf90","salmon")
+  ) +
+  scale_y_continuous(
+    breaks = scales::pretty_breaks(n = 5),
+    labels = scales::dollar
+  ) +
+  labs(
+    title = "Right-skewed Distribution of Average Income"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) + 
+  coord_flip() 
+
+# Patchwork plots
+bottompatch <- es / inc
+moneypatch <- (fr / bottompatch
+    ) +
+    plot_layout(
+      heights = c(2,3)
+    ) + 
+    plot_annotation(
+      title = "Varying Distributions of Expenditure and Income"
+    )
+
+moneypatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
 ::: {.focusbox .focus data-latex="focus"}
-**Insights from Boxplot**
+**Insights from Raincloud Plots**
 
 -   Transactions are either outflows (-ve value) or inflows (+ve value)
 -   **Wage**, **Shelter** and **RentAdjustment** have a larger range of values compared to Recreation, Food and Education
@@ -605,34 +817,52 @@ demo_age
 ```
 
 ::: {.solvebox .solve data-latex="solve"}
-These may be grouped together by percentile, and analysed as age groups instead to give a better overview of different demographics. Each band is approximately grouped into 10-year age ranges:
+These may be grouped together by percentile, and analysed as age groups instead to give a better overview of different demographics. Each band represents sequential 20th percentiles:
 
--   **25th Percentile: 18-29yo**
--   **25-50th Percentile: 30-39yo**
--   **50-75th Percentile: 40-50yo**
--   **75th Percentile: 51-60yo**
+-   **Lowest 20th Percentile: 18-26**
+-   **20-40th Percentile: 27-35**
+-   **40-60th Percentile: 36-44**
+-   **60-80th Percentile: 45-52**
+-   **Top 20th Percentile: 53-60**
 :::
 
 ```{r}
-#| fig-width: 8
+# Function to bin by 20th Percentile
+cutpct <- function(x) {
+  cut(x, breaks=c(quantile(demo_data_new$age, 
+                           probs = seq(0, 1, by = 0.20))), 
+      labels=c("18-26","27-35","36-44","45-52","53-60"), 
+      include.lowest=TRUE)
+}
 
-# Grouping Age into Age Groups
-demo_data_new$ageGroup <- as.factor(cut(demo_data_new$age,
-                                        breaks = c(0,29,39,50,60),
-                                        labels = c("18-29", "30-39", "40-50", "51-60")))
+# Applying to new column, grouping Age into Age Groups
+demo_data_new$ageGroup <- sapply(demo_data_new$age, cutpct)
+
 
 # Barchart of ageGroup
-demo_agegrp<- ggplot(demo_data_new, aes(x = ageGroup)) +
-            geom_bar() +
-            labs(title = "Participants are evenly\ndistributed across Age Groups", #< Linebreak added to title so it does not get truncated
-                  x = "Age Group",
-                  y = NULL) +
-            geom_text(stat = "count",
-                      aes(label = after_stat(count)),
-                      vjust = -1) +
-            ylim(0,400) + #< Same y-axis limits for both age and wage plots to standardise
-            theme(text = element_text(size = 12),
-            plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+demo_agegrp<- ggplot(
+  demo_data_new, 
+  aes(x = ageGroup)
+  ) +
+  geom_bar() +
+  labs(
+    # Linebreak added to title so it does not get truncated
+    title = "Participants are evenly\ndistributed across Age Groups", 
+    x = "Age Group",
+    y = NULL
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +
+  # Same y-axis limits for both age and wage plots to standardise
+  ylim(0,250) + 
+  theme(
+    text = element_text(size = 12),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
 ```
 
 **Wage**
@@ -646,31 +876,39 @@ describe(financial_agg$monthlyWage)
 ::: {.solvebox .solve data-latex="solve"}
 Based on the Mean and distribution of values across percentiles as shown above, participants are banded according to annual income:
 
--   **Bottom 25th Percentile: low**
--   **26-50th Percentile: mid-low**
--   **50-90th Percentile: mid-high**
--   **Top 10th Percentile: high**\
+-   **Bottom 20th Percentile: Low**
+-   **20-40th Percentile: Mid-low**
+-   **40-60th Percentile: Mid**
+-   **60-80th Percentile: Mid-high**
+-   **Top 20th Percentile: High**
 :::
 
 ```{r}
-# Grouping Annual wage into income Groups
-financial_agg$incomeGroup <- as.factor(cut(financial_agg$monthlyWage,
-                                        breaks = c(0,2467,3429,6675,Inf),
-                                        labels = c("low", "mid-low", "mid-high", "high")))
+# Function to bin by 20th Percentile
+cutwpct <- function(x) {
+  cut(x, breaks=c(quantile(financial_agg$monthlyWage, 
+                           probs = seq(0, 1, by = 0.20))), 
+      labels=c("Low","Mid-low","Mid","Mid-high","High"), 
+      include.lowest=TRUE)
+}
+
+# Applying to new column, grouping Age into Age Groups
+financial_agg$incomeGroup <- sapply(financial_agg$monthlyWage, cutwpct)
 
 # Barchart of incomeGroup
 fin_incgrp<- ggplot(financial_agg, aes(x = incomeGroup)) +
                 geom_bar() +
-                labs(title = "Higher Number of Citizens\nin Middle Income Groups", #< Linebreak added to title so it does not get truncated
+                labs(title = "Number of Citizens\nby Income Group", #< Linebreak added to title so it does not get truncated
                     x = "Income Group",
                     y = NULL) +
                 geom_text(stat = "count",
                           aes(label = after_stat(count)),
                           vjust = -1) +
-                ylim(0,400) + #< Upper bound of y-axis limit is set so that geom_text annotations are not cut off
+                ylim(0,250) + #< Upper bound of y-axis limit is set so that geom_text annotations are not cut off
                 theme(text = element_text(size = 12),
                       axis.text.y = element_blank(), #< Shared y-axis when used in patchwork with age chart
                       plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
 ```
 
 **Age and Income Groups**
@@ -739,7 +977,7 @@ h <-
   ) +
   annotate(
     geom = "text", 
-    x = 3800, 
+    x = 3900, 
     y = 290,
     label = paste0("Median Income per Capita: $", median_incomePC)
   ) +
@@ -896,7 +1134,6 @@ ggplot(
   
 ```
 
-
 ### 3.1.2: **Are there differences in Joviality Across Income and Age Groups?**
 
 This study first proposes to find out if specific groups within the population have reported lower or higher joviality scores, and if this difference between factor levels in the sample is significant enough to represent the overall city population.
@@ -923,28 +1160,30 @@ $$H_1: Joviality\ is\ not\ normally\ distributed\ across\ groups$$\
 ggplot(
     df_combined, 
     aes(x = joviality, 
-        fill = incomeGroup)
+        y = incomeGroup,
+        fill = incomeGroup,
+        color = incomeGroup)
   ) +
-  geom_density(
-    adjust = 1/4, 
-    alpha = .4
+  geom_density_ridges(
+    # Adjust bandwidth to reveal variations 
+    bandwidth = .05, 
+    alpha = .6
   ) +
   labs(
     title = "Distribution of Joviality Score Across Income Groups"
   ) +
   annotate(
     geom = "text", 
-    x = .25, 
-    y = 3.1,
-    label = "High income groups recorded peaks in lower joviality"
+    x = 0.2, y = 5.9,
+    label = "High income groups\nrecorded peaks in lower joviality"
   ) +
   annotate(
     geom = "text", 
-    x = 0.8, y = 2.4,
-    label = "Low income groups recorded peaks in higher joviality"
+    x = 0.8, y = 1.5,
+    label = "Low income groups\nrecorded peaks in higher joviality"
   ) +
   theme(
-    axis.text.y = element_blank(),
+    legend.position = "none",
     axis.title.y = element_blank(),
     panel.grid.major = element_blank(),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
@@ -1022,7 +1261,7 @@ ggbetweenstats(data = df_combined,
         plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
-The p-value is \< significance level of 0.05, so we can reject the null hypothesis and conclude that median joviality differs among income groups. In fact, there is a large difference in mean joviality between low income and high income groups, **with participants in low income groups having greater joviality (median = 0.63) than higher income groups (median = 0.22).**
+The p-value is \< significance level of 0.05, so we can reject the null hypothesis and conclude that median joviality differs among income groups. In fact, there is a large difference in mean joviality between low income and high income groups, **with participants in low income groups having significantly greater joviality (median = 0.69) than those in the high income group (median = 0.27).**
 :::
 
   **Age Groups**
@@ -1035,12 +1274,13 @@ The p-value is \< significance level of 0.05, so we can reject the null hypothes
 ggplot(
     df_combined, 
     aes(x = joviality, 
-      fill = ageGroup, 
-      color = ageGroup)
+        y = ageGroup,
+        fill = ageGroup,
+        color = ageGroup)
   ) +
-  geom_density(
-    adjust = 1/4, 
-    alpha = .1
+  geom_density_ridges(
+    bandwidth = .05, 
+    alpha = .6
   ) +
   scale_x_continuous(
     breaks = scales::pretty_breaks(n = 5)
@@ -1050,7 +1290,7 @@ ggplot(
     subtitle = "Variation of joviality across all age groups -- suggests possible influence of multiple factors"
   ) +
   theme(
-    axis.text.y = element_blank(),
+    legend.position = "none",
     axis.title.y = element_blank(),
     panel.grid.major = element_blank(),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
@@ -1070,7 +1310,7 @@ ggplot(df_combined,
       stat_qq_point(size=0.5) + 
       facet_wrap(~ ageGroup, nrow = 1) + #< nrow used to fit all plots into a line
       labs(title = "Deviation from normality across Age Groups",
-           subtitle = "Q-Q plots visually indicate that points diverge from diagonal",
+           subtitle = "Q-Q plots visually indicate that points diverge from diagonal at tail ends",
            x = "", y = "") +
       theme_bw() + #< theme selected as the border and colored title bar makes it easier to differentiate
       theme(legend.position = "none", #< legend removed as it was unnecessary
@@ -1117,22 +1357,60 @@ ggbetweenstats(data = df_combined,
         plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
 
-The p-value 0.08 is \> significant level of 0.05, so we conclude that **there is no significant difference in mean joviality score across age groups.**
+
+The p-value (0.17) is \> significant level of 0.05, so we conclude that **there is no significant difference in mean joviality score across age groups.**
 :::
 
 ::: {.pencilbox .pencil data-latex="pencil"}
 **Visual Considerations**
 
--   Density plot was used to compare across groups to reveal 'peaks' between high and low income groups at opposite ends of the joviality spectrum. As there were multiple variations in the distribution of Income and Age Groups, `geom_density(adjust)` argument was used to alter the bandwidth such that the density estimation was less smoothed out. This enabled the visualisation of the variations present in joviality across the groups.
+-   Density ridges were used to compare across groups to reveal 'peaks' between high and low income groups at opposite ends of the joviality spectrum. As there were multiple variations in the distribution of Income and Age Groups, `bandwidth` argument from `geom_density_ridges()` was used to alter the bandwidth such that the density estimation was less smoothed out. This enabled the visualisation of the variations present in joviality across the groups.
 -   Transparency for each density plot was toggled to show overlapping layers. `color` argument was added to Age Group plot as transparency value was increased due to the multiple overlaps. This enabled clearer visualisation of each group without obscuring.
 -   Annotations were added to emphasize on insights from analysis of density
 -   Q-Q plots were used to reveal deviations from normality for each group. `facet_wrap()` was used to show the distribution of each group side-by-side for clarity
 -   `kable` styling of tables were used to display p-value statistics below each plot.
 :::
 
+**How are Age and Income Groups Related?**
+
+```{r}
+ggSpine(
+    df_combined,
+    aes(x = ageGroup, 
+    fill = incomeGroup),
+    addlabel = TRUE,
+    interactive = TRUE
+  )
+
+```
+
+
+To determine if there is an association between both groups, a chi-square test of association is conducted at 95% confidence level. 
+
+$$H_0: There\ is\ no\ association\ between\ income\ and\ age\ groups$$ $$H_1: There\ is\ an\ association\ between\ income\ and\ age\ groups$$
+
+```{r}
+set.seed(1234)
+  ggbarstats(
+    df_combined,
+    x = ageGroup, 
+    y = incomeGroup,
+    bf.message = FALSE
+  ) +
+  theme(
+    plot.background = element_rect(
+      fill="#F8F3E6",colour="#F8F3E6")
+  )
+```
+
+Since p-value (0.76) is > significance level of 0.05, we conclude that **there is no significant association between Income Group and Education Level.**
+
+
 ### 3.1.3 Joviality Across Both Income and Age
 
-The one-way ANOVA tests reported significant differences in joviality between income groups but not between age groups. However, there are still trends that can be observed when comparing multiple groups and different factor levels. This could give more specific insight into demographic patterns, as visualised in the following chart that compares joviality score across both Age and Income groups:
+The one-way ANOVA tests reported significant differences in joviality between income groups but not between age groups. There was also no reported association between income and age groups. However, there are still trends that can be observed when comparing multiple groups and different factor levels. This could give more specific insight into demographic patterns, as visualised in the following chart that compares joviality score across both Age and Income groups:
+
+
 
 ::: {.pencilbox .pencil data-latex="pencil"}
 **Design Considerations**
@@ -1143,6 +1421,8 @@ The one-way ANOVA tests reported significant differences in joviality between in
 -   Subtitle was added to highlight most important insight from the analysis
 -   Ideally, I would have changed the font output to match the rest of my visualisations -- this proved tricky due to the interactive layer, which had different parameters.
 :::
+
+
 
 ```{r}
 #| warning: false
@@ -1331,64 +1611,49 @@ From the chi-square Tests of Association conducted above, income and education l
 -   X-axis title, text and ticks were removed as there are only two distinct groups, which are labelled in the legend and colour coded across the graph. These unnecessary elements were removed to present a cleaner overall visual.
 :::
 
-```{r}
-#| fig-height: 8
-#| fig-width: 8
+#\| fig-height: 8 #\| fig-width: 8
 
-edu2 <-  ggplot(df_highlow,
-                aes(x = incomeGroup, 
-                    y = joviality,
-                    fill = incomeGroup)) + #< Different colors for income groups for greater differentiation
-            geom_boxplot() + 
-            facet_grid(ageGroup~educationLevel) +
-            theme_bw() + #< Use this theme as the border makes each plot clearly defined
-            scale_y_continuous(breaks = scales::pretty_breaks(n=3)) + 
-            theme(panel.spacing = unit(1, 'lines'), #< Add panel spacing so that plots are not too clustered
-                  axis.text.x = element_blank(),
-                  axis.ticks.x = element_blank(),
-                  axis.title.x = element_blank(),
-                  panel.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
-                  plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+edu2 \<- ggplot(df_highlow, aes(x = incomeGroup, y = joviality, fill = incomeGroup)) + #\< Different colors for income groups for greater differentiation geom_boxplot() + facet_grid(ageGroup\~educationLevel) + theme_bw() + #\< Use this theme as the border makes each plot clearly defined scale_y\_continuous(breaks = scales::pretty_breaks(n=3)) + theme(panel.spacing = unit(1, 'lines'), #\< Add panel spacing so that plots are not too clustered axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.title.x = element_blank(), panel.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"), plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 
-# Make into interactive diagram to show Statistics  
+# Make into interactive diagram to show Statistics
+
 ggplotly(edu2)
-```
 
-   
 
-::: {.focusbox .focus data-latex="focus"}
-**Insights from Visualisation**
+       
 
--   Filtering by Income Group revealed that citizens from the high income group generally have higher educational qualifications, with a minimum level of High School or College education. In fact, participants aged 40-60 in this group attained either a Bachelors or Masters degree.
--   For the lower income group, variation in joviality scores was significantly wider in the High School/College and Low education levels, compared to Graduate and Bachelors. Joviality score range and median was also much higher for the latter.\
--   **From these insights, it is possible to deduce that affordability is an obstacle to attaining higher education. City planners could look into improving the educational infrastructure, or providing grants and greater access to higher education, especially for the lower income groups.**
-:::
+    ::: {.focusbox .focus data-latex="focus"}
+    **Insights from Visualisation**
 
-   
+    -   Filtering by Income Group revealed that citizens from the high income group generally have higher educational qualifications, with a minimum level of High School or College education. In fact, participants aged 40-60 in this group attained either a Bachelors or Masters degree.
+    -   For the lower income group, variation in joviality scores was significantly wider in the High School/College and Low education levels, compared to Graduate and Bachelors. Joviality score range and median was also much higher for the latter.\
+    -   **From these insights, it is possible to deduce that affordability is an obstacle to attaining higher education. City planners could look into improving the educational infrastructure, or providing grants and greater access to higher education, especially for the lower income groups.**
+    :::
 
-### 3.2.3: Comparing Joviality across Income Groups and Household Size
+       
 
-```{r}
-#| message: false
-#| fig-width: 8
+    ### 3.2.3: Comparing Joviality across Income Groups and Household Size
 
-ggplot(df_highlow, 
-       aes(x = joviality, y = incomeGroup, 
-           fill = 0.5 - abs(0.5 - after_stat(ecdf)))) + 
-  geom_density_ridges_gradient(calc_ecdf = TRUE, 
-                               scale = 6) +
-  facet_wrap(~householdSize) + 
-  scale_fill_viridis(direction = -1,
-                     alpha = 0.8,
-                     option = "E") +
-  labs(title = "Probability Density of Joviality Score Across Income Groups and Household Sizes",
-       subtitle = "- Darker colours suggest higher probability of joviality score occurring\n- Peaks in Joviality seem to increase in larger households in lower income groups",
-       x = "Joviality", y = "Income Groups") + 
-  guides(color=guide_legend("Probability")) +
-  theme(legend.position = "right",
-        legend.direction = "vertical",
-        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
-```
+
+    #| message: false
+    #| fig-width: 8
+
+    ggplot(df_highlow, 
+           aes(x = joviality, y = incomeGroup, 
+               fill = 0.5 - abs(0.5 - after_stat(ecdf)))) + 
+      geom_density_ridges_gradient(calc_ecdf = TRUE, 
+                                   scale = 6) +
+      facet_wrap(~householdSize) + 
+      scale_fill_viridis(direction = -1,
+                         alpha = 0.8,
+                         option = "E") +
+      labs(title = "Probability Density of Joviality Score Across Income Groups and Household Sizes",
+           subtitle = "- Darker colours suggest higher probability of joviality score occurring\n- Peaks in Joviality seem to increase in larger households in lower income groups",
+           x = "Joviality", y = "Income Groups") + 
+      guides(color=guide_legend("Probability")) +
+      theme(legend.position = "right",
+            legend.direction = "vertical",
+            plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 
 ### 3.2.4: Comparing Joviality and Expenses
 
@@ -1726,4 +1991,4 @@ L ----> S
 P ----> S
 ```
 
-An overarching theme (`urbanthemes`) was used to ensure standardised colors and chart styles throughout the study. In general, density plots, dotplots in various configurations, as well as histograms were chosen to visualise the underlying undulations in distribution of variables. Interactive elements were also deployed to enable filtering through the data to uncover trends and differences. Insights from each visualisation have been added after each visual, or added as titles/subtitles in the charts themselves.
+An overarching theme (`urbnthemes`) was used to ensure standardised colors and chart styles throughout the study. In general, density plots, dotplots in various configurations, as well as histograms were chosen to visualise the underlying undulations in distribution of variables. Interactive elements were also deployed to enable filtering through the data to uncover trends and differences. Insights from each visualisation have been added after each visual, or added as titles/subtitles in the charts themselves.

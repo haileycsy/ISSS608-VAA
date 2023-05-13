@@ -27,17 +27,16 @@ GAStech_edges <- read_csv("data/GAStech_email_edge-v2.csv")
 ```{r}
 glimpse(GAStech_edges)
 ```
-# 1: Data Wrangling 
 
-## 1.1: Changing Date and Time formats  
+# 1: Data Wrangling
 
-::: {.pinbox .pin data-latex="pin"}  
+## 1.1: Changing Date and Time formats
 
-*   `dmy()` transforms the SentDate to Date data type.  
-*   `wday()` returns the day of the week as a decimal number or an ordered factor if label is TRUE.
-
+::: {.pinbox .pin data-latex="pin"}
+-   `dmy()` transforms the SentDate to Date data type.\
+-   `wday()` returns the day of the week as a decimal number or an ordered factor if label is TRUE.
 :::
- 
+
 ```{r}
 GAStech_edges <- GAStech_edges %>%
   mutate(SendDate = dmy(SentDate)) %>%
@@ -46,12 +45,12 @@ GAStech_edges <- GAStech_edges %>%
                         abbr = FALSE))
 glimpse(GAStech_edges)
 ```
+
 ## 1.2 Aggregating Attributes
 
 GAStech_edges data.frame consists of individual e-mail flow records, which is not very useful for visualisation.
 
 In view of this, data will be aggregated by date, senders, receivers, main subject and day of the week.
-
 
 ```{r}
 #| message: false
@@ -65,12 +64,13 @@ GAStech_edges_aggregated <- GAStech_edges %>%
 
 glimpse(GAStech_edges_aggregated)
 ```
+
 # 2: Creating network objects using **tidygraph**
 
-## 2.1: Using **tbl_graph()** to build a network graph dataframe  
+## 2.1: Using **tbl_graph()** to build a network graph dataframe
 
-*   `tbl_graph()` creates a tbl_graph network object from nodes and edges data  
-*   `as_tbl_graph()` converts network data and objects to a tbl_graph network
+-   `tbl_graph()` creates a tbl_graph network object from nodes and edges data\
+-   `as_tbl_graph()` converts network data and objects to a tbl_graph network
 
 ```{r}
 GAStech_graph <- tbl_graph(nodes = GAStech_nodes,
@@ -78,25 +78,23 @@ GAStech_graph <- tbl_graph(nodes = GAStech_nodes,
                            directed = TRUE)
 
 GAStech_graph
-```  
-  
+```
 
-::: {.focusbox .focus data-latex="focus"}  
-
-*   The output above reveals that GAStech_graph is a tbl_graph object with 54 nodes and 4541 edges.  
-*   The command also prints the first six rows of “Node Data” and the first three of “Edge Data”.It states that the Node Data is active -- this makes it possible to manipulate the data in one tibble at a time.
-
+::: {.focusbox .focus data-latex="focus"}
+-   The output above reveals that GAStech_graph is a tbl_graph object with 54 nodes and 4541 edges.\
+-   The command also prints the first six rows of "Node Data" and the first three of "Edge Data".It states that the Node Data is active -- this makes it possible to manipulate the data in one tibble at a time.
 :::
 
 ## 2.2: Using `activate()` to change the activate object
 
-The nodes tibble data frame is activated by default, but you can change which tibble data frame is active with the `activate()` function. Thus, if we wanted to rearrange the rows in the edges tibble to list those with the highest “weight” first, we could use `activate()` and then `arrange()`.
+The nodes tibble data frame is activated by default, but you can change which tibble data frame is active with the `activate()` function. Thus, if we wanted to rearrange the rows in the edges tibble to list those with the highest "weight" first, we could use `activate()` and then `arrange()`.
 
 ```{r}
 GAStech_graph %>%
   activate(edges) %>%
   arrange(desc(Weight))
 ```
+
 # 3: Plotting Static Network Graphs with **ggraph** package
 
 ## 3.1: Basic Network Graph
@@ -168,3 +166,117 @@ g <- ggraph(
 g + theme_graph()
 
 ```
+**Modifying Edges**
+
+```{r}
+#| warning: false
+g <- ggraph(GAStech_graph, 
+            layout = "nicely") +
+  geom_edge_link(aes(width=Weight), 
+                 alpha=0.2) +
+  scale_edge_width(range = c(0.1, 5)) +
+  geom_node_point(aes(colour = Department), 
+                  size = 3)
+
+g + theme_graph()
+```
+
+# 4: Facet Graphs
+
+## 4.1: Facet Edges
+
+```{r}
+#| warning: false
+set_graph_style()
+
+g <- ggraph(GAStech_graph, 
+            layout = "nicely") + 
+  geom_edge_link(aes(width=Weight), 
+                 alpha=0.2) +
+  scale_edge_width(range = c(0.1, 5)) +
+  geom_node_point(aes(colour = Department), 
+                  size = 2)
+
+g + facet_edges(~Weekday)
+
+```
+
+## 4.2: Framed Facet Graphs
+
+```{r}
+#| warning: false
+set_graph_style() 
+
+g <- ggraph(GAStech_graph, 
+            layout = "nicely") + 
+  geom_edge_link(aes(width=Weight), 
+                 alpha=0.2) +
+  scale_edge_width(range = c(0.1, 5)) +
+  geom_node_point(aes(colour = Department), 
+                  size = 2)
+  
+g + facet_edges(~Weekday) +
+  th_foreground(foreground = "grey80",  
+                border = TRUE) +
+  theme(legend.position = 'bottom')
+
+```
+
+# 5: Facet Nodes
+
+```{r}
+set_graph_style()
+
+g <- ggraph(GAStech_graph, 
+            layout = "nicely") + 
+  geom_edge_link(aes(width=Weight), 
+                 alpha=0.2) +
+  scale_edge_width(range = c(0.1, 5)) +
+  geom_node_point(aes(colour = Department), 
+                  size = 2)
+  
+g + facet_nodes(~Department)+
+  th_foreground(foreground = "grey80",  
+                border = TRUE) +
+  theme(legend.position = 'bottom')
+```
+
+# 6: Analysing Network Metrics
+
+## 6.1: Measuring Centrality
+
+Centrality allows us to quantify the relationships within the network. It reports  
+*   the connectivity of the node within a network, 
+*   the complexity of a network, 
+*   the clusters or sub-groups within a network.
+
+```{r}
+#| warning: false
+g <- GAStech_graph %>%
+  mutate(betweenness_centrality = centrality_betweenness()) %>%
+  ggraph(layout = "fr") + 
+  geom_edge_link(aes(width=Weight), 
+                 alpha=0.2) +
+  scale_edge_width(range = c(0.1, 5)) +
+  geom_node_point(aes(colour = Department,
+          # varying size of nodes by centrality measure            
+            size=betweenness_centrality))
+g 
+```
+**Network Metrics: Degree**
+Degree refers to the *number of direct connections* a node has.
+It is often interpreted in terms of the immediate risk of node for catching whatever is flowing through the network (such as a virus, or some information).
+
+This is different from **betweenness** index, which smeasures the relative "weight" of importance of the node. 
+
+**Network Metrics: Betweenness centrality**
+Betweenness is a centrality measure of a vertex within a graph. It is *a way of detecting the amount of influence a node has over the flow of information in a graph*. It is often used to find nodes that serve as a bridge from one part of a graph to another.Vertices that occur on many shortest paths between other vertices have higher betweenness than those that do not.  
+  
+**Network Metrics: In-degree & Out-degree**
+If the network is directed (meaning that ties have direction), then we usually define two separate measures of degree centrality, namely indegree and outdegree.  
+*   Indegree is a count of the number of ties directed to the node, and outdegree is the number of ties that the node directs to others.  
+
+For positive relations such as friendship or advice, we normally interpret indegree as a form of popularity, and outdegree as gregariousness. 
+
+
+
