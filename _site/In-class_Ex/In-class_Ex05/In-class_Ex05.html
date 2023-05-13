@@ -261,6 +261,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul>
   <li><a href="#installing-r-packages" id="toc-installing-r-packages" class="nav-link active" data-scroll-target="#installing-r-packages">Installing R Packages</a></li>
   <li><a href="#loading-the-json-data" id="toc-loading-the-json-data" class="nav-link" data-scroll-target="#loading-the-json-data">Loading the json Data</a></li>
+  <li><a href="#create-separate-tibbles-for-nodes-and-edges" id="toc-create-separate-tibbles-for-nodes-and-edges" class="nav-link" data-scroll-target="#create-separate-tibbles-for-nodes-and-edges">Create separate tibbles for nodes and edges</a></li>
   </ul>
 </nav>
     </div>
@@ -308,7 +309,37 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>MC1 <span class="ot">&lt;-</span> jsonlite<span class="sc">::</span><span class="fu">fromJSON</span>(<span class="st">"data/MC1.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(MC1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>List of 5
+ $ directed  : logi TRUE
+ $ multigraph: logi TRUE
+ $ graph     : Named list()
+ $ nodes     :'data.frame': 3428 obs. of  4 variables:
+  ..$ type   : chr [1:3428] "company" "organization" "organization" "organization" ...
+  ..$ dataset: chr [1:3428] "MC1" "MC1" "MC1" "MC1" ...
+  ..$ country: chr [1:3428] "Nalakond" NA NA NA ...
+  ..$ id     : chr [1:3428] "Spanish Shrimp  Carriers" "12744" "143129355" "7775" ...
+ $ links     :'data.frame': 11069 obs. of  6 variables:
+  ..$ type   : chr [1:11069] "ownership" "partnership" "partnership" "ownership" ...
+  ..$ weight : num [1:11069] 0.9 0.846 0.965 0.964 0.823 ...
+  ..$ dataset: chr [1:11069] "MC1" "MC1" "MC1" "MC1" ...
+  ..$ source : chr [1:11069] "Spanish Shrimp  Carriers" "Spanish Shrimp  Carriers" "Spanish Shrimp  Carriers" "Spanish Shrimp  Carriers" ...
+  ..$ target : chr [1:11069] "12744" "21323516" "290834957" "3506021" ...
+  ..$ key    : int [1:11069] 0 0 0 0 0 0 0 0 0 0 ...</code></pre>
+</div>
+</div>
+</section>
+<section id="create-separate-tibbles-for-nodes-and-edges" class="level1">
+<h1>Create separate tibbles for nodes and edges</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>MC1_nodes <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(MC1<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Select can be used to reorder dataframe columns</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, type, country)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>MC1_edges <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(MC1<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Move Source and Target to the front</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(source, target, type, weight, key)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

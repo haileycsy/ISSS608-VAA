@@ -253,6 +253,7 @@ Centrality allows us to quantify the relationships within the network. It report
 ```{r}
 #| warning: false
 g <- GAStech_graph %>%
+  # Use tidyverse functions for tidygraph
   mutate(betweenness_centrality = centrality_betweenness()) %>%
   ggraph(layout = "fr") + 
   geom_edge_link(aes(width=Weight), 
@@ -273,8 +274,7 @@ This is different from **betweenness** index, which smeasures the relative "weig
 Betweenness is a centrality measure of a vertex within a graph. It is *a way of detecting the amount of influence a node has over the flow of information in a graph*. It is often used to find nodes that serve as a bridge from one part of a graph to another.Vertices that occur on many shortest paths between other vertices have higher betweenness than those that do not.  
   
 **Network Metrics: In-degree & Out-degree**
-If the network is directed (meaning that ties have direction), then we usually define two separate measures of degree centrality, namely indegree and outdegree.  
-*   Indegree is a count of the number of ties directed to the node, and outdegree is the number of ties that the node directs to others.  
+If the network is directed (meaning that ties have direction), then we usually define two separate measures of degree centrality, namely indegree and outdegree. *Indegree is a count of the number of ties directed to the node, and outdegree is the number of ties that the node directs to others.*  
 
 For positive relations such as friendship or advice, we normally interpret indegree as a form of popularity, and outdegree as gregariousness. 
 
