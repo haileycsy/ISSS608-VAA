@@ -41,6 +41,7 @@ website:
       - text: "{{< fa magnifying-glass-chart >}} Take-home Ex"
         menu:
           - text: "Take-home Ex 1"
+            href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html
       - text: "{{< fa laptop-code >}} Projects"
         menu:
           - text: "Superstore Orders"
