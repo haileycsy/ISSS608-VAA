@@ -32,7 +32,7 @@ website:
           - text: "Hands-on Ex 5"
             href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html
           - text: "Hands-on Ex 6"
-            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex06.html
+            href: Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html
             
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
