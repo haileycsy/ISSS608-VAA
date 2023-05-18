@@ -18,6 +18,7 @@ website:
             href: index.qmd
           - text: "{{< fa robot >}} Hello World"
             href: about.html
+            
       - text: "{{< fa hand-sparkles >}} Hands-on Ex"
         menu:
           - text: "Hands-on Ex 1"
@@ -30,6 +31,9 @@ website:
             href: Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html
           - text: "Hands-on Ex 5"
             href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html
+          - text: "Hands-on Ex 6"
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex06.html
+            
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
           - text: "In-class Ex 3"
