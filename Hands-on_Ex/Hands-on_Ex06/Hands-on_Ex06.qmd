@@ -1,0 +1,453 @@
+---
+title: "Hands on Exercise 6"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: true
+    code-summary: "code block"
+---
+
+<font size = "5">**Multivariate Analysis & Visualisation**</font>
+
+# 1: **Ternary Plots** - Visualising 3-part Compositional Data
+
+## Loading packages
+
+```{r}
+#| code-fold: false
+#| message: false
+pacman::p_load(plotly, tidyverse, DT, ggtern, urbnthemes)
+```
+
+```{r}
+#| message: false
+library(ggtern)
+```
+
+## Data
+
+Dataset consists of demographic data about Singapore Residents by Planning Area Subzone, Age Group, Sex and Type of Dwelling (June 2000-2018)
+
+```{r}
+pop_data <- read_csv("data/respopagsex2000to2018_tidy.csv") 
+```
+
+Derive new measures from the dataset, using `mutate()`
+
+```{r}
+#Deriving the young, old and economically categories
+agpop_mutated <- pop_data %>%
+  mutate(
+    `Year` = as.character(Year))%>%
+  # similar function as pivot_wider()
+  spread(
+    AG, Population) %>%
+  mutate(
+    YOUNG = rowSums(.[4:8]))%>%
+  mutate(
+    ACTIVE = rowSums(.[9:16]))  %>%
+  mutate(
+    OLD = rowSums(.[17:21])) %>%
+  mutate(
+    TOTAL = rowSums(.[22:24])) %>%
+  filter(Year == 2018)%>%
+  filter(TOTAL > 0)
+
+datatable(head(agpop_mutated))
+```
+
+## 1.1: Static Ternary Diagram
+
+```{r}
+
+set_urbn_defaults(style = "print")
+
+#ternary plots take x,y,z values 
+ggtern(
+    data = agpop_mutated,
+    aes(x = YOUNG,
+        y= ACTIVE, 
+        z = OLD)
+  ) +
+  geom_point() +
+  theme(
+    plot.background = element_rect(fill = "#F8F3E6"),
+    panel.background = element_rect(fill = "#F8F3E6")
+  )
+```
+
+## 1.2: Theming by Color
+
+```{r}
+ggtern(
+    data = agpop_mutated,
+    aes(x = YOUNG,
+        y= ACTIVE, 
+        z = OLD)
+  ) +
+  geom_point() +
+  labs(
+    title="Population structure, 2015"
+  ) +
+  theme_rgbw() +
+  theme(
+    plot.background = element_rect(fill = "#F8F3E6"),
+    panel.background = element_rect(fill = "#F8F3E6")
+  )
+
+```
+
+## 1.3: Interactive Ternary Diagrams with `plot_ly()`
+
+```{r}
+#| message: false
+#| warning: false
+#| fig-height: 6
+
+# function for creating annotation object
+label <- function(txt) {
+  list(
+    text = txt, 
+    x = 0.1, y = 1,
+    ax = 0, ay = 0,
+    xref = "paper", yref = "paper", 
+    align = "center",
+    font = list(family = "serif", size = 15, color = "white"),
+    bgcolor = "#b3b3b3", bordercolor = "black", borderwidth = 2
+  )
+}
+
+# function for axis formatting
+axis <- function(txt) {
+  list(
+    title = txt, tickformat = ".0%", tickfont = list(size = 10)
+  )
+}
+
+ternaryAxes <- list(
+  aaxis = axis("Young"), 
+  baxis = axis("Active"), 
+  caxis = axis("Old")
+)
+
+# Initiating a plotly visualization 
+plot_ly(
+  agpop_mutated, 
+  # plot_ly uses a,b,c instead of x,y,z
+  a = ~YOUNG, 
+  b = ~ACTIVE, 
+  c = ~OLD, 
+  color = I("#3E4254"), 
+  # Make points more transparent to see overlaps
+  alpha = .7,
+  type = "scatterternary"
+) %>%
+  layout(
+    annotations = label("Ternary Markers"), 
+    ternary = ternaryAxes,
+  # Add margin arguments to layout to prevent plot truncation 
+    margin = list(t = 60,
+                  b = 60)
+  )
+```
+
+# 2: **Correlation Matrices** - Visualising correlations between variable pairs
+
+## Required packages
+
+```{r}
+#| code-fold: false
+pacman::p_load(corrplot, ggstatsplot, tidyverse)
+```
+
+## Data
+
+A [Wine Quality Data Set](https://archive.ics.uci.edu/ml/datasets/wine+quality) from the UCI Machine Learning Repository is used for this study.
+
+| **Input Variables**  | fixed acidity  |  volatile acidity   | citric acid |    residual sugar    | density |
+|:----------:|:----------:|:----------:|:----------:|:----------:|------------|
+|                      |   chlorides    | free sulfur dioxide |     Yes     | total sulfur dioxide | pH      |
+| **Output Variables** | quality (0-10) |                     |             |                      |         |
+
+```{r}
+wine <- read_csv("data/wine_quality.csv")
+datatable(head(wine))
+```
+
+## 2.1: Correlation Matrix using Base R `pairs()`
+
+```{r}
+# Plot only columns 1 - 11
+pairs(wine[,1:11])
+```
+
+## 2.2: Lower Corner/ Upper Corner Matrix
+
+Lower
+
+```{r}
+pairs(wine[,2:12], upper.panel = NULL)
+```
+
+Upper
+
+```{r}
+pairs(wine[,2:12], lower.panel = NULL)
+```
+
+## 2.3: Including Correlation Coefficients in Plots
+
+**The complicated way**
+
+```{r}
+#| warning: false
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...) {
+usr <- par("usr")
+on.exit(par(usr))
+par(usr = c(0, 1, 0, 1))
+r <- abs(cor(x, y, use="complete.obs"))
+txt <- format(c(r, 0.123456789), digits=digits)[1]
+txt <- paste(prefix, txt, sep="")
+if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+text(0.5, 0.5, txt, cex = cex.cor * (1 + r) / 2)
+}
+
+pairs(wine[,2:12], 
+      upper.panel = panel.cor)
+```
+
+# 3 **Grouped Correlation Matrices** with `ggcorrmat()`
+
+```{r}
+#| fig-width: 8
+grouped_ggcorrmat(
+  data = wine,
+  cor.vars = 1:11,
+  grouping.var = type,
+  type = "robust",
+  p.adjust.method = "holm",
+  plotgrid.args = list(ncol = 2),
+  ggcorrplot.args = list(outline.color = "black", 
+                         hc.order = TRUE,
+                         tl.cex = 10),
+  annotation.args = list(
+    tag_levels = "a",
+    title = "Correlogram for wine dataset",
+    subtitle = "The measures are: alcohol, sulphates, fixed acidity, citric acid, chlorides, residual sugar, density, free sulfur dioxide and volatile acidity",
+    caption = "Dataset: UCI Machine Learning Repository"
+  )
+)
+```
+
+# 4 Visual Geometrics using `corrplot()`
+
+Compute correlation matrix first using `cor()`
+```{r}
+wine_cor <- cor(wine[, 1:11])
+```
+
+## 4.1: Basic plot
+
+```{r}
+corrplot(wine_cor)
+```
+
+## 4.2: Working with shapes
+
+::: {.panel-tabset}
+
+## **pie**
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+corrplot(wine_cor,
+         method = "pie")
+```
+
+## **ellipse**
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+corrplot(wine_cor,
+         method = "ellipse")
+```
+
+## **shade**
+
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+corrplot(wine_cor,
+         method = "shade")
+```
+## **number**
+
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+corrplot(wine_cor,
+         method = "number")
+```
+::: 
+
+## 4.3: Working with Upper & Lower Layouts
+
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+corrplot(wine_cor,
+         method = "shade",
+         type = "lower")
+```
+
+## 4.4: Working with Mixed layouts
+
+```{r}
+corrplot.mixed(wine_cor, 
+               lower = "circle", 
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l")
+```
+
+
+## 4.5: Changing font colors and removing elements
+
+```{r}
+corrplot(wine_cor, 
+         method = "ellipse", 
+         type="lower",
+         diag = FALSE,
+         tl.col = "grey10")
+```
+
+## 4.6: Adding Test of Significance to corrgram
+
+Compute p-values and confidence intervals using `corr.mtest()`
+
+```{r}
+wine_sig = cor.mtest(wine_cor, conf.level= .95)
+```
+
+```{r}
+corrplot(wine_cor,
+         method = "number",
+         type = "lower",
+         diag = FALSE,
+         tl.col = "black",
+         tl.srt = 45,
+         # Insert test to graph using this argument
+         p.mat = wine_sig$p,
+         sig.level = .05)
+```
+
+## 4.7: Reordering a corrgram 
+
+::: {.focusbox .focus}
+
+**Corrplot package supports 4 sorting methods:**
+
+*   “AOE” is for the angular order of the eigenvectors. See Michael Friendly (2002) for details.
+*   “FPC” for the first principal component order.  
+*   “hclust” for hierarchical clustering order, and “hclust.method” for the agglomeration method to be used.“hclust.method” should be one of “ward”, “single”, “complete”, “average”, “mcquitty”, “median” or “centroid”.  
+*   “alphabet” for alphabetical order.
+
+:::
+
+::: {.panel-tabset}  
+
+## **hclust**
+```{r}
+corrplot.mixed(wine_cor, 
+               lower = "shade", 
+               upper = "number",
+               tl.pos = "lt",
+               tl.col = "grey10",
+               order="hclust",
+               hclust.method = "ward.D",
+               addrect = 3)
+```
+
+## **AOE**
+```{r}
+corrplot.mixed(wine_cor, 
+               lower = "shade", 
+               upper = "number",
+               tl.pos = "lt",
+               diag = "l",
+               order="AOE",
+               tl.col = "grey10")
+```
+
+:::
+
+# 5: **Heatmaps** - Cross-examining Multivariate Data
+
+## Required Packages
+```{r}
+#| code-fold: false
+#| message: false
+pacman::p_load(seriation, dendextend, heatmaply)
+```
+
+## Data
+
+Data used for this study is the World Happiness 2018 Report. 
+
+```{r}
+wh <- read_csv("data/WHData-2018.csv")
+datatable(head(wh))
+```
+
+Preparing the data:
+
+```{r}
+#| code-fold: false
+#| warning: false
+
+# row names should be country
+row.names(wh) <- wh$Country
+
+# transform dataframe into datamatrix
+
+wh1 <- dplyr::select(wh, c(3, 7:12))
+wh_matrix <- data.matrix(wh)
+```
+## 5.1: Base R heatmap()
+
+The arguments `Rowv=NA` and `Colv=NA` are used to switch off the option of plotting the row and column dendrograms.
+
+```{r}
+wh_heatmap <- heatmap(wh_matrix,
+                      Rowv = NA, 
+                      Colv = NA)
+```
+
+Base R cluster heatmap
+
+```{r}
+wh_heatmap <- heatmap(wh_matrix)
+```
+
+## 5.2: Interactive Heatmap with heatmaply
+
+```{r}
+heatmaply(mtcars)
+```
+
+### 5.2.1: Column and Row Scaling 
+
+When variables come from normal distribution, scaling will bring them closer to standard normal distribution
+
+```{r}
+heatmaply(wh_matrix[, -c(1, 2, 4, 5)],
+          scale = "column")
+```
+
+### 5.2.2: Normal Standardisation
+
+When variables in the data comes from possibly different (and non-normal) distributions, the normalize function can be used to bring data to the 0 to 1 scale by subtracting the minimum and dividing by the maximum of all observations.
+
+```{r}
+heatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]))
+```

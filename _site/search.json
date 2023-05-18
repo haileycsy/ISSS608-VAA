@@ -432,5 +432,201 @@
     "title": "Take-home Exercise 1",
     "section": "4.2 A Visual Summary",
     "text": "4.2 A Visual Summary\n\n\n\n\nflowchart LR\nA((Joviality)) --> B[Income Groups] --- E[Age Group]\nB -.-|fa:fa-circle-up joviality| C(High Income)\nB -.- D(fa:fa-face-smile Low Income)\nE -.- F(fa:fa-face-smile Younger) ===|fa:fa-face-smile Most Jovial| D\nE -.-|fa:fa-circle-up joviality| G(Older)\nA ---> H[Expenses] -.-> I[Expense ratio] -.- D\nH -.- J(fa:fa-up-long fa:fa-sack-dollar Recreation)\nC -.-|fa:fa-circle-up joviality| J\nH -.-|fa:fa-circle-up joviality| K(fa:fa-down-long fa:fa-sack-dollar Shelter)\nH -.-|fa:fa-circle-up joviality| S(fa:fa-up-long fa:fa-sack-dollar Food)\nA --> L[Household Size] -.- M(fa:fa-face-smile Single)\nL -.-|fa:fa-circle-up joviality| N(2-3) --- O[Have Kids]\nA ---> P[Education] -.- Q(fa:fa-face-smile Higher Edu) -.- D\nP -.-|fa:fa-circle-up joviality| R(Lower Edu)\nB ----> T((fa:fa-tree-city Plans))\nE ----> T\nH ----> T\nL ----> T\nP ----> T\n\n\n\n\n\n\n\n\nAn overarching theme (urbnthemes) was used to ensure standardised colors and chart styles throughout the study. In general, density plots, dotplots in various configurations, as well as histograms were chosen to visualise the underlying undulations in distribution of variables. Interactive elements were also deployed to enable filtering through the data to uncover trends and differences. Insights from each visualisation have been added after each visual, or added as titles/subtitles in the charts themselves."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#data-preparation",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#data-preparation",
+    "title": "Hands on Exercise 5",
+    "section": "7.1: Data Preparation",
+    "text": "7.1: Data Preparation\n\n\ncode block\nGAStech_edges_aggregated <- GAStech_edges %>%\n  left_join(GAStech_nodes, by = c(\"sourceLabel\" = \"label\")) %>%\n  rename(from = id) %>%\n  left_join(GAStech_nodes, by = c(\"targetLabel\" = \"label\")) %>%\n  rename(to = id) %>%\n  filter(MainSubject == \"Work related\") %>%\n  group_by(from, to) %>%\n    summarise(weight = n()) %>%\n  filter(from!=to) %>%\n  filter(weight > 1) %>%\n  ungroup()\n\n\n`summarise()` has grouped output by 'from'. You can override using the\n`.groups` argument."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#plotting-the-graph",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#plotting-the-graph",
+    "title": "Hands on Exercise 5",
+    "section": "7.2: Plotting the Graph",
+    "text": "7.2: Plotting the Graph\n\n\ncode block\nvisNetwork(GAStech_nodes,\n           GAStech_edges_aggregated) %>%\n  visIgraphLayout(layout = \"layout_with_fr\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#adding-colored-groups",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#adding-colored-groups",
+    "title": "Hands on Exercise 5",
+    "section": "7.3: Adding colored groups",
+    "text": "7.3: Adding colored groups\n\n\ncode block\n#rename categorical color variable from \"Department\" to \"group\"\nGAStech_nodes <- GAStech_nodes %>%\n  rename(group = Department) \n\n# Assign colors with vislegend()\nvisNetwork(GAStech_nodes,\n           GAStech_edges_aggregated) %>%\n  visIgraphLayout(layout = \"layout_with_fr\") %>%\n  visLegend() %>%\n  visLayout(randomSeed = 123)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#specifying-curved-edges-with-visedges",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#specifying-curved-edges-with-visedges",
+    "title": "Hands on Exercise 5",
+    "section": "7.4: Specifying curved edges with visEdges()",
+    "text": "7.4: Specifying curved edges with visEdges()\n\n\ncode block\nvisNetwork(GAStech_nodes,\n           GAStech_edges_aggregated) %>%\n  visIgraphLayout(layout = \"layout_with_fr\") %>%\n  visEdges(arrows = \"to\", \n           smooth = list(enabled = TRUE, \n                         type = \"curvedCW\")) %>%\n  visLegend() %>%\n  visLayout(randomSeed = 123)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#incorporating-interactivity-menu-with-visoptions",
+    "href": "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html#incorporating-interactivity-menu-with-visoptions",
+    "title": "Hands on Exercise 5",
+    "section": "7.5: Incorporating interactivity menu with visOptions()",
+    "text": "7.5: Incorporating interactivity menu with visOptions()\nAdd argument nodesIdSelection = TRUE\n\n\ncode block\nvisNetwork(GAStech_nodes,\n           GAStech_edges_aggregated) %>%\n  visIgraphLayout(layout = \"layout_with_fr\") %>%\n  visOptions(highlightNearest = TRUE,\n             nodesIdSelection = TRUE) %>%\n  visLegend() %>%\n  visLayout(randomSeed = 123)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html",
+    "title": "Hands on Exercise 6",
+    "section": "",
+    "text": "Multivariate Analysis & Visualisation"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#loading-packages",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#loading-packages",
+    "title": "Hands on Exercise 6",
+    "section": "Loading packages",
+    "text": "Loading packages\n\npacman::p_load(plotly, tidyverse, DT, ggtern, urbnthemes)\n\n\n\ncode block\nlibrary(ggtern)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#data",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#data",
+    "title": "Hands on Exercise 6",
+    "section": "Data",
+    "text": "Data\nDataset consists of demographic data about Singapore Residents by Planning Area Subzone, Age Group, Sex and Type of Dwelling (June 2000-2018)\n\n\ncode block\npop_data <- read_csv(\"data/respopagsex2000to2018_tidy.csv\") \n\n\nRows: 108126 Columns: 5\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (3): PA, SZ, AG\ndbl (2): Year, Population\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\n\nDerive new measures from the dataset, using mutate()\n\n\ncode block\n#Deriving the young, old and economically categories\nagpop_mutated <- pop_data %>%\n  mutate(\n    `Year` = as.character(Year))%>%\n  # similar function as pivot_wider()\n  spread(\n    AG, Population) %>%\n  mutate(\n    YOUNG = rowSums(.[4:8]))%>%\n  mutate(\n    ACTIVE = rowSums(.[9:16]))  %>%\n  mutate(\n    OLD = rowSums(.[17:21])) %>%\n  mutate(\n    TOTAL = rowSums(.[22:24])) %>%\n  filter(Year == 2018)%>%\n  filter(TOTAL > 0)\n\ndatatable(head(agpop_mutated))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#static-ternary-diagram",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#static-ternary-diagram",
+    "title": "Hands on Exercise 6",
+    "section": "1.1: Static Ternary Diagram",
+    "text": "1.1: Static Ternary Diagram\n\n\ncode block\nset_urbn_defaults(style = \"print\")\n\n#ternary plots take x,y,z values \nggtern(\n    data = agpop_mutated,\n    aes(x = YOUNG,\n        y= ACTIVE, \n        z = OLD)\n  ) +\n  geom_point() +\n  theme(\n    plot.background = element_rect(fill = \"#F8F3E6\"),\n    panel.background = element_rect(fill = \"#F8F3E6\")\n  )"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#theming-by-color",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#theming-by-color",
+    "title": "Hands on Exercise 6",
+    "section": "1.2: Theming by Color",
+    "text": "1.2: Theming by Color\n\n\ncode block\nggtern(\n    data = agpop_mutated,\n    aes(x = YOUNG,\n        y= ACTIVE, \n        z = OLD)\n  ) +\n  geom_point() +\n  labs(\n    title=\"Population structure, 2015\"\n  ) +\n  theme_rgbw() +\n  theme(\n    plot.background = element_rect(fill = \"#F8F3E6\"),\n    panel.background = element_rect(fill = \"#F8F3E6\")\n  )"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#interactive-ternary-diagrams-with-plot_ly",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#interactive-ternary-diagrams-with-plot_ly",
+    "title": "Hands on Exercise 6",
+    "section": "1.3: Interactive Ternary Diagrams with plot_ly()",
+    "text": "1.3: Interactive Ternary Diagrams with plot_ly()\n\n\ncode block\n# function for creating annotation object\nlabel <- function(txt) {\n  list(\n    text = txt, \n    x = 0.1, y = 1,\n    ax = 0, ay = 0,\n    xref = \"paper\", yref = \"paper\", \n    align = \"center\",\n    font = list(family = \"serif\", size = 15, color = \"white\"),\n    bgcolor = \"#b3b3b3\", bordercolor = \"black\", borderwidth = 2\n  )\n}\n\n# function for axis formatting\naxis <- function(txt) {\n  list(\n    title = txt, tickformat = \".0%\", tickfont = list(size = 10)\n  )\n}\n\nternaryAxes <- list(\n  aaxis = axis(\"Young\"), \n  baxis = axis(\"Active\"), \n  caxis = axis(\"Old\")\n)\n\n# Initiating a plotly visualization \nplot_ly(\n  agpop_mutated, \n  # plot_ly uses a,b,c instead of x,y,z\n  a = ~YOUNG, \n  b = ~ACTIVE, \n  c = ~OLD, \n  color = I(\"#3E4254\"), \n  # Make points more transparent to see overlaps\n  alpha = .7,\n  type = \"scatterternary\"\n) %>%\n  layout(\n    annotations = label(\"Ternary Markers\"), \n    ternary = ternaryAxes,\n  # Add margin arguments to layout to prevent plot truncation \n    margin = list(t = 60,\n                  b = 60)\n  )"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#required-packages",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#required-packages",
+    "title": "Hands on Exercise 6",
+    "section": "Required packages",
+    "text": "Required packages\n\npacman::p_load(corrplot, ggstatsplot, tidyverse)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#data-1",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#data-1",
+    "title": "Hands on Exercise 6",
+    "section": "Data",
+    "text": "Data\nA Wine Quality Data Set from the UCI Machine Learning Repository is used for this study.\n\n\n\n\n\n\n\n\n\n\n\nInput Variables\nfixed acidity\nvolatile acidity\ncitric acid\nresidual sugar\ndensity\n\n\n\n\n\nchlorides\nfree sulfur dioxide\nYes\ntotal sulfur dioxide\npH\n\n\nOutput Variables\nquality (0-10)\n\n\n\n\n\n\n\n\n\ncode block\nwine <- read_csv(\"data/wine_quality.csv\")\n\n\nRows: 6497 Columns: 13\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr  (1): type\ndbl (12): fixed acidity, volatile acidity, citric acid, residual sugar, chlo...\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\n\ncode block\ndatatable(head(wine))"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#correlation-matrix-using-base-r-pairs",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#correlation-matrix-using-base-r-pairs",
+    "title": "Hands on Exercise 6",
+    "section": "2.1: Correlation Matrix using Base R pairs()",
+    "text": "2.1: Correlation Matrix using Base R pairs()\n\n\ncode block\n# Plot only columns 1 - 11\npairs(wine[,1:11])"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#lower-corner-matrix",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#lower-corner-matrix",
+    "title": "Hands on Exercise 6",
+    "section": "2.2: Lower Corner Matrix",
+    "text": "2.2: Lower Corner Matrix\n\n\ncode block\npairs(wine[,2:12], upper.panel = NULL)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#lower-corner-upper-corner-matrix",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#lower-corner-upper-corner-matrix",
+    "title": "Hands on Exercise 6",
+    "section": "2.2: Lower Corner/ Upper Corner Matrix",
+    "text": "2.2: Lower Corner/ Upper Corner Matrix\nLower\n\n\ncode block\npairs(wine[,2:12], upper.panel = NULL)\n\n\n\n\n\nUpper\n\n\ncode block\npairs(wine[,2:12], lower.panel = NULL)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#including-correlation-coefficients-in-plots",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#including-correlation-coefficients-in-plots",
+    "title": "Hands on Exercise 6",
+    "section": "2.3: Including Correlation Coefficients in Plots",
+    "text": "2.3: Including Correlation Coefficients in Plots\nThe complicated way\n\n\ncode block\npanel.cor <- function(x, y, digits=2, prefix=\"\", cex.cor, ...) {\nusr <- par(\"usr\")\non.exit(par(usr))\npar(usr = c(0, 1, 0, 1))\nr <- abs(cor(x, y, use=\"complete.obs\"))\ntxt <- format(c(r, 0.123456789), digits=digits)[1]\ntxt <- paste(prefix, txt, sep=\"\")\nif(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)\ntext(0.5, 0.5, txt, cex = cex.cor * (1 + r) / 2)\n}\n\npairs(wine[,2:12], \n      upper.panel = panel.cor)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#basic-plot",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#basic-plot",
+    "title": "Hands on Exercise 6",
+    "section": "4.1: Basic plot",
+    "text": "4.1: Basic plot\n\n\ncode block\ncorrplot(wine_cor)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#working-with-shapes",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#working-with-shapes",
+    "title": "Hands on Exercise 6",
+    "section": "4.2: Working with shapes",
+    "text": "4.2: Working with shapes\n\npieellipseshadenumber\n\n\n\n\ncode block\ncorrplot(wine_cor,\n         method = \"pie\")\n\n\n\n\n\n\n\n\n\ncode block\ncorrplot(wine_cor,\n         method = \"ellipse\")\n\n\n\n\n\n\n\n\n\ncode block\ncorrplot(wine_cor,\n         method = \"shade\")\n\n\n\n\n\n\n\n\n\ncode block\ncorrplot(wine_cor,\n         method = \"number\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#working-with-upper-lower-layouts",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#working-with-upper-lower-layouts",
+    "title": "Hands on Exercise 6",
+    "section": "4.3: Working with Upper & Lower Layouts",
+    "text": "4.3: Working with Upper & Lower Layouts\n\n\ncode block\ncorrplot(wine_cor,\n         method = \"shade\",\n         type = \"lower\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#working-with-mixed-layouts",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#working-with-mixed-layouts",
+    "title": "Hands on Exercise 6",
+    "section": "4.4: Working with Mixed layouts",
+    "text": "4.4: Working with Mixed layouts\n\n\ncode block\ncorrplot.mixed(wine_cor, \n               lower = \"circle\", \n               upper = \"number\",\n               tl.pos = \"lt\",\n               diag = \"l\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#changing-font-colors-and-removing-elements",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#changing-font-colors-and-removing-elements",
+    "title": "Hands on Exercise 6",
+    "section": "4.5: Changing font colors and removing elements",
+    "text": "4.5: Changing font colors and removing elements\n\n\ncode block\ncorrplot(wine_cor, \n         method = \"ellipse\", \n         type=\"lower\",\n         diag = FALSE,\n         tl.col = \"grey10\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#adding-test-of-significance-to-corrgram",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#adding-test-of-significance-to-corrgram",
+    "title": "Hands on Exercise 6",
+    "section": "4.6: Adding Test of Significance to corrgram",
+    "text": "4.6: Adding Test of Significance to corrgram\nCompute p-values and confidence intervals using corr.mtest()\n\n\ncode block\nwine_sig = cor.mtest(wine_cor, conf.level= .95)\n\n\n\n\ncode block\ncorrplot(wine_cor,\n         method = \"number\",\n         type = \"lower\",\n         diag = FALSE,\n         tl.col = \"black\",\n         tl.srt = 45,\n         # Insert test to graph using this argument\n         p.mat = wine_sig$p,\n         sig.level = .05)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#reordering-a-corrgram",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#reordering-a-corrgram",
+    "title": "Hands on Exercise 6",
+    "section": "4.7: Reordering a corrgram",
+    "text": "4.7: Reordering a corrgram\n\nCorrplot package supports 4 sorting methods:\n\n“AOE” is for the angular order of the eigenvectors. See Michael Friendly (2002) for details.\n“FPC” for the first principal component order.\n\n“hclust” for hierarchical clustering order, and “hclust.method” for the agglomeration method to be used.“hclust.method” should be one of “ward”, “single”, “complete”, “average”, “mcquitty”, “median” or “centroid”.\n\n“alphabet” for alphabetical order.\n\n\n\nhclustAOE\n\n\n\n\ncode block\ncorrplot.mixed(wine_cor, \n               lower = \"shade\", \n               upper = \"number\",\n               tl.pos = \"lt\",\n               tl.col = \"grey10\",\n               order=\"hclust\",\n               hclust.method = \"ward.D\",\n               addrect = 3)\n\n\n\n\n\n\n\n\n\ncode block\ncorrplot.mixed(wine_cor, \n               lower = \"shade\", \n               upper = \"number\",\n               tl.pos = \"lt\",\n               diag = \"l\",\n               order=\"AOE\",\n               tl.col = \"grey10\")"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#required-packages-1",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#required-packages-1",
+    "title": "Hands on Exercise 6",
+    "section": "Required Packages",
+    "text": "Required Packages\n\npacman::p_load(seriation, dendextend, heatmaply)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#data-2",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#data-2",
+    "title": "Hands on Exercise 6",
+    "section": "Data",
+    "text": "Data\nData used for this study is the World Happiness 2018 Report.\n\n\ncode block\nwh <- read_csv(\"data/WHData-2018.csv\")\n\n\nRows: 156 Columns: 12\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr  (2): Country, Region\ndbl (10): Happiness score, Whisker-high, Whisker-low, Dystopia, GDP per capi...\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\n\ncode block\ndatatable(head(wh))\n\n\n\n\n\n\n\nPreparing the data:\n\n# row names should be country\nrow.names(wh) <- wh$Country\n\n# transform dataframe into datamatrix\n\nwh1 <- dplyr::select(wh, c(3, 7:12))\nwh_matrix <- data.matrix(wh)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#base-r-heatmap",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#base-r-heatmap",
+    "title": "Hands on Exercise 6",
+    "section": "5.1: Base R heatmap()",
+    "text": "5.1: Base R heatmap()\nThe arguments Rowv=NA and Colv=NA are used to switch off the option of plotting the row and column dendrograms.\n\n\ncode block\nwh_heatmap <- heatmap(wh_matrix,\n                      Rowv = NA, \n                      Colv = NA)\n\n\n\n\n\nBase R cluster heatmap\n\n\ncode block\nwh_heatmap <- heatmap(wh_matrix)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#interactive-heatmap-with-heatmaply",
+    "href": "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html#interactive-heatmap-with-heatmaply",
+    "title": "Hands on Exercise 6",
+    "section": "5.2: Interactive Heatmap with heatmaply",
+    "text": "5.2: Interactive Heatmap with heatmaply\n\n\ncode block\nheatmaply(mtcars)\n\n\n\n\n\n\n\n5.2.1: Column and Row Scaling\nWhen variables come from normal distribution, scaling will bring them closer to standard normal distribution\n\n\ncode block\nheatmaply(wh_matrix[, -c(1, 2, 4, 5)],\n          scale = \"column\")\n\n\n\n\n\n\n\n\n5.2.2: Normal Standardisation\nWhen variables in the data comes from possibly different (and non-normal) distributions, the normalize function can be used to bring data to the 0 to 1 scale by subtracting the minimum and dividing by the maximum of all observations.\n\n\ncode block\nheatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]))"
   }
 ]
