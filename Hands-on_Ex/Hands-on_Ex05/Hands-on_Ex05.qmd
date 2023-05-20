@@ -278,8 +278,7 @@ For positive relations such as friendship or advice, we normally interpret indeg
 
 `visNetwork()` function uses a nodes list and edges list to create an interactive graph.
 
-The nodes list must include an “id” column, and the edge list must have “from” and “to” columns.
-The function also plots the labels for the nodes, using the names of the actors from the “label” column in the node list.
+The nodes list must include an "id" column, and the edge list must have "from" and "to" columns. The function also plots the labels for the nodes, using the names of the actors from the "label" column in the node list.
 
 ## 7.1: Data Preparation
 
@@ -296,6 +295,7 @@ GAStech_edges_aggregated <- GAStech_edges %>%
   filter(weight > 1) %>%
   ungroup()
 ```
+
 ## 7.2: Plotting the Graph
 
 ```{r}
@@ -321,9 +321,7 @@ visNetwork(GAStech_nodes,
 
 ```
 
-## 7.4: Specifying curved edges with `visEdges()` 
-
-
+## 7.4: Specifying curved edges with `visEdges()`
 
 ```{r}
 visNetwork(GAStech_nodes,

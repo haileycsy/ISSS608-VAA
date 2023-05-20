@@ -1,0 +1,348 @@
+---
+title: "Take-home Exercise 2"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: true
+    code-summary: "code block"
+---
+
+<font size = "5">**VAST Challenge: Mini-Challenge 2**</font>
+
+# Project Brief
+
+The country of Oceanus has sought FishEye International’s help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing. FishEye’s analysts received import/export data for Oceanus’ marine and fishing industries. However, Oceanus has informed FishEye that the data is incomplete. To facilitate their analysis, FishEye transformed the trade data into a knowledge graph. Using this knowledge graph, they hope to understand business relationships, including finding links that will help them stop IUU fishing and protect marine species that are affected by it. FishEye analysts found that node-link diagrams gave them a good high-level overview of the knowledge graph. However, they are now looking for visualizations that provide more detail about patterns for entities in the knowledge graph. 
+
+FishEye knows from past experience that companies caught fishing illegally will shut down but will then often start up again under a different name. FishEye wants your help to visualize temporal patterns so they can compare the activities of companies over time to determine if the companies have returned to their nefarious acts. 
+
+# Project Objectives
+
+This study aims to visualise temporal patterns for individual entities and between entities from trade records. Categorize the types of business relationship patterns you find.
+
+```{mermaid}
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#93c7c2',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#3d7670',
+      'lineColor': '#3d7670',
+      'secondaryColor': '#3d7670',
+      'tertiaryColor': '#fff'
+    }
+  }
+}%%
+
+flowchart LR
+    A{fa:fa-fish-fins \nOverall\nnetwork} -->|patterns?| B(Year)
+    A -->|patterns?| C(Month)
+    B -.- D((?))
+    C -.- E((?))
+
+```
+
+# 1: Data Preparation
+
+::: {.panel-tabset}
+
+## Installing packages
+
+```{r intstall-packages}
+pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,
+               visNetwork, tidygraph, ggraph, ggiraph, igraph, scales,
+               gganimate, ggrain, ggridges, graphlayouts)
+```
+
+## Loading the json Data
+
+Use `jsonlite` package to read .json files
+
+```{r load-mc2}
+mc2 <- jsonlite::fromJSON("data/mc2_challenge_graph.json")
+```
+
+```{r glimpse-mc2}
+glimpse(mc2)
+```
+:::
+
+::: {.solvebox .solve. data-latex="solve"}
+
+**The json file contains 2 dataframes:**  
+
+* **nodes**
+  - 34576 observations of 4 variables
+  - shpcountry, rcvcountry, dataset and id
+* **links**
+  - 5,464,378 observations of 9 variables
+  - arrivaldate, hscode, valueofgoods_omu, volumeteu, weightkg, dataset, source, target, valueofgoodsusd  
+
+:::
+
+*Notes: TEU (Twenty-foot Equivalent Unit) is a unit of measurement of shipping volume, used to determine cargo capacity for container ships and terminals*
+
+## 1.1: Splitting data into nodes and edges
+
+```{r split-nodes-edges}
+mc2_nodes <- as_tibble(mc2$nodes) %>%
+    # reorder dataframe columns
+  select(id, rcvcountry, shpcountry)
+
+mc2_links <- as_tibble(mc2$links) %>%
+  # Extract year from date and save as factor column
+  mutate(year = as_factor(year(arrivaldate))) %>%
+  
+  # Move Source and Target to the front
+  select(source, target, hscode, year, arrivaldate, weightkg, volumeteu, valueofgoods_omu, valueofgoodsusd)
+```
+
+
+## 1.2: Data Health
+
+Diagnostic checks to survey the extent of "incompleteness" of the data
+
+::: {.panel-tabset}
+
+## **Nodes**
+
+```{r nodes-check1}
+#| code-fold: false
+# Check for columns with missing values
+colSums(is.na(mc2_nodes))
+```
+
+**rcvcountry** has 2909 missing values, and **shpcountry** has 22359 missing values. There are more incomplete records pertaining to origin of the trades. To facilitate analysis, all NA values are replaced by "Unknown":
+
+```{r nodes-na-country}
+#| code-fold: false
+mc2_nodes <- mc2_nodes %>%
+  replace(is.na(mc2_nodes), "Unknown")
+```
+
+```{r nodes-check2}
+#| code-fold: false
+# Check for duplicated rows
+mc2_nodes[duplicated(mc2_nodes),]
+```
+
+There are no duplicated entries in the nodes tibble. 
+
+## **Links**
+
+```{r links-check1}
+#| code-fold: false
+# Check for columns with missing values
+colSums(is.na(mc2_links))
+```
+
+**valueofgoods_omu** and **valueofgoodsusd** columns are mostly incomplete. These columns will be dropped for the analysis. 
+
+```{r edges-check2}
+#| code-fold: false
+# Check for duplicated rows
+mc2_links[duplicated(mc2_links),]
+```
+There are 155,291 duplicated transactions. As these may be indicative of possible {{< fa fish >}} *fishy* activity, the duplicated rows are saved separately as **mc2_links_dup**.
+
+```{r}
+#| code-fold: false
+# Save duplicated transactions in a separate tibble
+mc2_links_dup <- mc2_links[duplicated(mc2_links),]
+
+# Leave only unique transactions in original edges tibble
+mc2_links <- unique(mc2_links)
+```
+
+:::
+
+## 1.3: Aggregating **links** Variables 
+
+The transactions recorded in mc2_links are too granular for visualisation. The dataframe is grouped by source, target and year-month, to get the number of transactions per traderoute (source->target) per month each year.  
+
+```{r edges-agg}
+#| message: false
+#| code-fold: false
+mc2_links_agg <- mc2_links %>%
+  # Change date to ym format
+  mutate(
+    yearmonth = floor_date(as_date(arrivaldate), "month")) %>%
+  # group by traderoute and yearmonth
+  group_by(
+    source, target, year, yearmonth) %>%
+   # count number of transactions per source-target traderoute per month
+  summarise(
+    weight = n()) %>%
+  # Filter to keep traderoutes with more than one transaction
+  filter(
+    weight >1) %>%
+  arrange(
+    year, yearmonth) %>%
+  ungroup()
+```
+
+
+# 2: **Visualising Traderoutes by Year**
+
+```{mermaid}
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#93c7c2',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#3d7670',
+      'lineColor': '#3d7670',
+      'secondaryColor': '#3d7670',
+      'tertiaryColor': '#fff'
+    }
+  }
+}%%
+
+flowchart LR
+    A{fa:fa-fish-fins \nOverall\nnetwork} --> B(Year)
+    A --> C(Month)
+    B -->|patterns?| D(traderoutes)
+
+```
+
+## 2.1: How many different traderoutes are there per year per month?
+
+```{r}
+# Setting default theme for all plots
+set_urbn_defaults("print", base_family = "Lato")
+
+routes_by_year <- mc2_links_agg %>%
+  # Change month to character
+  mutate(yearmonth = as.factor(format(yearmonth,"%b"))) %>%
+  # Group by year and month to count frequency of trade routes
+  group_by(year, yearmonth) %>%
+  summarise(nroutes = n()) %>%
+  # Sort by Year-month
+  arrange(year, 
+  # Manually assign ordinal levels to month to retain order
+          factor(yearmonth, levels = c("Jan", "Feb", "Mar", "Apr", 
+                            "May", "Jun", "Jul", "Aug", 
+                            "Sep", "Oct", "Nov", "Dec")))
+
+# Plotting barcharts to compare frequency count
+  ggplot(routes_by_year) +
+  # Manually assign ordinal levels to month to retain order in plot
+  geom_col(aes(x = factor(yearmonth, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", 
+                            "May", "Jun", "Jul", "Aug", 
+                            "Sep", "Oct", "Nov", "Dec")),
+               y = nroutes)
+  ) +
+  labs(
+    title = "Frequency of traderoutes by Year",
+    y = "No. of traderoutes",
+    x = NULL
+  ) +
+  # Plot separate barcharts per year
+  facet_wrap(~year) +
+  theme_gray() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x = element_text(angle = 90),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+```
+```{r}
+datatable(routes_by_year)
+```
+
+
+
+## 2.2: Preparing Network Graph Table
+
+::: {.panel-tabset}
+
+## **Step 1: Filtering value**
+
+
+## **Step 2: Inner join nodes and edges by overlapping companies**
+
+```{r nodes-join-distinct}
+# filter distinct source and target from mc2_edges
+distinct_source <- mc2_edges_agg %>%
+    distinct(source)
+
+distinct_target <- mc2_edges_agg %>%
+    distinct(target)
+
+# Select only overlapping nodes and distinct companies from edges
+nodes_source <- inner_join(
+    mc2_nodes, distinct_source,
+    by = c("id" = "source")
+  )
+
+nodes_target <- inner_join(
+    mc2_nodes, distinct_target,
+    by = c("id" = "target")
+  )
+
+# Create new nodes data by combining filtered dataframes
+nodes_new <- bind_rows(nodes_source, nodes_target)
+```
+
+## **Step 3: Combine into tbl_graph()**
+
+```{r nodes-graph-combined}
+# Combine edges and nodes to a graph dataframe
+graph <- tbl_graph(
+    nodes = nodes_new,
+    edges = mc2_edges_agg, 
+    directed = TRUE)
+
+graph
+```
+
+:::
+
+## 2.2 Plotting initial network graph
+
+```{r g-year-animated}
+#| fig-width: 8
+#| fig-height: 8
+g_year <- ggraph(
+    graph, 
+  # Specify layout options to plot a chord diagram
+    layout = 'linear', 
+    circular = TRUE
+  ) +
+  # Vary edge color by year
+  geom_edge_arc(
+    aes(color = factor(year)), 
+    alpha = 0.2
+  ) +
+  scale_edge_width(
+    range = c(0.1, 5)
+  ) +
+  geom_node_point(
+    size = .5
+  ) +
+  labs(
+    title = "Trade Network: {mc2_edges_agg$year}"
+  ) +
+  transition_manual(
+    as.integer(mc2_edges_agg$year)
+  ) +
+  theme(
+    plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"),
+    panel.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6")
+  )
+
+g_year
+```
+
+## Trade Routes that have Started and Stopped
+
+```{r}
+edges_startstop <- mc2_edges_agg %>%
+  group_by(year, source, target) %>%
+  summarise(count = n()) %>%
+  ungroup()
+```
+

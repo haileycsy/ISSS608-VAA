@@ -39,9 +39,9 @@ Derive new measures from the dataset, using `mutate()`
 agpop_mutated <- pop_data %>%
   mutate(
     `Year` = as.character(Year))%>%
-  # similar function as pivot_wider()
-  spread(
-    AG, Population) %>%
+  pivot_wider(
+    names_from = AG, 
+    values_from = Population) %>%
   mutate(
     YOUNG = rowSums(.[4:8]))%>%
   mutate(
@@ -242,6 +242,7 @@ grouped_ggcorrmat(
 # 4 Visual Geometrics using `corrplot()`
 
 Compute correlation matrix first using `cor()`
+
 ```{r}
 wine_cor <- cor(wine[, 1:11])
 ```
@@ -254,9 +255,9 @@ corrplot(wine_cor)
 
 ## 4.2: Working with shapes
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## **pie**
+
 ```{r}
 #| fig-height: 7
 #| fig-width: 7
@@ -265,6 +266,7 @@ corrplot(wine_cor,
 ```
 
 ## **ellipse**
+
 ```{r}
 #| fig-height: 7
 #| fig-width: 7
@@ -280,6 +282,7 @@ corrplot(wine_cor,
 corrplot(wine_cor,
          method = "shade")
 ```
+
 ## **number**
 
 ```{r}
@@ -288,7 +291,7 @@ corrplot(wine_cor,
 corrplot(wine_cor,
          method = "number")
 ```
-::: 
+:::
 
 ## 4.3: Working with Upper & Lower Layouts
 
@@ -309,7 +312,6 @@ corrplot.mixed(wine_cor,
                tl.pos = "lt",
                diag = "l")
 ```
-
 
 ## 4.5: Changing font colors and removing elements
 
@@ -341,22 +343,20 @@ corrplot(wine_cor,
          sig.level = .05)
 ```
 
-## 4.7: Reordering a corrgram 
+## 4.7: Reordering a corrgram
 
 ::: {.focusbox .focus}
-
 **Corrplot package supports 4 sorting methods:**
 
-*   “AOE” is for the angular order of the eigenvectors. See Michael Friendly (2002) for details.
-*   “FPC” for the first principal component order.  
-*   “hclust” for hierarchical clustering order, and “hclust.method” for the agglomeration method to be used.“hclust.method” should be one of “ward”, “single”, “complete”, “average”, “mcquitty”, “median” or “centroid”.  
-*   “alphabet” for alphabetical order.
-
+-   "AOE" is for the angular order of the eigenvectors. See Michael Friendly (2002) for details.
+-   "FPC" for the first principal component order.\
+-   "hclust" for hierarchical clustering order, and "hclust.method" for the agglomeration method to be used."hclust.method" should be one of "ward", "single", "complete", "average", "mcquitty", "median" or "centroid".\
+-   "alphabet" for alphabetical order.
 :::
 
-::: {.panel-tabset}  
-
+::: panel-tabset
 ## **hclust**
+
 ```{r}
 corrplot.mixed(wine_cor, 
                lower = "shade", 
@@ -369,6 +369,7 @@ corrplot.mixed(wine_cor,
 ```
 
 ## **AOE**
+
 ```{r}
 corrplot.mixed(wine_cor, 
                lower = "shade", 
@@ -378,12 +379,12 @@ corrplot.mixed(wine_cor,
                order="AOE",
                tl.col = "grey10")
 ```
-
 :::
 
 # 5: **Heatmaps** - Cross-examining Multivariate Data
 
 ## Required Packages
+
 ```{r}
 #| code-fold: false
 #| message: false
@@ -392,7 +393,7 @@ pacman::p_load(seriation, dendextend, heatmaply)
 
 ## Data
 
-Data used for this study is the World Happiness 2018 Report. 
+Data used for this study is the World Happiness 2018 Report.
 
 ```{r}
 wh <- read_csv("data/WHData-2018.csv")
@@ -413,6 +414,7 @@ row.names(wh) <- wh$Country
 wh1 <- dplyr::select(wh, c(3, 7:12))
 wh_matrix <- data.matrix(wh)
 ```
+
 ## 5.1: Base R heatmap()
 
 The arguments `Rowv=NA` and `Colv=NA` are used to switch off the option of plotting the row and column dendrograms.
@@ -435,7 +437,7 @@ wh_heatmap <- heatmap(wh_matrix)
 heatmaply(mtcars)
 ```
 
-### 5.2.1: Column and Row Scaling 
+### 5.2.1: Column and Row Scaling
 
 When variables come from normal distribution, scaling will bring them closer to standard normal distribution
 

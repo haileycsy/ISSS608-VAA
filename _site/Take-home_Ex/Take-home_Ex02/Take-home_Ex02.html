@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2023-05-19">
+
+<title>haileycsy - Take-home Exercise 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../Images/apple-touch-icon.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/all.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/fontawesome6-0.1.0/latex-fontsize.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script src="../../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../Images/Name_Logo2.png" alt="" class="navbar-logo">
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-fa-house-chimney-window--home" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text"><i class="fa-solid fa-house-chimney-window" aria-label="house-chimney-window"></i> Home</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-fa-house-chimney-window--home">    
+        <li>
+    <a class="dropdown-item" href="../../index.html">
+ <span class="dropdown-text"><i class="fa-solid fa-house-chimney-window" aria-label="house-chimney-window"></i> Home</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../about.html">
+ <span class="dropdown-text"><i class="fa-solid fa-robot" aria-label="robot"></i> Hello World</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-fa-hand-sparkles--hands-on-ex" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text"><i class="fa-solid fa-hand-sparkles" aria-label="hand-sparkles"></i> Hands-on Ex</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-fa-hand-sparkles--hands-on-ex">    
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html">
+ <span class="dropdown-text">Hands-on Ex 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html">
+ <span class="dropdown-text">Hands-on Ex 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html">
+ <span class="dropdown-text">Hands-on Ex 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html">
+ <span class="dropdown-text">Hands-on Ex 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html">
+ <span class="dropdown-text">Hands-on Ex 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html">
+ <span class="dropdown-text">Hands-on Ex 6</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-fa-pen-to-square--in-class-ex" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text"><i class="fa-solid fa-pen-to-square" aria-label="pen-to-square"></i> In-class Ex</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-fa-pen-to-square--in-class-ex">    
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex03/In-Class_Ex03.html">
+ <span class="dropdown-text">In-class Ex 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex04/In-Class_Ex04.html">
+ <span class="dropdown-text">In-class Ex 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex05/In-class_Ex05.html">
+ <span class="dropdown-text">In-class Ex 5</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-fa-magnifying-glass-chart--take-home-ex" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text"><i class="fa-solid fa-magnifying-glass-chart" aria-label="magnifying-glass-chart"></i> Take-home Ex</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-fa-magnifying-glass-chart--take-home-ex">    
+        <li>
+    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html">
+ <span class="dropdown-text">Take-home Ex 1</span></a>
+  </li>  
+        <li class="dropdown-header">Take-home Ex 2</li>
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-fa-laptop-code--projects" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text"><i class="fa-solid fa-laptop-code" aria-label="laptop-code"></i> Projects</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-fa-laptop-code--projects">    
+        <li>
+    <a class="dropdown-item" href="../../Projects/Superstore_Orders.html">
+ <span class="dropdown-text">Superstore Orders</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/hailey-sy-cheong/"><i class="bi bi-linkedin" role="img" aria-label="Linkedin">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://public.tableau.com/app/profile/hailey.cheong"><i class="bi bi-diagram-3-fill" role="img" aria-label="Tableau">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/haileycsy"><i class="bi bi-github" role="img" aria-label="Github">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#project-brief" id="toc-project-brief" class="nav-link active" data-scroll-target="#project-brief">Project Brief</a></li>
+  <li><a href="#project-objectives" id="toc-project-objectives" class="nav-link" data-scroll-target="#project-objectives">Project Objectives</a></li>
+  <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">1: Data Preparation</a>
+  <ul class="collapse">
+  <li><a href="#installing-packages" id="toc-installing-packages" class="nav-link" data-scroll-target="#installing-packages">Installing packages</a></li>
+  <li><a href="#loading-the-json-data" id="toc-loading-the-json-data" class="nav-link" data-scroll-target="#loading-the-json-data">Loading the json Data</a></li>
+  <li><a href="#splitting-data-into-nodes-and-edges" id="toc-splitting-data-into-nodes-and-edges" class="nav-link" data-scroll-target="#splitting-data-into-nodes-and-edges">1.1: Splitting data into nodes and edges</a></li>
+  <li><a href="#data-health" id="toc-data-health" class="nav-link" data-scroll-target="#data-health">1.2: Data Health</a></li>
+  <li><a href="#aggregating-variables" id="toc-aggregating-variables" class="nav-link" data-scroll-target="#aggregating-variables">1.3: Aggregating Variables</a></li>
+  <li><a href="#build-a-network-graph-table" id="toc-build-a-network-graph-table" class="nav-link" data-scroll-target="#build-a-network-graph-table">Build a Network graph table</a>
+  <ul class="collapse">
+  <li><a href="#inner-join-nodes-and-edges-by-overlapping-companies" id="toc-inner-join-nodes-and-edges-by-overlapping-companies" class="nav-link" data-scroll-target="#inner-join-nodes-and-edges-by-overlapping-companies">Inner join nodes and edges by overlapping companies</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#plotting-initial-network-graph" id="toc-plotting-initial-network-graph" class="nav-link" data-scroll-target="#plotting-initial-network-graph">Plotting initial network graph</a>
+  <ul class="collapse">
+  <li><a href="#temporal-graph" id="toc-temporal-graph" class="nav-link" data-scroll-target="#temporal-graph">Temporal graph</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Take-home Exercise 2</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 19, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p><font size="5"><strong>VAST Challenge: Mini-Challenge 2</strong></font></p>
+<section id="project-brief" class="level1">
+<h1>Project Brief</h1>
+<p>The country of Oceanus has sought FishEye International’s help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing. FishEye’s analysts received import/export data for Oceanus’ marine and fishing industries. However, Oceanus has informed FishEye that the data is incomplete. To facilitate their analysis, FishEye transformed the trade data into a knowledge graph. Using this knowledge graph, they hope to understand business relationships, including finding links that will help them stop IUU fishing and protect marine species that are affected by it. FishEye analysts found that node-link diagrams gave them a good high-level overview of the knowledge graph. However, they are now looking for visualizations that provide more detail about patterns for entities in the knowledge graph.</p>
+<p>FishEye knows from past experience that companies caught fishing illegally will shut down but will then often start up again under a different name. FishEye wants your help to visualize temporal patterns so they can compare the activities of companies over time to determine if the companies have returned to their nefarious acts.</p>
+</section>
+<section id="project-objectives" class="level1">
+<h1>Project Objectives</h1>
+<p>This study aims to visualise temporal patterns for individual entities and between entities from trade records. Categorize the types of business relationship patterns you find.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<p>
+</p><pre class="mermaid mermaid-js" data-tooltip-selector="#mermaid-tooltip-1">%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#93c7c2',
+      'primaryTextColor': '#3d7670',
+      'primaryBorderColor': '#3d7670',
+      'lineColor': '#3d7670',
+      'secondaryColor': '#3d7670',
+      'tertiaryColor': '#fff'
+    }
+  }
+}%%
+
+flowchart LR
+    A{fa:fa-fish-fins \nOverall\nnetwork} --&gt;|patterns?| B(Year)
+    A --&gt;|patterns?| C(Month)
+    B -.- D((?))
+    C -.- E((?))
+
+</pre>
+<div id="mermaid-tooltip-1" class="mermaidTooltip">
+
+</div>
+<p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="data-preparation" class="level1">
+<h1>1: Data Preparation</h1>
+<p>::: {.panel-tabset}</p>
+<section id="installing-packages" class="level2">
+<h2 class="anchored" data-anchor-id="installing-packages">Installing packages</h2>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(jsonlite, tidyverse, DT, lubridate, Hmisc,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               visNetwork, tidygraph, ggraph, igraph,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               gganimate, graphlayouts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="loading-the-json-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-the-json-data">Loading the json Data</h2>
+<p>Use <code>jsonlite</code> package to read .json files</p>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mc2 <span class="ot">&lt;-</span> jsonlite<span class="sc">::</span><span class="fu">fromJSON</span>(<span class="st">"data/mc2_challenge_graph.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(mc2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>List of 5
+ $ directed  : logi TRUE
+ $ multigraph: logi TRUE
+ $ graph     : Named list()
+ $ nodes     :'data.frame': 34576 obs. of  4 variables:
+  ..$ shpcountry: chr [1:34576] "Polarinda" NA "Oceanus" NA ...
+  ..$ rcvcountry: chr [1:34576] "Oceanus" NA "Oceanus" NA ...
+  ..$ dataset   : chr [1:34576] "MC2" "MC2" "MC2" "MC2" ...
+  ..$ id        : chr [1:34576] "AquaDelight Inc and Son's" "BaringoAmerica Marine Ges.m.b.H." "Yu gan  Sea spray GmbH Industrial" "FlounderLeska Marine BV" ...
+ $ links     :'data.frame': 5464378 obs. of  9 variables:
+  ..$ arrivaldate     : chr [1:5464378] "2034-02-12" "2034-03-13" "2028-02-07" "2028-02-23" ...
+  ..$ hscode          : chr [1:5464378] "630630" "630630" "470710" "470710" ...
+  ..$ valueofgoods_omu: num [1:5464378] 141015 141015 NA NA NA ...
+  ..$ volumeteu       : num [1:5464378] 0 0 0 0 0 0 0 0 0 0 ...
+  ..$ weightkg        : int [1:5464378] 4780 6125 10855 11250 11165 11290 9000 19490 6865 19065 ...
+  ..$ dataset         : chr [1:5464378] "MC2" "MC2" "MC2" "MC2" ...
+  ..$ source          : chr [1:5464378] "AquaDelight Inc and Son's" "AquaDelight Inc and Son's" "AquaDelight Inc and Son's" "AquaDelight Inc and Son's" ...
+  ..$ target          : chr [1:5464378] "BaringoAmerica Marine Ges.m.b.H." "BaringoAmerica Marine Ges.m.b.H." "-15045" "-15045" ...
+  ..$ valueofgoodsusd : num [1:5464378] NA NA NA NA NA ...</code></pre>
+</div>
+</div>
+<div class="solvebox solve.">
+<p><strong>The json file contains 2 dataframes:</strong></p>
+<ul>
+<li><strong>nodes</strong>
+<ul>
+<li>34576 observations of 4 variables</li>
+<li>shpcountry, rcvcountry, dataset and id</li>
+</ul></li>
+<li><strong>links</strong>
+<ul>
+<li>5,464,378 observations o 9 variables</li>
+<li>arrivaldate, hscode, valueofgoods_omu, volumeteu, weightkg, dataset, source, target, valueofgoodsusd</li>
+</ul></li>
+</ul>
+</div>
+<p><em>Notes: TEU (Twenty-foot Equivalent Unit) is a unit of measurement of shipping volume, used to determine cargo capacity for container ships and terminals</em></p>
+</section>
+<section id="splitting-data-into-nodes-and-edges" class="level2">
+<h2 class="anchored" data-anchor-id="splitting-data-into-nodes-and-edges">1.1: Splitting data into nodes and edges</h2>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mc2_nodes <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(mc2<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># reorder dataframe columns</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id, rcvcountry, shpcountry)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>mc2_edges <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(mc2<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Format arrivaldate as datetype, in year-month format</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span> <span class="fu">floor_date</span>(<span class="fu">as_date</span>(arrivaldate), <span class="st">"month"</span>),</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Extract year from date and save as factor column</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">year =</span> <span class="fu">as_factor</span>(<span class="fu">year</span>(arrivaldate))) <span class="sc">%&gt;%</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Move Source and Target to the front</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(source, target, hscode, arrivaldate, year, weightkg, volumeteu, valueofgoods_omu, valueofgoodsusd)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>Hmisc<span class="sc">::</span><span class="fu">describe</span>(mc2_nodes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>mc2_nodes 
+
+ 3  Variables      34576  Observations
+--------------------------------------------------------------------------------
+id 
+       n  missing distinct 
+   34576        0    34576 
+
+lowest : -1                                      -10                                     -100                                    -1000                                   -10000                                 
+highest: zūn yú N.V. Transportation              zūn yú Plc Holdings                     zūn yú Submarine Incorporated Logistics ОАО Ltd. Liability Co                   ОАО S.A. de C.V.                       
+--------------------------------------------------------------------------------
+rcvcountry 
+       n  missing distinct 
+   31667     2909      113 
+
+lowest : -22005      -22014      -22015      Afarisburg  Alverossia 
+highest: Vientoro    Yggdrasonia Zaloria     Zawalinda   Zimawand   
+--------------------------------------------------------------------------------
+shpcountry 
+       n  missing distinct 
+   12217    22359      154 
+
+lowest : -22004      -22005      -22007       Francora   Afarivaria 
+highest: Zaloria     Zambalantis Zambarka    Zawalinda   Zimawand   
+--------------------------------------------------------------------------------</code></pre>
+</div>
+</div>
+</section>
+<section id="data-health" class="level2">
+<h2 class="anchored" data-anchor-id="data-health">1.2: Data Health</h2>
+<p>Diagnostic checks to survey the extent of “incompleteness” of the data</p>
+<div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true"><strong>Nodes</strong></a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false"><strong>Edges</strong></a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for columns with missing values</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(mc2_nodes))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        id rcvcountry shpcountry 
+         0       2909      22359 </code></pre>
+</div>
+</div>
+<p><strong>rcvcountry</strong> has 2909 missing values, and <strong>shpcountry</strong> has 22359 missing values. There are more incomplete records pertaining to origin of the trades. To facilitate analysis, all NA values are replaced by “Unknown”:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>mc2_nodes <span class="ot">&lt;-</span> mc2_nodes <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace</span>(<span class="fu">is.na</span>(mc2_nodes), <span class="st">"Unknown"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for duplicated rows</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>mc2_nodes[<span class="fu">duplicated</span>(mc2_nodes),]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 3
+# ℹ 3 variables: id &lt;chr&gt;, rcvcountry &lt;chr&gt;, shpcountry &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>There are no duplicated entries in the nodes tibble.</p>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for columns with missing values</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(mc2_edges))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>          source           target           hscode      arrivaldate 
+               0                0                0                0 
+            year         weightkg        volumeteu valueofgoods_omu 
+               0                0           520933          5464097 
+ valueofgoodsusd 
+         3017844 </code></pre>
+</div>
+</div>
+<p><strong>valueofgoods_omu</strong> column is mostly incomplete. This column will be dropped for the analysis.</p>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check for duplicated rows</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>mc2_edges[<span class="fu">duplicated</span>(mc2_edges),]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 355,606 × 9
+   source    target hscode arrivaldate year  weightkg volumeteu valueofgoods_omu
+   &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;  &lt;date&gt;      &lt;fct&gt;    &lt;int&gt;     &lt;dbl&gt;            &lt;dbl&gt;
+ 1 French C… Mar d… 851629 2028-03-01  2028        20         0               NA
+ 2 French C… Mar d… 851629 2028-05-01  2028       120         0               NA
+ 3 French C… Mar d… 851629 2028-06-01  2028       110         0               NA
+ 4 French C… -1992  852990 2028-01-01  2028      2830         0               NA
+ 5 French C… -1992  852990 2028-01-01  2028      2830         0               NA
+ 6 French C… -1992  852990 2028-01-01  2028      2805         0               NA
+ 7 French C… -1992  852990 2028-01-01  2028       655         0               NA
+ 8 French C… -1992  852990 2028-01-01  2028      1895         0               NA
+ 9 French C… -1992  852990 2028-01-01  2028      1895         0               NA
+10 French C… -1992  852990 2028-01-01  2028      2790         0               NA
+# ℹ 355,596 more rows
+# ℹ 1 more variable: valueofgoodsusd &lt;dbl&gt;</code></pre>
+</div>
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save duplicated transactions in a separate tibble</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>mc2_edges_dup <span class="ot">&lt;-</span> mc2_edges[<span class="fu">duplicated</span>(mc2_edges),]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Leave only unique transactions in original edges tibble</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>mc2_edges <span class="ot">&lt;-</span> <span class="fu">unique</span>(mc2_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>There are 355,606 duplicated transactions. As these may be indicative of possible <em>fishy</em> <i class="fa-solid fa-fish" aria-label="fish"></i> activity, the duplicated rows are saved separately as <strong>mc2_edges_dup</strong>.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="aggregating-variables" class="level2">
+<h2 class="anchored" data-anchor-id="aggregating-variables">1.3: Aggregating Variables</h2>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mc2_edges_agg <span class="ot">&lt;-</span> mc2_edges <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(source, target, year) <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>   <span class="co"># Set weight as number of transactions</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weight =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(source <span class="sc">!=</span> target) <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(weight <span class="sc">&gt;</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="build-a-network-graph-table" class="level2">
+<h2 class="anchored" data-anchor-id="build-a-network-graph-table">Build a Network graph table</h2>
+<section id="inner-join-nodes-and-edges-by-overlapping-companies" class="level3">
+<h3 class="anchored" data-anchor-id="inner-join-nodes-and-edges-by-overlapping-companies">Inner join nodes and edges by overlapping companies</h3>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(mc2_edges_agg<span class="sc">$</span>source)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>mc2_edges_agg$source 
+       n  missing distinct 
+  288495        0    11325 
+
+lowest : -13                        -15                        -1515                      -214                       -27                       
+highest: zūn yú N.V. Shipping       zūn yú N.V. Transportation zūn yú Plc Holdings        ОАО Ltd. Liability Co      ОАО S.A. de C.V.          </code></pre>
+</div>
+</div>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(mc2_edges_agg<span class="sc">$</span>target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>mc2_edges_agg$target 
+       n  missing distinct 
+  288495        0    18277 
+
+lowest : -100                                    -1000                                   -10003                                  -10005                                  -10006                                 
+highest: zūn yú N.V. Transportation              zūn yú Plc Holdings                     zūn yú Submarine Incorporated Logistics ОАО Ltd. Liability Co                   ОАО S.A. de C.V.                       </code></pre>
+</div>
+</div>
+<p>mc2_edges source features 11,325 distinct companies, while target has 18277.</p>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(mc2_nodes<span class="sc">$</span>id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>mc2_nodes$id 
+       n  missing distinct 
+   34576        0    34576 
+
+lowest : -1                                      -10                                     -100                                    -1000                                   -10000                                 
+highest: zūn yú N.V. Transportation              zūn yú Plc Holdings                     zūn yú Submarine Incorporated Logistics ОАО Ltd. Liability Co                   ОАО S.A. de C.V.                       </code></pre>
+</div>
+</div>
+<p>mc2_nodes has 34,576 distinct company ids</p>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter distinct source and target from mc2_edges</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>distinct_source <span class="ot">&lt;-</span> mc2_edges <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>(source)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>distinct_target <span class="ot">&lt;-</span> mc2_edges <span class="sc">%&gt;%</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">distinct</span>(target)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Select only overlapping nodes and distinct companies from edges</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>nodes_source <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    mc2_nodes, distinct_source,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"source"</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>nodes_target <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    mc2_nodes, distinct_target,</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"id"</span> <span class="ot">=</span> <span class="st">"target"</span>)</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create new nodes data by combining filtered dataframes</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>mc2_nodes_new <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  nodes_source, nodes_target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine edges and nodes to a graph dataframe</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>mc2_graph <span class="ot">&lt;-</span> <span class="fu">tbl_graph</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">nodes =</span> mc2_nodes_new,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">edges =</span> mc2_edges_agg, </span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">directed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>mc2_graph</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tbl_graph: 43908 nodes and 288495 edges
+#
+# A directed multigraph with 21423 components
+#
+# A tibble: 43,908 × 3
+  id                                rcvcountry shpcountry
+  &lt;chr&gt;                             &lt;chr&gt;      &lt;chr&gt;     
+1 AquaDelight Inc and Son's         Oceanus    Polarinda 
+2 Yu gan  Sea spray GmbH Industrial Oceanus    Oceanus   
+3 Olas del Mar Worldwide            Oceanus    Oceanus   
+4 French Crab S.p.A. Worldwide      Utoporiana Kondanovia
+5 Panope Limited Liability Company  Oceanus    Vesperanda
+6 hǎi dǎn Corporation Wharf         Oceanus    Marebak   
+# ℹ 43,902 more rows
+#
+# A tibble: 288,495 × 4
+   from    to year  weight
+  &lt;int&gt; &lt;int&gt; &lt;fct&gt;  &lt;int&gt;
+1  2162 20466 2029       2
+2  2162 20466 2030       3
+3  2162   586 2030       3
+# ℹ 288,492 more rows</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="plotting-initial-network-graph" class="level1">
+<h1>Plotting initial network graph</h1>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>g_full <span class="ot">&lt;-</span> <span class="fu">ggraph</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    mc2_graph, </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Specify layout options to plot a chord diagram</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">layout =</span> <span class="st">'linear'</span>, </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">circular =</span> <span class="cn">TRUE</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Vary edge color by year</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_arc</span>(</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">factor</span>(year)), </span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha =</span> <span class="fl">0.2</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_edge_width</span>(</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">range =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="dv">5</span>)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>( </span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">linewidth =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in geom_node_point(linewidth = 1): Ignoring unknown parameters:
+`linewidth`</code></pre>
+</div>
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>animated <span class="ot">&lt;-</span> g_full <span class="sc">+</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Trade Network: {frame_time}"</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">transition_manual</span>(</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    mc2_edges_agg<span class="sc">$</span>year</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"#F8F3E6"</span>, <span class="at">color =</span> <span class="st">"#F8F3E6"</span>)</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>animated</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using the `size` aesthetic in this geom was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` in the `default_aes` field and elsewhere instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>nframes and fps adjusted to match transition</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex02_files/figure-html/unnamed-chunk-18-1.gif" class="img-fluid"></p>
+</div>
+</div>
+<section id="temporal-graph" class="level2">
+<h2 class="anchored" data-anchor-id="temporal-graph">Temporal graph</h2>
+<div class="cell">
+<details>
+<summary>code block</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>net <span class="ot">&lt;-</span> <span class="fu">graph_from_data_frame</span>(mc2_graph)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(net, <span class="at">edge.arrow.size=</span>.<span class="dv">4</span>,<span class="at">vertex.label=</span><span class="cn">NA</span>, <span class="at">edge.attr.comb=</span><span class="fu">list</span>(<span class="at">weight=</span><span class="st">"sum"</span>,<span class="st">"ignore"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex02_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-right">Copyright 2023<img src="Images/Name_Logo3.png" class="img-fluid" alt="Name_logo" width="100"></div>
+  </div>
+</footer>
+
+
+
+</body></html>

@@ -42,10 +42,12 @@ website:
             href: In-Class_Ex/In-Class_Ex04/In-Class_Ex04.html
           - text: "In-class Ex 5"
             href: In-class_Ex/In-class_Ex05/In-class_Ex05.html
+            
       - text: "{{< fa magnifying-glass-chart >}} Take-home Ex"
         menu:
           - text: "Take-home Ex 1"
             href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html
+          - text: "Take-home Ex 2"
       - text: "{{< fa laptop-code >}} Projects"
         menu:
           - text: "Superstore Orders"
