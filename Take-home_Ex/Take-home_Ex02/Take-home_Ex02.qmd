@@ -9,15 +9,15 @@ format:
 
 <font size = "5">**VAST Challenge: Mini-Challenge 2**</font>
 
-# Project Brief
+# Project Brief {{< fa ocean >}}
 
-The country of Oceanus has sought FishEye International’s help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing. FishEye’s analysts received import/export data for Oceanus’ marine and fishing industries. However, Oceanus has informed FishEye that the data is incomplete. To facilitate their analysis, FishEye transformed the trade data into a knowledge graph. Using this knowledge graph, they hope to understand business relationships, including finding links that will help them stop IUU fishing and protect marine species that are affected by it. FishEye analysts found that node-link diagrams gave them a good high-level overview of the knowledge graph. However, they are now looking for visualizations that provide more detail about patterns for entities in the knowledge graph. 
+The country of Oceanus has sought FishEye International's help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing. Using import/export trade data, FishEye's analysts hope to understand business relationships, including finding links that will help them stop *fishy* IUU activities and protect marine species that are affected by it.
 
-FishEye knows from past experience that companies caught fishing illegally will shut down but will then often start up again under a different name. FishEye wants your help to visualize temporal patterns so they can compare the activities of companies over time to determine if the companies have returned to their nefarious acts. 
+FishEye knows from past experience that companies caught fishing illegally will often shut down then start up again under a different name. Visualising these temporal patterns could thus help in comparing the activities of companies over time to determine if the companies have returned to their nefarious acts.
 
 # Project Objectives
 
-This study aims to visualise temporal patterns for individual entities and between entities from trade records. Categorize the types of business relationship patterns you find.
+This study thus aims to **visualise temporal patterns for individual entities and between entities from trade records**, and categorize the types of business relationship patterns found through analysis, paying particular attention to abnormalities in to detect {{< fa fish >}} *fishy* trade activities.
 
 ```{mermaid}
 %%{
@@ -35,23 +35,22 @@ This study aims to visualise temporal patterns for individual entities and betwe
 }%%
 
 flowchart LR
-    A{fa:fa-fish-fins \nOverall\nnetwork} -->|patterns?| B(Year)
-    A -->|patterns?| C(Month)
-    B -.- D((?))
-    C -.- E((?))
-
+    A{fa:fa-fish-fins \nOverall\nnetwork} -->|patterns?| B(Time)
+    B -.- C((?))
+    
 ```
 
 # 1: Data Preparation
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Installing packages
 
 ```{r intstall-packages}
+#| code-fold: false
 pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,
-               visNetwork, tidygraph, ggraph, ggiraph, igraph, scales,
-               gganimate, ggrain, ggridges, graphlayouts)
+               visNetwork, tidygraph, ggraph, ggiraph, igraph, scales, ggplot2, 
+               gganimate, ggstatsplot, ggrain, ggridges, graphlayouts, plotly, patchwork,
+               kableExtra, ggpubr, ggrepel)
 ```
 
 ## Loading the json Data
@@ -59,35 +58,39 @@ pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,
 Use `jsonlite` package to read .json files
 
 ```{r load-mc2}
+#| code-fold: false
 mc2 <- jsonlite::fromJSON("data/mc2_challenge_graph.json")
 ```
 
 ```{r glimpse-mc2}
+#| code-fold: false
 glimpse(mc2)
 ```
 :::
 
-::: {.solvebox .solve. data-latex="solve"}
+::: {.solvebox .solve data-latex="solve"}
+**The json file contains 2 dataframes:**
 
-**The json file contains 2 dataframes:**  
-
-* **nodes**
-  - 34576 observations of 4 variables
-  - shpcountry, rcvcountry, dataset and id
-* **links**
-  - 5,464,378 observations of 9 variables
-  - arrivaldate, hscode, valueofgoods_omu, volumeteu, weightkg, dataset, source, target, valueofgoodsusd  
-
+-   **nodes**
+    -   34576 observations of 4 variables
+    -   shpcountry, rcvcountry, dataset and id
+-   **links**
+    -   5,464,378 observations of 9 variables
+    -   arrivaldate, hscode, valueofgoods_omu, volumeteu, weightkg, dataset, source, target, valueofgoodsusd
 :::
 
-*Notes: TEU (Twenty-foot Equivalent Unit) is a unit of measurement of shipping volume, used to determine cargo capacity for container ships and terminals*
+**Notes:**\
+- **volumeteu:** *TEU (Twenty-foot Equivalent Unit) is a unit of measurement of shipping volume, used to determine cargo capacity for container ships and terminals.*\
+- **hscode:** *(Harmonized System Codes) is a standardized numerical method of identifying traded products.*
 
 ## 1.1: Splitting data into nodes and edges
 
 ```{r split-nodes-edges}
+#| code-fold: false
 mc2_nodes <- as_tibble(mc2$nodes) %>%
     # reorder dataframe columns
-  select(id, rcvcountry, shpcountry)
+  select(id, rcvcountry, shpcountry) %>%
+  arrange(id)
 
 mc2_links <- as_tibble(mc2$links) %>%
   # Extract year from date and save as factor column
@@ -97,14 +100,14 @@ mc2_links <- as_tibble(mc2$links) %>%
   select(source, target, hscode, year, arrivaldate, weightkg, volumeteu, valueofgoods_omu, valueofgoodsusd)
 ```
 
-
 ## 1.2: Data Health
 
 Diagnostic checks to survey the extent of "incompleteness" of the data
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## **Nodes**
+
+**I. Checking for Missing Values:**
 
 ```{r nodes-check1}
 #| code-fold: false
@@ -120,15 +123,29 @@ mc2_nodes <- mc2_nodes %>%
   replace(is.na(mc2_nodes), "Unknown")
 ```
 
+**II. Checking for Duplicates:**
+
 ```{r nodes-check2}
 #| code-fold: false
 # Check for duplicated rows
 mc2_nodes[duplicated(mc2_nodes),]
 ```
 
-There are no duplicated entries in the nodes tibble. 
+There are no duplicated entries in the nodes tibble.
+
+**III. Assigning unique identifier:**
+
+As the company names are long and may be difficult to use as labels, a numerical universal unique identifier (uuid) is assigned to each company:
+
+```{r nodes-add-id}
+#| code-fold: false
+# Add unique id for each company
+mc2_nodes$uuid <- seq.int(nrow(mc2_nodes))
+```
 
 ## **Links**
+
+**I. Checking for Missing Values:**
 
 ```{r links-check1}
 #| code-fold: false
@@ -136,13 +153,16 @@ There are no duplicated entries in the nodes tibble.
 colSums(is.na(mc2_links))
 ```
 
-**valueofgoods_omu** and **valueofgoodsusd** columns are mostly incomplete. These columns will be dropped for the analysis. 
+**valueofgoods_omu** has too many missing values and will unnecessarily skew aggregated values. While some missing values could be intentional non-reporting of value and thus indicate possible IUU, there are too many to be able to filter out based on this criteria alone. This column will be dropped for the analysis, while the relationship between **weightkg**, **volumeteu** and **valueofgoodsusd** will be looked into more closely to check for possible discrepencies. 
+
+**II. Checking for Duplicates:**
 
 ```{r edges-check2}
 #| code-fold: false
 # Check for duplicated rows
 mc2_links[duplicated(mc2_links),]
 ```
+
 There are 155,291 duplicated transactions. As these may be indicative of possible {{< fa fish >}} *fishy* activity, the duplicated rows are saved separately as **mc2_links_dup**.
 
 ```{r}
@@ -153,16 +173,24 @@ mc2_links_dup <- mc2_links[duplicated(mc2_links),]
 # Leave only unique transactions in original edges tibble
 mc2_links <- unique(mc2_links)
 ```
-
 :::
 
-## 1.3: Aggregating **links** Variables 
+## 1.3: Filtering and Aggregating **links** Variables
 
-The transactions recorded in mc2_links are too granular for visualisation. The dataframe is grouped by source, target and year-month, to get the number of transactions per traderoute (source->target) per month each year.  
+::: {.solvebox .solve data-latex="solve"}
+**hscode** is an internationally used 6-digit system to classify traded goods, documented by International and Governmental bodies such as the [World Customs Organisation](https://unstats.un.org/wiki/pages/viewpage.action?pageId=87426301) and [United States ITC](https://hts.usitc.gov/current) These different articles/products are coded as subcategories under 99 chapters, with the first 2 digits identifying the chapter that the goods are classified in.
+:::
 
-```{r edges-agg}
+```{r}
+describe(mc2_links$hscode)
+```
+
+From the code output describing the distribution of **hscode** numbers above (1 - 99), it is not possible to assume that the first number of each 6-digit hscode represents the chapter number identifying type of traded good, as most official hscodes start with a '0'. Products of interest belong to **Chapter 3: Fish and Crustaceans, Molluscs and other Aquatic Invertebrates**, but it is unclear if hscodes beginning with '3' belong to chapter 3 or chapter 30.
+
+The transactions recorded in **mc2_links** are too granular for visualisation, spread across 7 years (2028-2034). The dataframe is grouped by source, target and year-month, to get the number of transactions per traderoute (source-\>target) per month each year.
+
+```{r links-agg}
 #| message: false
-#| code-fold: false
 mc2_links_agg <- mc2_links %>%
   # Change date to ym format
   mutate(
@@ -170,19 +198,275 @@ mc2_links_agg <- mc2_links %>%
   # group by traderoute and yearmonth
   group_by(
     source, target, year, yearmonth) %>%
-   # count number of transactions per source-target traderoute per month
   summarise(
-    weight = n()) %>%
-  # Filter to keep traderoutes with more than one transaction
+  # count number of transactions per source-target traderoute per product type per month
+    weight = n(),
+  # Calculate total weight of export per month per traderoute
+    weightkg = sum(weightkg),
+  # Calculate total volume in teu per month per traderoute
+    volumeteu = sum(volumeteu),
+  # Calculate total value in usd per month per traderoute
+    valueusd = sum(valueofgoodsusd)
+  ) %>%
   filter(
-    weight >1) %>%
+   # Filter to keep traderoutes with more than one transaction
+    weight >1,
+    # Filter to keep traderoutes between different companies only
+    source != target) %>%
   arrange(
     year, yearmonth) %>%
   ungroup()
 ```
 
+## **Summary Statistics** **I. Trends in number of unique traderoutes (source** {{< fa angles-right >}} **target) by Year**
 
-# 2: **Visualising Traderoutes by Year**
+```{r}
+#| message: false
+# Aggregating number of routes into new dataframe
+routes_by_year <- mc2_links_agg %>%
+  # Change month to character
+  mutate(yearmonth = format(yearmonth,"%b")) %>%
+  # Group by year and month to count frequency of trade routes
+  group_by(year, yearmonth) %>%
+  summarise(nroutes = n(),
+            avgkg = sum(weightkg)/nroutes) %>%
+  # Sort by Year-month
+  arrange(year, 
+  # Manually assign ordinal levels to month to retain order
+          factor(yearmonth, levels = c("Jan", "Feb", "Mar", "Apr", 
+                            "May", "Jun", "Jul", "Aug", 
+                            "Sep", "Oct", "Nov", "Dec"))) %>%
+  ungroup()
+
+# Create pivot table to get years as columns 
+rby_pivot <- routes_by_year %>%
+# Remove avgkg column 
+  select(-avgkg) %>%
+  pivot_wider(names_from = year,
+              values_from = nroutes)
+
+# Manually set order of months in new pivot table
+rby_pivot$yearmonth <- factor(rby_pivot$yearmonth, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", 
+                            "May", "Jun", "Jul", "Aug", 
+                            "Sep", "Oct", "Nov", "Dec"))
+
+# List columns (years) to use in plot 
+rby_columns <- colnames(rby_pivot)
+
+# Setting default theme for all plots
+set_urbn_defaults("print", base_family = "Lato")
+
+# Specify annotation
+note1 <- list(
+  xref = 'paper',
+  yref = 'y',
+  x = 0.23,
+  y = 8800,
+  xanchor = 'left',
+  yanchor = 'middle',
+  text = "Abnormal Increase in Mar 2030",
+  font = list(size = 12,
+# color-code annotation to match line color
+              color = 'rgb(85,183,72)'),
+  showarrow = FALSE)
+
+# Plot trend lines
+rby <- plot_ly(
+    rby_pivot, 
+    x = ~yearmonth
+  ) %>%
+# Add Trendlines by Year
+  add_trace(
+    y = ~rby_pivot[[rby_columns[2]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2028"
+  ) %>%
+  add_trace(
+    y = ~rby_pivot[[rby_columns[3]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2029"
+  ) %>%
+  add_trace(
+    y = ~rby_pivot[[rby_columns[4]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2030"
+  ) %>%
+  add_trace(
+    y = ~rby_pivot[[rby_columns[5]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2031"
+  ) %>%
+  add_trace(
+    y = ~rby_pivot[[rby_columns[6]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2032"
+  ) %>%
+  add_trace(
+    y = ~rby_pivot[[rby_columns[7]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2033"
+  ) %>%
+  add_trace(
+    y = ~rby_pivot[[rby_columns[8]]],
+    type = 'scatter', 
+    mode = 'lines+markers', 
+    name = "2034"
+  ) %>%
+  layout(
+    title = "Increasing Trend in Traderoute Count in 2029 and 2033", 
+    yaxis = list(title = 'Number of Traderoutes'),
+  # Specify blank title to remove x-axis title
+    xaxis = list(title = ""),
+  # Add top margin to prevent title from being truncated
+    margin = list(t = 80),
+  # Add annotation to plot
+    annotations = note1,
+  # Specify plot and background colors
+    plot_bgcolor = "#F8F3E6",
+    paper_bgcolor = "#F8F3E6"
+  ) 
+
+rby
+```
+
+## **II. Trends in Average Weight (kg) of Exports by Year**
+
+```{r}
+# Create pivot table to get years as columns 
+kgby_pivot <- routes_by_year %>%
+# Remove nroutes column 
+  select(-nroutes) %>%
+  pivot_wider(names_from = year,
+              values_from = avgkg)
+
+# Manually set order of months in new pivot table
+kgby_pivot$yearmonth <- factor(kgby_pivot$yearmonth, 
+                          levels = c("Jan", "Feb", "Mar", "Apr", 
+                            "May", "Jun", "Jul", "Aug", 
+                            "Sep", "Oct", "Nov", "Dec"))
+
+# List columns (years) to use in plot 
+kgby_columns <- colnames(kgby_pivot)
+
+# Plot trend lines
+kgby <- plot_ly(
+    kgby_pivot, 
+    x = ~yearmonth
+  ) %>%
+# Add Trendlines by Year
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[2]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2028"
+  ) %>%
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[3]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2029"
+  ) %>%
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[4]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2030"
+  ) %>%
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[5]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2031"
+  ) %>%
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[6]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2032"
+  ) %>%
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[7]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2033"
+  ) %>%
+  add_trace(
+    y = ~kgby_pivot[[kgby_columns[8]]],
+    type = 'scatter', 
+    mode = 'lines', 
+    name = "2034"
+  ) %>%
+  layout(
+    title = "Fluctuations in Average Trade Weights Across each Year", 
+    yaxis = list(title = 'Average Weight of Trade (kg)'),
+  # Specify blank title to remove x-axis title
+    xaxis = list(title = ""),
+  # Add top margin to prevent title from being truncated
+    margin = list(t = 80),
+  # Specify plot and background colors
+    plot_bgcolor = "#F8F3E6",
+    paper_bgcolor = "#F8F3E6"
+  )
+
+kgby
+```
+
+::: {.focusbox .focus data-latex="focus"}
+**Insights from LineChart:**
+
+-   Abnormal increase in traderoute count in Mar 2030\
+-   No regularly coinciding 'peaks' to suggest seasonal trends (through changes in export weight) across the years
+
+To determine if there are specific companies or traderoutes accounting for a high percentage of these spikes in trade volume, **it would be useful to visualise and compare tradecount and export weight of the highest contributors over the years.** This is to investigate if the spikes are attributed to specific companies or traderoutes, or just an overall increase in numbers or trade volume across the board (pointing to increases in demand instead of *fishy* activity).
+:::
+
+## 1.4: Classifying Companies based on trade records
+
+Companies' trade records are flagged as "suspicious" or "normal" based on the following logic:
+
+| **Tradecount** | **Traded<br>Product Weight(kg)** | **Trade <br>Value ($usd)** | **Flag**   |
+|----------------|----------------------------------|----------------------------|------------|
+| High           | -                                | 0                          | suspicious |
+| -              | High                             | 0                          | suspicious |
+| Low            | -                                | High                       | suspicious |
+
+
+```{r}
+#| message: false
+#| code-fold: false
+
+# Aggregate values based on traderoute (source-target)
+mc2_links_class <- mc2_links_agg %>%
+  group_by(source, target) %>%
+  summarise(weight = sum(weight),
+            weightkg = sum(weightkg),
+            valueusd = sum(valueusd, na.rm = TRUE)) %>%
+  ungroup()
+
+# Apply ifelse conditions to classify traderecord
+mc2_links_class$tradeRecord <- 
+  ifelse(
+    # High tradecount, no recorded trade value
+    mc2_links_class$weight > quantile(mc2_links_class$weight, .75) & mc2_links_class$valueusd == 0 |
+    # High traded product weight, no recorded trade value 
+    mc2_links_class$weightkg > quantile(mc2_links_class$weightkg, .75) & mc2_links_class$valueusd == 0 |
+    # High recorded trade value, low tradecount
+    mc2_links_class$valueusd > quantile(mc2_links_class$valueusd, .75) & mc2_links_class$weight < quantile(mc2_links_class$weight, .25), 
+    "suspicious", "normal"
+  )
+```
+
+
+# 2: **Exploring** {{< fa fish >}} **Fishy Data Patterns**
+
+From the Summary Statistics and preliminary visualisations in Section 1.4, traderoutes will be investigated based on abnormalities in temporal trends across number of trades and export weight. The analysis will focus on visualising networks based on filtered records:
 
 ```{mermaid}
 %%{
@@ -200,149 +484,1397 @@ mc2_links_agg <- mc2_links %>%
 }%%
 
 flowchart LR
-    A{fa:fa-fish-fins \nOverall\nnetwork} --> B(Year)
-    A --> C(Month)
-    B -->|patterns?| D(traderoutes)
+    A{fa:fa-fish-fins \nOverall\nnetwork} ==> B((Country\nLevel))
+    A ==> C((Company\nLevel))
+    C -.- D{fa:fa-calendar-days \nTime} -->|patterns?| E(trade frequency)
+    B -.- D -->|patterns?| F(trade weight)
+    D -->|patterns?| G(trade value\n$usd)
 
 ```
 
-## 2.1: How many different traderoutes are there per year per month?
+## **2.1 Country Level Trade Networks**
+
+In order to get plot a network graph detailing links between countries, new links and nodes dataframes have to be created from existing data.
 
 ```{r}
-# Setting default theme for all plots
-set_urbn_defaults("print", base_family = "Lato")
+#| code-fold: false
+country_links <- mc2_links_agg %>%
+  # Match source company to nodes to get shipping origin country
+  inner_join(mc2_nodes, by = join_by("source" == "id")) %>%
+  # Use shpcountry as source, rcvcountry as target for links
+  select(shpcountry, rcvcountry, year, yearmonth, weight, weightkg) %>%
+  filter(shpcountry != rcvcountry)
 
-routes_by_year <- mc2_links_agg %>%
-  # Change month to character
-  mutate(yearmonth = as.factor(format(yearmonth,"%b"))) %>%
-  # Group by year and month to count frequency of trade routes
-  group_by(year, yearmonth) %>%
-  summarise(nroutes = n()) %>%
-  # Sort by Year-month
-  arrange(year, 
-  # Manually assign ordinal levels to month to retain order
-          factor(yearmonth, levels = c("Jan", "Feb", "Mar", "Apr", 
-                            "May", "Jun", "Jul", "Aug", 
-                            "Sep", "Oct", "Nov", "Dec")))
+```
 
-# Plotting barcharts to compare frequency count
-  ggplot(routes_by_year) +
-  # Manually assign ordinal levels to month to retain order in plot
-  geom_col(aes(x = factor(yearmonth, 
-                          levels = c("Jan", "Feb", "Mar", "Apr", 
+### **2.1.1: Investigating 2030 data**
+
+From the summary statistics outlined in Section 1, there was an observed abnormal increase in tradecount in March 2030. Trade records from 2030 are thus filtered out for investigation:
+
+::: panel-tabset
+## **Step 1: Filter records belonging to year 2030**
+
+```{r}
+#| message: false
+country_links_2030 <- country_links %>%
+  filter(year == "2030") %>%
+  group_by(shpcountry, rcvcountry, yearmonth) %>%
+  summarise(weight = sum(weight),
+            weightkg = sum(weightkg)) %>%
+  filter(shpcountry != rcvcountry) %>%
+  ungroup()
+```
+
+## **Step 2: Create country nodes**
+
+```{r}
+#| code-fold: false
+distinct_shpcountry <- country_links_2030 %>%
+    distinct(shpcountry) %>%
+    mutate(country = shpcountry) %>%
+    select(country)
+
+distinct_rcvcountry <- country_links_2030 %>%
+    distinct(rcvcountry) %>%
+    mutate(country = rcvcountry) %>%
+    select(country)
+
+country_nodes_2030 <- unique(rbind(distinct_shpcountry, distinct_rcvcountry))
+```
+
+## **Step 3: Create Country Graph object**
+
+```{r}
+#| code-fold: false
+country_graph_2030 <- tbl_graph(nodes = country_nodes_2030,
+                          edges = country_links_2030, 
+                          directed = TRUE)
+country_graph_2030
+```
+:::
+
+## **Step 4: Visualise country trade network for 2030:**
+
+```{r}
+#| fig-width: 6
+#| fig-height: 6
+#| warning: false
+
+# Measure directed out-degree centrality and save as a column
+V(country_graph_2030)$out_degree <- degree(country_graph_2030, mode = "out")
+
+set.seed(1234)
+g2030 <- country_graph_2030 %>%
+  activate(edges) %>%
+  mutate(yearmonth = factor(format(yearmonth, "%b"),
+                            levels = c("Jan", "Feb", "Mar", "Apr", 
                             "May", "Jun", "Jul", "Aug", 
-                            "Sep", "Oct", "Nov", "Dec")),
-               y = nroutes)
+                            "Sep", "Oct", "Nov", "Dec"))) %>%
+  ggraph(layout = "linear",
+         circular = TRUE) +
+  geom_edge_fan(
+    aes(width = weight,
+        color = yearmonth),
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1,4)
+  ) +
+  geom_node_point(
+    aes(size = out_degree),
+    color = "grey20",
+    alpha = .7,
+    show.legend = FALSE
+  ) +
+  geom_node_text(
+    aes(label = ifelse(out_degree > quantile(out_degree, .75), country, "")), 
+    size = 3,
+    repel = TRUE
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "grey20"),
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(yearmonth,
+                    transition_length = 6,
+                    state_length = 4
   ) +
   labs(
-    title = "Frequency of traderoutes by Year",
-    y = "No. of traderoutes",
-    x = NULL
+    title = "Country-level Trade Network in {closest_state} 2030",
+    subtitle = "Larger nodes have higher Out-Degree Centrality. Countries with the most export routes are identified: "
   ) +
-  # Plot separate barcharts per year
-  facet_wrap(~year) +
-  theme_gray() +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.text.x = element_text(angle = 90),
-        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
-  )
+  enter_fade() +
+  exit_fade()
 
-```
-```{r}
-datatable(routes_by_year)
+g2030
 ```
 
+::: {.focusbox .focus data-latex="focus"}
 
+**Insights from Network Graph:**
 
-## 2.2: Preparing Network Graph Table
+There are no visually *fishy* patterns identified in March 2030, compared to the other months. The links with thicker widths represent higher number of traderoutes -- these have largely remained the same throughout the year. This suggests that the abnormal increase could be detected at a company-level instead of a country-level network analysis. **However, more information is first gathered from country-level traderoute activities to sieve out possible flags for IUU activity.**  
+:::
+
+## **2.1.2: Visualising Records Across the Years**
+
+**Which countries have the heaviest trade activities?** Plotting an overall network graph would result in a dense web of links with little analytical value. To detect *fishy* temporal patterns, countries that have higher traderoute counts are used for the network analysis.  
+
 
 ::: {.panel-tabset}
 
-## **Step 1: Filtering value**
+## **Step 1: Filter countries in top 1000 by Traderoute count**
 
+```{r}
+#| code-fold: false
+# Filtering out countries by weight
+country_links_top <- top_n(country_links, 1000, weight)
 
-## **Step 2: Inner join nodes and edges by overlapping companies**
-
-```{r nodes-join-distinct}
-# filter distinct source and target from mc2_edges
-distinct_source <- mc2_edges_agg %>%
-    distinct(source)
-
-distinct_target <- mc2_edges_agg %>%
-    distinct(target)
-
-# Select only overlapping nodes and distinct companies from edges
-nodes_source <- inner_join(
-    mc2_nodes, distinct_source,
-    by = c("id" = "source")
-  )
-
-nodes_target <- inner_join(
-    mc2_nodes, distinct_target,
-    by = c("id" = "target")
-  )
-
-# Create new nodes data by combining filtered dataframes
-nodes_new <- bind_rows(nodes_source, nodes_target)
 ```
 
-## **Step 3: Combine into tbl_graph()**
+## **Step 2: Create Country Nodes and Graph Object**
 
-```{r nodes-graph-combined}
-# Combine edges and nodes to a graph dataframe
-graph <- tbl_graph(
-    nodes = nodes_new,
-    edges = mc2_edges_agg, 
-    directed = TRUE)
+```{r}
+#| code-fold: false
 
-graph
+# Getting unique country names from links data
+distinct_shpcountry_all <- country_links_top %>%
+    distinct(shpcountry) %>%
+    mutate(country = shpcountry) %>%
+    select(country)
+
+distinct_rcvcountry_all <- country_links_top %>%
+    distinct(rcvcountry) %>%
+    mutate(country = rcvcountry) %>%
+    select(country)
+
+# Creating nodes list from combined links data
+country_nodes <- unique(rbind(distinct_shpcountry_all, distinct_rcvcountry_all))
+
+# Create Graph Object
+country_graph <- tbl_graph(nodes = country_nodes,
+                          edges = country_links_top, 
+                          directed = TRUE)
+country_graph
 ```
 
 :::
 
-## 2.2 Plotting initial network graph
-
-```{r g-year-animated}
-#| fig-width: 8
-#| fig-height: 8
-g_year <- ggraph(
-    graph, 
-  # Specify layout options to plot a chord diagram
-    layout = 'linear', 
-    circular = TRUE
-  ) +
-  # Vary edge color by year
-  geom_edge_arc(
-    aes(color = factor(year)), 
-    alpha = 0.2
-  ) +
-  scale_edge_width(
-    range = c(0.1, 5)
-  ) +
-  geom_node_point(
-    size = .5
-  ) +
-  labs(
-    title = "Trade Network: {mc2_edges_agg$year}"
-  ) +
-  transition_manual(
-    as.integer(mc2_edges_agg$year)
-  ) +
-  theme(
-    plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"),
-    panel.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6")
-  )
-
-g_year
-```
-
-## Trade Routes that have Started and Stopped
+**I. Out-degree centrality (Visualising top Exports)**
 
 ```{r}
-edges_startstop <- mc2_edges_agg %>%
-  group_by(year, source, target) %>%
-  summarise(count = n()) %>%
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Measure directed out-degree centrality and save as a column
+V(country_graph)$out_degree <- degree(country_graph, mode = "out")
+
+set.seed(1234)
+g_out <- country_graph %>%
+  ggraph(layout = "kk"
+  )+
+  geom_edge_fan(
+    aes(width = weight,
+        color = year),
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1,4)
+  ) +
+  geom_node_point(
+    aes(size = out_degree),
+    color = "grey20",
+    show.legend = FALSE
+  ) +
+  geom_node_text(
+    aes(label = ifelse(out_degree > quantile(out_degree, .5), country, "")), 
+    size = 3,
+    nudge_x = .5
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "grey20"),
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r =10,
+                         l = 10)
+  ) +
+  transition_states(year,
+                    transition_length = 3,
+                    state_length = 4
+  ) +
+  labs(
+    title = "Country Trade Network for Year {closest_state}",
+    subtitle = "Larger nodes have higher Out-Degree Centrality"
+  ) +
+  enter_fade() +
+  exit_fade()
+
+g_out
+```
+
+**II. In-degree centrality (Visualising top Imports)**
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Measure directed out-degree centrality and save as a column
+V(country_graph)$in_degree <- degree(country_graph, mode = "in")
+
+set.seed(1234)
+g_in <- country_graph %>%
+  ggraph(layout = "kk"
+  )+
+  geom_edge_fan(
+    aes(width = weight,
+        color = year),
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1,4)
+  ) +
+  geom_node_point(
+    aes(size = in_degree),
+    color = "grey20",
+    show.legend = FALSE
+  ) +
+  geom_node_text(
+    aes(label = ifelse(in_degree > quantile(in_degree, .5), country, "")), 
+    size = 3,
+    nudge_x = .5
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "grey20"),
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 3,
+                    state_length = 4
+  ) +
+  labs(
+    title = "Country Trade Network for Year {closest_state}",
+    subtitle = "Larger nodes have higher In-Degree Centrality. Countries with the most imports are identified:"
+  ) +
+  enter_fade() +
+  exit_fade()
+
+g_in
+```
+
+**III. Betweenness Centrality**
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Calculate betweenness centrality and save values to new column
+country_graph <- country_graph %>%
+  mutate(betweenness = centrality_betweenness())
+
+set.seed(1234)
+g_bc <- country_graph %>%
+  ggraph(
+    layout = "kk") +
+  geom_edge_fan(
+    aes(width = weight,
+        color = year),
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1,4)
+  ) +
+  geom_node_point(
+    aes(size = betweenness),
+    color = "grey20"
+  ) +
+  geom_node_text(
+    aes(label = ifelse(betweenness > quantile(betweenness, .5), country, "")), 
+    size = 3,
+    nudge_y = .3
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "grey20"),
+    legend.position = "bottom",
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(yearmonth,
+                    transition_length = 5,
+                    state_length = 5
+  ) +
+  labs(
+    title = "Country Trade Network for Year {closest_state}",
+    subtitle = "Utoporiana has the highest Betweenness Centrality,\npossibly acting as intermediary facilitating traderoutes "
+  ) +
+  enter_fade() +
+  exit_fade()
+
+g_bc
+```
+
+**IV. Eigenvector Centrality**
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Calculate eigenvector centrality and save values to new column
+ec <- eigen_centrality(country_graph)$vector
+V(country_graph)$eigencentrality <- ec
+
+set.seed(1234)
+g_ec <- country_graph %>%
+  ggraph(layout = "kk") +
+  geom_edge_fan(
+    aes(width = weight,
+        color = year),
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1,4)
+  ) +
+  geom_node_point(
+    aes(size = eigencentrality),
+    color = "grey30"
+  ) +
+  geom_node_text(
+    aes(label = ifelse(eigencentrality > quantile(eigencentrality, .5), country, "")), 
+    size = 3,
+    nudge_y = -.2
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "grey20"),
+    legend.position = "bottom",
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(yearmonth,
+                    transition_length = 5,
+                    state_length = 5
+  ) +
+  labs(
+    title = "Country Trade Network for Year {closest_state}",
+    subtitle = "Oceanus, Marebak and Coralmarica have higher Eigenvector Centrality, 
+    \nsuggesting high influence within the overall network"
+  ) +
+  enter_fade() +
+  exit_fade()
+
+g_ec
+```
+
+**V. PageRank Score**
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Calculate PageRank Score and save values to new column
+pr <- page_rank(country_graph)$vector
+V(country_graph)$pagerank <- pr
+
+set.seed(1234)
+g_pr <- country_graph %>%
+  ggraph(layout = "linear",
+         circular = TRUE) +
+  geom_edge_arc(
+    aes(width = weight,
+        color = year),
+    alpha = .5,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1,4)
+  ) +
+  geom_node_point(
+    aes(size = pagerank),
+    color = "grey30"
+  ) +
+  geom_node_text(
+    aes(label = country), 
+    size = 3,
+    nudge_y = -.05
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "grey20"),
+    legend.title = element_text(),
+    legend.position = "bottom",
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 5,
+                    state_length = 5
+  ) +
+  labs(
+    title = "Country Trade Network for {closest_state}",
+    subtitle = "Oceanus and Utoporiana have highest connectedness to other countries, possibly acting as trade hubs"
+  ) +
+  enter_fade() +
+  exit_fade()
+
+g_pr
+```
+
+### 2.1.2: Comparing Distribution of Centrality Measures
+
+Data Preparation:
+
+```{r}
+# Retrieve Centrality measures from nodes
+country_centrality <- data.frame(
+  OutDegree = V(country_graph)$out_degree,
+  InDegree = V(country_graph)$in_degree,
+  Betweenness_centrality = V(country_graph)$betweenness,
+  Eigenvector_centrality = V(country_graph)$eigencentrality,
+  PageRank_score = V(country_graph)$pagerank
+)
+
+# Create function to transform variables to same scale (min-max normalisation)
+transform_variable <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+
+# function to apply scaling across all variables in a dataframe
+transform_dataframe <- function(df) {
+  df %>%
+    mutate(across(where(is.numeric) & !matches("uuid"), transform_variable))
+}
+
+# Apply function and save to new dataframe
+country_centrality_scaled <- transform_dataframe(country_centrality)
+
+# Pivot longer to get centrality measures as factors
+country_centrality_long <- gather(country_centrality_scaled, key = "CentralityMeasure", value = "CentralityScore")
+
+```
+
+```{r}
+#| message: false
+# Density ridges to show distribution of data
+ggplot(
+    country_centrality_long, 
+    aes(x = CentralityScore, 
+        y = CentralityMeasure, 
+        fill = CentralityMeasure,
+        color = CentralityMeasure)
+  ) +
+  geom_density_ridges(
+    alpha = .6,
+    scale = 3
+  ) +
+  geom_rug() +
+  labs(
+    title = "Similar Distribution of Values Across Centrality Measures",
+    subtitle = "Right-skewed distribution with presence of outliers",
+    x = "Centrality Score",
+    y = "Centrality Measure"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.title = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+```  
+
+::: { .solvebox .solve data-latex="solve}
+**Insights from Network Graphs:**
+The differences in scores across centrality measures for each country suggests that there are various clusters of networks within the larger trade network, consisting of key Importers, Exporters, Intermediaries/Facilitators and Trade Hubs. **Marebak**, for instance, has a higher Out-Degree and Eigenvector Centrality value, but lower scores on other measures -- this suggests that the country is a net exporter, and may have strong ties to important trading countries. 
+:::
+
+
+## **2.2 Company Level Trade Networks: Top Traderoutes by Frequency**
+
+```{mermaid}
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#93c7c2',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#3d7670',
+      'lineColor': '#3d7670',
+      'secondaryColor': '#3d7670',
+      'tertiaryColor': '#fff'
+    }
+  }
+}%%
+
+flowchart LR
+    A{fa:fa-fish-fins \nOverall\nnetwork} ==> B((Country\nLevel))
+    A ==> C((Company\nLevel)) -.-|filter| B
+    C -.- D{fa:fa-calendar-days \nTime} -->|patterns?| E(trade frequency)
+    B -.- D -->|patterns?| F(trade weight)
+    D -->|patterns?| G(trade value\n$usd)
+
+```
+
+::: {.panel-tabset}
+
+## **Step 1: Create a dataframe containing only countries to use as a filter**
+
+```{r}
+#| message: false
+#| warning: false
+#| code-fold: false
+
+# Extract centrality metrics from country graph and save into new data frame
+country_filter <- data.frame(
+  country = V(country_graph)$country,
+  OutDegree = V(country_graph)$out_degree,
+  InDegree = V(country_graph)$in_degree,
+  Betweenness_centrality = V(country_graph)$betweenness,
+  Eigenvector_centrality = V(country_graph)$eigencentrality,
+  PageRank_score = V(country_graph)$pagerank
+)
+
+# Define function to filter each variable by percentile
+percentile_filter <- function(x) {
+  x >= quantile(x, .75)
+}
+
+# Filter the dataframe to retrieve list of countries 
+country_filter <- country_filter %>%
+  filter(percentile_filter(OutDegree) |
+           percentile_filter(InDegree) |
+           percentile_filter(Betweenness_centrality) |
+           percentile_filter(Eigenvector_centrality) |
+           percentile_filter(PageRank_score)
+          )
+```
+
+
+## **Step 2: Filter out only companies that have trading ties with country_filter**
+
+```{r}
+#| code-fold: false
+mc2_nodes_filtered <- mc2_nodes %>%
+  filter(shpcountry %in% country_filter$country | 
+           rcvcountry %in% country_filter$country)
+```
+
+:::
+
+## **Step 3: Aggregate the frequency of traderoutes in filtered coutries**
+
+```{r}
+#| code-fold: false
+#| message: false
+routes_by_count <- mc2_links_agg %>%
+  # Ensure that companies in the dataframe are from top trading countries 
+  filter(source %in% mc2_nodes_filtered$id |
+           target %in% mc2_nodes_filtered$id) %>%
+  group_by(source, target) %>%
+  filter(source != target) %>%
+  # Get count of trade route
+  summarise(count = sum(weight)) %>%
+  # Arrange in descending order to get top routes first
+  arrange(desc(count)) %>%
+ungroup()
+
+datatable(head(routes_by_count,10))
+
+```
+\n
+::: {.focusbox .focus data-latex="focus"}
+**Insights from Table:**\
+\n There seems to be many common source and target companies appearing across various traderoutes. This suggests that IUU fishing activity could be detected through visualising this information as a network and using centrality measures to determine key players. Since companies caught fishing illegally shut down but often start up again under a different company, identifying *fishy* companies by comparing their trading partners over the years could help determine if they are engaging in illegal acts.
+:::
+
+### 2.2.1: What are *abnormally* large tradecounts?
+
+```{r}
+source_count <- routes_by_count %>%
+  group_by(source) %>%
+  summarise(sourcecount = n()) %>%
+  arrange(desc(sourcecount)) %>%
+  ungroup()
+ 
+target_count <- routes_by_count %>%
+  group_by(target) %>%
+  summarise(targetcount = n()) %>%
+  arrange(desc(targetcount)) %>%
   ungroup()
 ```
 
+```{r}
+#| warning: false
+medsource <- median(source_count$sourcecount)
+qsource <- quantile(source_count$sourcecount, probs = .95)
+
+distinctsource <- n_distinct(routes_by_count$source)
+distincttarget <- n_distinct(routes_by_count$target)
+
+source <- ggplot(source_count, 
+       aes(1, 
+           y = sourcecount)
+  ) +
+  geom_rain(
+    alpha = .7,
+    boxplot.args = list(
+              color = "grey20",
+              fill = "salmon",
+              outlier.shape = NA),
+    violin.args = list(alpha = .6,
+                       fill = "salmon")
+  ) +
+  scale_y_continuous(
+    limits = c(0, 1500),
+    breaks = scales::pretty_breaks(n = 5)
+  ) +
+# Add annotation for median and 95th percentile value
+  annotate(
+    geom = "text",
+    x = 1.3,
+    y = 500,
+    label = paste0("Median count: ", medsource, "  |  ",
+                   "95th Percentile count: ", qsource, "  |  ",
+                   "No. distinct:", distinctsource)
+  ) +
+  labs(
+    title = "I. Distribution of traderoute counts per Source Company"
+  ) + 
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) + 
+  coord_flip() 
+
+medtarget <- median(target_count$targetcount)
+qtarget <- quantile(target_count$targetcount, probs = .95)
+
+target <- ggplot(target_count, 
+       aes(1, 
+           y = targetcount)
+  ) +
+  geom_rain(
+    alpha = .7,
+    boxplot.args = list(
+              color = "grey20",
+              fill = "#1696d2",
+              outlier.shape = NA),
+    violin.args = list(alpha = .6,
+                       fill = "#1696d2")
+  ) +
+  scale_y_continuous(
+    limits = c(0, 1500),
+    breaks = scales::pretty_breaks(n = 5)
+  ) +
+  annotate(
+    geom = "text",
+    x = 1.3,
+    y = 500,
+    label = paste0("Median count: ", medtarget, "  |  ",
+                   "95th Percentile count: ", qtarget, "  |  ",
+                   "No. distinct:", distincttarget)
+  ) +
+   annotate(
+    geom = "text",
+    x = 0.9,
+    y = 1200,
+    label = "Presence of many Outliers with high traderoute counts"
+  ) +
+  labs(
+    title = "II. Distribution of traderoute counts per Target Company"
+  ) + 
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) + 
+  coord_flip() 
+
+countpatch <- (source / target) +
+              plot_annotation(title = "Highly Right-skewed Distributions of Traderoute Counts",
+                              theme = theme(plot.title = element_text(size = 16)))
+countpatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+::: {.focusbox .focus data-latex="focus"}
+**Insights from Distribution of traderoute counts:**
+
+The density raincloud plots of traderoute counts reveal the presence of outliers with values far above the median and 95th percentile value. This suggets that abnormal fishing activity could be investigated by filtering out traderoutes with very high frequency. **Investigating by using countries as filters, as well as companies beyond the top 95th percentile of traderoutes could thus give some insight into IUU fishing networks.**
+:::
+
+## 2.3: **Who are the Top players in the Trade Network by Tradecount?**
+
+::: panel-tabset
+
+## **Step 1: Filter links by Country and Yearly Frequency**
+
+```{r}
+#| message: false
+#| code-fold: false
+
+links_sorted <- mc2_links_agg %>%
+  # Only keep companies in suspicious countries
+   filter(source %in% mc2_nodes_filtered$id |
+           target %in% mc2_nodes_filtered$id) %>%
+  
+  # Group and calculate total number of tradecounts per year
+  group_by(source, target, year) %>%
+  summarise(weight = sum(weight)) %>%
+  
+  # Arrange data in order of year and descending order of tradecounts to get top
+  arrange(year, desc(weight)) %>%
+  ungroup()
+  
+# Filter out top 30 per year
+top_30 <- links_sorted %>%
+  group_by(year) %>%
+  # Get top 30 companies by weight
+  top_n(30, weight) %>%
+  ungroup()
+```
+
+## **Step 2: Ensure that id in nodes dataframe are = source and target in links dataframe**
+
+```{r}
+#| code-fold: false
+# Create nodes dataframe for top 10 exporters from oceanus
+ttdistinct_source <- top_30 %>%
+  distinct(source)
+
+ttdistinct_target <- top_30 %>%
+  distinct(target)
+
+# Select only overlapping nodes and distinct companies from links
+ttnodes_source <- inner_join(
+    ttdistinct_source, mc2_nodes,
+    by = c("source" = "id")) %>%
+  mutate(id = source)
+
+ttnodes_target <- inner_join(
+    ttdistinct_target, mc2_nodes,
+    by = c("target" = "id")) %>%
+  mutate(id = target)
+
+# Create new nodes data by combining filtered dataframes
+top_30_nodes <- bind_rows(ttnodes_source, ttnodes_target) %>%
+  left_join(source_count, by = c("id" = "source")) %>%
+  select(id, uuid, shpcountry, rcvcountry)
+```
+
+## **Step 3: Create graph object**
+
+```{r}
+#| code-fold: false
+top_30_graph <- tbl_graph(nodes = top_30_nodes,
+                          edges = top_30, 
+                          directed = TRUE)
+top_30_graph
+```
+:::
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Measure directed out-degree centrality and save as a column
+V(top_30_graph)$out_degree <- degree(top_30_graph, mode = "out")
+
+set.seed(1234)
+ttg_out <- ggraph(top_30_graph, 
+    layout = "kk"
+  ) +
+  geom_edge_link(
+    aes(width = weight,
+        color = year), 
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1, 4)
+  ) +
+  geom_node_point(
+    color = "grey30",
+    aes(size = out_degree)
+  ) +
+  geom_node_text(
+    aes(label = ifelse(out_degree > quantile(out_degree, .75), uuid, "")), 
+    size = 3,
+    nudge_x = .5,
+    nudge_y = -.2
+  ) +
+  guides(
+    color = "none"
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              colour = "#3A3B60"),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(),
+    legend.box = "vertical",
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 4,
+                    state_length = 5
+  ) +
+  labs(
+    title = 'Year: {closest_state}',
+    subtitle = "Top Exporters by Degree Centrality >> \nLarger nodes represent higher out-degree Centrality, thicker links show higher frequency of trade"
+  ) +
+  enter_grow() +
+  exit_fade()
+
+ttg_out
+```
+
+In the plot above, the relative sizes of the nodes are based on **Out-degree centrality**, where larger nodes have a higher number of out-going links. This enables us to visually determine companies with higher number of exporting links over time. Subsequent plots using **In-degree centrality** and **betweenness centrality** instead are shown below:
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+#| warning: false
+
+# Measure directed out-degree centrality and save as a column
+V(top_30_graph)$in_degree <- degree(top_30_graph, mode = "in")
+
+set.seed(1234)
+ttg_in <- ggraph(top_30_graph, 
+    layout = "linear"
+  ) +
+  geom_edge_arc(
+    aes(width = weight,
+        color = year), 
+    alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1, 4)
+  ) +
+  geom_node_point(
+    color = "grey30",
+    aes(size = in_degree)
+  ) +
+  geom_node_text(
+    aes(label = ifelse(in_degree > quantile(in_degree, .75), uuid, "")), 
+    size = 3,
+    repel = TRUE
+  ) +
+  guides(
+    color = "none"
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              colour = "#3A3B60"),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(),
+    legend.box = "vertical",
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 3,
+                    state_length = 2
+  ) +
+  labs(
+    title = 'Year: {closest_state}',
+    subtitle = "Expanding trade network through the years"
+  ) +
+  enter_fade() +
+  exit_fade()
+
+ttg_in
+```
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+  
+# Calculate betweenness centrality and save values to new column
+top_30_graph <- top_30_graph %>%
+  mutate(betweenness = centrality_betweenness())
+
+set.seed(1234)
+ttg2 <- 
+  ggraph(top_30_graph,
+         layout = "kk"
+  ) +
+  geom_edge_link(
+    aes(width = weight,
+        color = year), 
+        alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1, 4)
+  ) +
+  geom_node_point(
+    color = "grey30",
+    aes(size = betweenness)
+  ) +
+  geom_node_text(
+  # Only show labels of top 75th percentile by betweenness centrality
+    aes(label = ifelse(betweenness > quantile(betweenness, .75), uuid, "")),
+    nudge_x = .7,
+    size = 3
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "#3A3B60"),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 3,
+                    state_length = 2
+  ) +
+  labs(
+    title = "Year: {closest_state}",
+    subtitle = "Top Exporters by Betweenness Centrality >> \nLarger nodes represent higher out-degree Centrality, thicker links show higher frequency of trade"
+  ) +
+  enter_grow() +
+  exit_fade()
+
+ttg2
+```
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+
+# Calculate eigenvector centrality and save values to new column
+ec <- eigen_centrality(top_30_graph)$vector
+V(top_30_graph)$eigencentrality <- ec
+
+set.seed(1234)
+ttg3 <- 
+  ggraph(top_30_graph,
+         layout = "kk"
+  ) +
+  geom_edge_link(
+    aes(width = weight,
+        color = year), 
+        alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1, 4)
+  ) +
+  geom_node_point(
+    color = "grey30",
+    aes(size = eigencentrality)
+  ) +
+  geom_node_text(
+  # Only show labels of top 75th percentile by betweenness centrality
+    aes(label = ifelse(eigencentrality > quantile(eigencentrality, .75), uuid, "")),
+    nudge_x = .7,
+    size = 3
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "#3A3B60"),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 3,
+                    state_length = 2
+  ) +
+  labs(
+    title = "Year: {closest_state}",
+    subtitle = "Company Network with Eigenvector Centrality >> \nLarger nodes represent higher Eigenvector Centrality, thicker links show higher frequency of trade"
+  ) +
+  enter_grow() +
+  exit_fade()
+
+ttg3
+``` 
+
+```{r}
+#| fig-width: 5
+#| fig-height: 5
+
+# Calculate pageRank Score and save values to new column
+pr <- page_rank(top_30_graph)$vector
+V(top_30_graph)$pagerank <- pr
+
+set.seed(1234)
+ttg4 <- 
+  ggraph(top_30_graph,
+         layout = "kk"
+  ) +
+  geom_edge_link(
+    aes(width = weight,
+        color = year), 
+        alpha = .6,
+    arrow = arrow(length = unit(2, 'mm')),
+    show.legend = FALSE
+  ) +
+  scale_edge_width(
+    range = c(0.1, 4)
+  ) +
+  geom_node_point(
+    color = "grey30",
+    aes(size = pagerank)
+  ) +
+  geom_node_text(
+  # Only show labels of top 75th percentile by betweenness centrality
+    aes(label = ifelse(pagerank > quantile(pagerank, .75), uuid, "")),
+    nudge_x = .7,
+    size = 3
+  ) +
+  theme(
+    plot.title = element_text(size = 20,
+                              color = "#3A3B60"),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_text(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  transition_states(year,
+                    transition_length = 3,
+                    state_length = 2
+  ) +
+  labs(
+    title = "Year: {closest_state}",
+    subtitle = "Company Network with PageRank Score >> \nLarger nodes represent higher Scores, thicker links show higher frequency of trade"
+  ) +
+  enter_grow() +
+  exit_fade()
+
+ttg4
+``` 
+
+## 2.3.1 : Visualising distribution of Centrality Measures
+
+Data Preparation:
+
+::: panel-tabset
+
+## Create dataframe with centrality measures
+
+```{r}
+#| code-fold: false
+# Retrieve Centrality measures from nodes
+top30_centrality <- data.frame(
+  country = V(top_30_graph)$id,
+  uuid = V(top_30_graph)$uuid,
+  OutDegree = V(top_30_graph)$out_degree,
+  InDegree = V(top_30_graph)$in_degree,
+  Betweenness_centrality = V(top_30_graph)$betweenness,
+  Eigenvector_centrality = V(top_30_graph)$eigencentrality,
+  PageRank_score = V(top_30_graph)$pagerank
+)
+
+```
+
+## Check that total degree of nodes = in + out degree
+
+```{r}
+#| code-fold: false
+all(degree(top_30_graph) == top30_centrality$OutDegree + top30_centrality$InDegree)
+```
+:::
+
+```{r}
+#| warning: false
+ggplot(top30_centrality,
+       aes(x = InDegree,
+           y = OutDegree,
+           label = uuid)
+  ) +  
+  geom_abline(intercept = 0, 
+              slope = 1,
+              color = "grey40",
+              alpha = .6
+  ) +
+  ylim(0, 25) +
+  xlim(0, 25) +
+  geom_point(
+    aes(color = ifelse(OutDegree == 0 & InDegree == 0, "grey40",
+                       ifelse(OutDegree > 0 & InDegree <= 0,"#1696d2", "#fdbf11")
+                       )
+        ),
+    show.legend = FALSE
+  ) +
+  geom_label_repel(aes(label = uuid),
+                  box.padding = 0.35
+  ) +
+  annotate(
+    geom = "text",
+    x = 8,
+    y = 20,
+    label = "Net Exporters",
+    size = 8,
+    color = "grey70"
+  ) +
+  annotate(
+    geom = "text",
+    x = 20,
+    y = 8,
+    label = "Net Importers",
+    size = 8,
+    color = "grey70"
+  ) +
+  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+
+```
+
+```{r}
+# Apply function to normalize values in dataframe
+top30_centrality_scaled <- top30_centrality %>%
+    select(OutDegree, InDegree, Betweenness_centrality, Eigenvector_centrality, PageRank_score)
+    
+top30_centrality_scaled <- transform_dataframe(top30_centrality_scaled)
+
+# Pivot longer to get centrality measures as factors
+top30_centrality_long <- gather(top30_centrality_scaled, key = "CentralityMeasure", value = "CentralityScore")
+
+```
+
+```{r}
+# Density ridges to show distribution of data
+ggplot(
+    top30_centrality_long, 
+    aes(x = CentralityScore, 
+        y = CentralityMeasure, 
+        fill = CentralityMeasure,
+        color = CentralityMeasure)
+  ) +
+  geom_density_ridges(
+    alpha = .6,
+    scale = 2
+  ) +
+  geom_rug() +
+  annotate(
+    geom = "text",
+    x = .7,
+    y = 4.5,
+    label = "Highly right-skewed distribution with smaller peaks"
+  ) +
+  labs(
+    title = "Similar Distribution of Values Across Centrality Measures",
+    x = "Centrality Score",
+    y = "Centrality Measure"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.title = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+```  
+
+
+::: {.focusbox .focus data-latex="focus"}
+**Insights from Network Graphs and Centrality Measure Distributions:**
+
+  - From the network graphs, we can see that key nodes are unchanged for the entire time period (2028-2034), but heavier traderoutes (identified by thicker links) seem to vary from key nodes through the years. This could be indicative of IUU activity, with *fishy* trading partners. The distribution graphs show intensely skewed distributions of centrality measures. This enables us to classify companies based on their relative centrality in the network.  
+  - Comparing the distribution of centrality measures, there are significantly more nodes with higher degree but lower betweenness centrality. This suggests that there are clusters of nodes in the network, and that these nodes are well-connected within their clusters but not to the rest of the nodes in other clusters. This could be indicative of various smaller IUU networks operating within the overall network.
+  
+:::
+
+
+## 2.5: What are the most heavily traded products?
+
+Using hscode (product code), we can filter the most frequently traded products by number of transactions, total export weight, as well as monetary value.
+
+```{r}
+#| message: false
+hscode_links <- mc2_links %>%
+  filter(source != target) %>%
+  group_by(hscode, year) %>%
+  summarise(
+    weight = n(),
+    weightkg = sum(weightkg),
+    value_usd = sum(valueofgoodsusd)) %>%
+  ungroup()
+
+hscode_weight <- top_n(hscode_links, 10, weight) 
+
+kbl(hscode_weight,
+    caption = "Top Traded Products by Frequency") %>%
+ kable_styling(
+   bootstrap_options = "striped", 
+   full_width = T,
+   position = "float_left")
+```
+
+Interestingly, the most frequently traded products for the data timerange are hscode **306170** across consecutive years.
+
+```{r}
+hscode_weightkg <- top_n(hscode_links, 10, weightkg) 
+
+kbl(hscode_weightkg,
+    caption = "Top Traded Products by Export Weight") %>%
+ kable_styling(
+   bootstrap_options = "striped", 
+   full_width = T,
+   position = "float_right")
+```
+
+```{r}
+hscode_value <- top_n(hscode_links, 10, value_usd) 
+
+kbl(hscode_value,
+    caption = "Top Traded Products by Monetary Value") %>%
+ kable_styling(
+   bootstrap_options = "striped", 
+   full_width = T,
+   position = "float_left")
+```
+
+::: {.panel-tabset}
+
+## **Step 1: Filter links by hscode and year**
+
+
+## 3: Categorizing {{< fa fish >}} *fishy* companies
+
+The network analysis metrics in section 2 are used to derive attributes of each *fishy* company:
+
+::: panel-tabset
+
+## **Net Exporters or Importers?**
+
+```{r}
+top30_centrality$netDegree <- ifelse(top30_centrality$OutDegree == 0 & top30_centrality$InDegree == 0, "neutral",
+                       ifelse(top30_centrality$OutDegree > 0 & top30_centrality$InDegree <= 0,"netExporter", "netImporter"))
+```
+
+## {{< fa fish >}}**Fishyness based on Centrality?**
+
+```{r}
+top30_centrality <- top30_centrality %>%
+  mutate(Betweenness_centrality = transform_variable(Betweenness_centrality),
+         Eigenvector_centrality = transform_variable(Eigenvector_centrality),
+         PageRank_score = transform_variable(PageRank_score),
+         centrality_total = Betweenness_centrality + Eigenvector_centrality + PageRank_score)
+
+```
+
+```{r}
+source_top <- source_count %>%
+  filter(sourcecount > 100)
+
+target_top <- target_count %>%
+  filter(targetcount > 100)
+
+mc2_links_top <- mc2_links_agg %>%
+  semi_join(target_top, by = join_by(target)) %>%
+  semi_join(source_top, by = join_by(source))
+
+```
+
+## 2.3: Yearly transactions for top traderoutes by frequency of trades
+
+::: panel-tabset
+## **Step 1: Aggregating values by Year**
+
+```{r}
+links_top_year <- mc2_links_top %>%
+  group_by(
+    source, target, year) %>%
+  summarise(
+  # Number of active months in the year
+    months_active = n(),
+  # Total number of transactions per year
+    weight = sum(weight),
+  # Avg weight of trade per month
+    avg_weightkg = round((sum(weightkg)/months_active),0)) %>%
+  ungroup()
+  
+datatable(links_top_year)
+```
+
+## **Step 2: Inner join nodes and edges by overlapping companies**
+
+```{r}
+# filter distinct source and target from mc2_edges
+distinct_source <- links_top_year %>%
+    distinct(source)
+
+distinct_target <- links_top_year %>%
+    distinct(target)
+
+# Select only overlapping nodes and distinct companies from links
+nodes_source <- inner_join(
+    distinct_source, mc2_nodes,
+    by = c("source" = "id")) %>%
+  mutate(id = source)
+
+nodes_target <- inner_join(
+    distinct_target, mc2_nodes,
+    by = c("target" = "id")) %>%
+  mutate(id = target)
+
+# Create new nodes data by combining filtered dataframes
+nodes_new <- bind_rows(nodes_source, nodes_target) %>%
+  select(id, shpcountry, rcvcountry)
+```
+
+## **Step 3: Rename variables**
+
+```{r}
+# Combine edges and nodes to a graph dataframe
+links_top_vis <- links_top_year %>% 
+  rename(
+    "from" = "source", 
+    "to" = "target") %>%
+  select(from, to, year, months_active, weight, avg_weightkg)
+```
+
+```{r}
+nodes_vis <- nodes_new %>%
+  rename("group" = "rcvcountry")
+```
+
+```{r}
+visNetwork(nodes_vis, links_top_vis,
+          height = "500px", width = "100%") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+  visGroups(groupname = "Oceanus", shape = "icon", 
+            icon = list(code = "f043", color = "deepskyblue4")) %>%
+  visGroups(groupname = "Unknown", shape = "icon", 
+            icon = list(code = "f059", color = "darkslategray4")) %>%
+  addFontAwesome() %>%
+  visLegend() %>%
+  visEdges(arrows = "to") %>%
+  visOptions(highlightNearest = list(enabled = T, degree = 2, hover = T),
+             nodesIdSelection = TRUE,
+             selectedBy = "shpcountry",
+             collapse = TRUE)
+```
+:::

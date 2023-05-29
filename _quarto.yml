@@ -18,7 +18,6 @@ website:
             href: index.qmd
           - text: "{{< fa robot >}} Hello World"
             href: about.html
-            
       - text: "{{< fa hand-sparkles >}} Hands-on Ex"
         menu:
           - text: "Hands-on Ex 1"
@@ -32,8 +31,7 @@ website:
           - text: "Hands-on Ex 5"
             href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html
           - text: "Hands-on Ex 6"
-            href: Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html
-            
+            href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex06.html
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
           - text: "In-class Ex 3"
@@ -42,7 +40,6 @@ website:
             href: In-Class_Ex/In-Class_Ex04/In-Class_Ex04.html
           - text: "In-class Ex 5"
             href: In-class_Ex/In-class_Ex05/In-class_Ex05.html
-            
       - text: "{{< fa magnifying-glass-chart >}} Take-home Ex"
         menu:
           - text: "Take-home Ex 1"
