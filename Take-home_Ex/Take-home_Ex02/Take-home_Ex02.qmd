@@ -516,6 +516,7 @@ From the summary statistics outlined in Section 1, there was an observed abnorma
 
 ```{r}
 #| message: false
+#| code-fold: false
 country_links_2030 <- country_links %>%
   filter(year == "2030") %>%
   group_by(shpcountry, rcvcountry, yearmonth) %>%
@@ -556,8 +557,8 @@ country_graph_2030
 ## **Step 4: Visualise country trade network for 2030:**
 
 ```{r}
-#| fig-width: 6
-#| fig-height: 6
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Measure directed out-degree centrality and save as a column
@@ -594,7 +595,7 @@ g2030 <- country_graph_2030 %>%
     repel = TRUE
   ) +
   theme(
-    plot.title = element_text(size = 20,
+    plot.title = element_text(size = 16,
                               color = "grey20"),
     legend.title = element_text(),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
@@ -667,8 +668,8 @@ country_graph
 **I. Out-degree centrality (Visualising top Exports)**
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 3
+#| fig-height: 3
 #| warning: false
 
 # Measure directed out-degree centrality and save as a column
@@ -703,8 +704,8 @@ g_out <- country_graph %>%
                               color = "grey20"),
     legend.title = element_text(),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
-    plot.margin = margin(r =10,
-                         l = 10)
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 3,
@@ -723,8 +724,8 @@ g_out
 **II. In-degree centrality (Visualising top Imports)**
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Measure directed out-degree centrality and save as a column
@@ -755,10 +756,12 @@ g_in <- country_graph %>%
     nudge_x = .5
   ) +
   theme(
-    plot.title = element_text(size = 20,
+    plot.title = element_text(size = 16,
                               color = "grey20"),
     legend.title = element_text(),
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 3,
@@ -777,8 +780,8 @@ g_in
 **III. Betweenness Centrality**
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Calculate betweenness centrality and save values to new column
@@ -809,11 +812,13 @@ g_bc <- country_graph %>%
     nudge_y = .3
   ) +
   theme(
-    plot.title = element_text(size = 20,
+    plot.title = element_text(size = 16,
                               color = "grey20"),
     legend.position = "bottom",
     legend.title = element_text(),
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(yearmonth,
                     transition_length = 5,
@@ -832,8 +837,8 @@ g_bc
 **IV. Eigenvector Centrality**
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Calculate eigenvector centrality and save values to new column
@@ -867,7 +872,9 @@ g_ec <- country_graph %>%
                               color = "grey20"),
     legend.position = "bottom",
     legend.title = element_text(),
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(yearmonth,
                     transition_length = 5,
@@ -887,8 +894,8 @@ g_ec
 **V. PageRank Score**
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Calculate PageRank Score and save values to new column
@@ -919,11 +926,13 @@ g_pr <- country_graph %>%
     nudge_y = -.05
   ) +
   theme(
-    plot.title = element_text(size = 20,
+    plot.title = element_text(size = 16,
                               color = "grey20"),
     legend.title = element_text(),
     legend.position = "bottom",
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 5,
@@ -1010,6 +1019,7 @@ The differences in scores across centrality measures for each country suggests t
 ## **2.2 Company Level Trade Networks: Top Traderoutes by Frequency**
 
 ```{mermaid}
+%%| fig-width: 7
 %%{
   init: {
     'theme': 'base',
@@ -1244,6 +1254,8 @@ links_sorted <- mc2_links_agg %>%
   group_by(source, target, year) %>%
   summarise(weight = sum(weight)) %>%
   
+  filter(source != target) %>%
+  
   # Arrange data in order of year and descending order of tradecounts to get top
   arrange(year, desc(weight)) %>%
   ungroup()
@@ -1280,8 +1292,8 @@ ttnodes_target <- inner_join(
 
 # Create new nodes data by combining filtered dataframes
 top_30_nodes <- bind_rows(ttnodes_source, ttnodes_target) %>%
-  left_join(source_count, by = c("id" = "source")) %>%
-  select(id, uuid, shpcountry, rcvcountry)
+  select(id, uuid, shpcountry, rcvcountry) %>%
+  distinct()
 ```
 
 ## **Step 3: Create graph object**
@@ -1296,8 +1308,8 @@ top_30_graph
 :::
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Measure directed out-degree centrality and save as a column
@@ -1323,7 +1335,7 @@ ttg_out <- ggraph(top_30_graph,
   ) +
   geom_node_text(
     aes(label = ifelse(out_degree > quantile(out_degree, .75), uuid, "")), 
-    size = 3,
+    size = 2,
     nudge_x = .5,
     nudge_y = -.2
   ) +
@@ -1337,7 +1349,9 @@ ttg_out <- ggraph(top_30_graph,
     legend.direction = "horizontal",
     legend.title = element_text(),
     legend.box = "vertical",
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 4,
@@ -1356,8 +1370,8 @@ ttg_out
 In the plot above, the relative sizes of the nodes are based on **Out-degree centrality**, where larger nodes have a higher number of out-going links. This enables us to visually determine companies with higher number of exporting links over time. Subsequent plots using **In-degree centrality** and **betweenness centrality** instead are shown below:
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 #| warning: false
 
 # Measure directed out-degree centrality and save as a column
@@ -1365,9 +1379,9 @@ V(top_30_graph)$in_degree <- degree(top_30_graph, mode = "in")
 
 set.seed(1234)
 ttg_in <- ggraph(top_30_graph, 
-    layout = "linear"
+    layout = "kk"
   ) +
-  geom_edge_arc(
+  geom_edge_fan(
     aes(width = weight,
         color = year), 
     alpha = .6,
@@ -1383,8 +1397,8 @@ ttg_in <- ggraph(top_30_graph,
   ) +
   geom_node_text(
     aes(label = ifelse(in_degree > quantile(in_degree, .75), uuid, "")), 
-    size = 3,
-    repel = TRUE
+    size = 2,
+    nudge_y = -.3
   ) +
   guides(
     color = "none"
@@ -1396,7 +1410,9 @@ ttg_in <- ggraph(top_30_graph,
     legend.direction = "horizontal",
     legend.title = element_text(),
     legend.box = "vertical",
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 3,
@@ -1406,15 +1422,15 @@ ttg_in <- ggraph(top_30_graph,
     title = 'Year: {closest_state}',
     subtitle = "Expanding trade network through the years"
   ) +
-  enter_fade() +
+  enter_grow() +
   exit_fade()
 
 ttg_in
 ```
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
   
 # Calculate betweenness centrality and save values to new column
 top_30_graph <- top_30_graph %>%
@@ -1443,7 +1459,7 @@ ttg2 <-
   # Only show labels of top 75th percentile by betweenness centrality
     aes(label = ifelse(betweenness > quantile(betweenness, .75), uuid, "")),
     nudge_x = .7,
-    size = 3
+    size = 2
   ) +
   theme(
     plot.title = element_text(size = 20,
@@ -1451,7 +1467,9 @@ ttg2 <-
     legend.position = "bottom",
     legend.direction = "horizontal",
     legend.title = element_text(),
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 3,
@@ -1468,8 +1486,8 @@ ttg2
 ```
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 
 # Calculate eigenvector centrality and save values to new column
 ec <- eigen_centrality(top_30_graph)$vector
@@ -1498,7 +1516,7 @@ ttg3 <-
   # Only show labels of top 75th percentile by betweenness centrality
     aes(label = ifelse(eigencentrality > quantile(eigencentrality, .75), uuid, "")),
     nudge_x = .7,
-    size = 3
+    size = 2
   ) +
   theme(
     plot.title = element_text(size = 20,
@@ -1506,7 +1524,9 @@ ttg3 <-
     legend.position = "bottom",
     legend.direction = "horizontal",
     legend.title = element_text(),
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 3,
@@ -1523,8 +1543,8 @@ ttg3
 ``` 
 
 ```{r}
-#| fig-width: 5
-#| fig-height: 5
+#| fig-width: 4
+#| fig-height: 4
 
 # Calculate pageRank Score and save values to new column
 pr <- page_rank(top_30_graph)$vector
@@ -1552,8 +1572,8 @@ ttg4 <-
   geom_node_text(
   # Only show labels of top 75th percentile by betweenness centrality
     aes(label = ifelse(pagerank > quantile(pagerank, .75), uuid, "")),
-    nudge_x = .7,
-    size = 3
+    nudge_x = -.5,
+    size = 2
   ) +
   theme(
     plot.title = element_text(size = 20,
@@ -1561,7 +1581,9 @@ ttg4 <-
     legend.position = "bottom",
     legend.direction = "horizontal",
     legend.title = element_text(),
-    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"),
+    plot.margin = margin(r = 15,
+                         l = 15)
   ) +
   transition_states(year,
                     transition_length = 3,
@@ -1575,7 +1597,7 @@ ttg4 <-
   exit_fade()
 
 ttg4
-``` 
+```
 
 ## 2.3.1 : Visualising distribution of Centrality Measures
 
@@ -1589,7 +1611,7 @@ Data Preparation:
 #| code-fold: false
 # Retrieve Centrality measures from nodes
 top30_centrality <- data.frame(
-  country = V(top_30_graph)$id,
+  company = V(top_30_graph)$id,
   uuid = V(top_30_graph)$uuid,
   OutDegree = V(top_30_graph)$out_degree,
   InDegree = V(top_30_graph)$in_degree,
@@ -1659,33 +1681,44 @@ top30_centrality_scaled <- top30_centrality %>%
     
 top30_centrality_scaled <- transform_dataframe(top30_centrality_scaled)
 
-# Pivot longer to get centrality measures as factors
-top30_centrality_long <- gather(top30_centrality_scaled, key = "CentralityMeasure", value = "CentralityScore")
 
 ```
 
 ```{r}
+#| message: false
+#| fig-height: 7
 # Density ridges to show distribution of data
-ggplot(
-    top30_centrality_long, 
-    aes(x = CentralityScore, 
-        y = CentralityMeasure, 
+inout_centrality <- top30_centrality_scaled %>%
+  select(InDegree, OutDegree)
+
+inout_centrality_long <- gather(inout_centrality, key = "CentralityMeasure", value = "CentralityScore")
+
+ridge1 <- 
+
+  ggplot(inout_centrality_long,
+    aes(x = CentralityMeasure,
+        y = CentralityScore, 
         fill = CentralityMeasure,
         color = CentralityMeasure)
   ) +
-  geom_density_ridges(
-    alpha = .6,
-    scale = 2
+  geom_rain(
+    alpha = .6
   ) +
   geom_rug() +
   annotate(
     geom = "text",
-    x = .7,
-    y = 4.5,
-    label = "Highly right-skewed distribution with smaller peaks"
+    x = 1.5,
+    y = .5,
+    label = "Presence of smaller peaks in distibution suggestive of outliers"
+  ) +
+  scale_fill_manual(
+    values = c("#98cf90","salmon")
+  ) +
+  scale_color_manual(
+    values = c("#98cf90","salmon")
   ) +
   labs(
-    title = "Similar Distribution of Values Across Centrality Measures",
+    title = "I. Right-skewed Distributions of In and Out Degree Centrality",
     x = "Centrality Score",
     y = "Centrality Measure"
   ) +
@@ -1694,8 +1727,41 @@ ggplot(
     axis.title = element_blank(),
     panel.grid.major = element_blank(),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
-  )
+  ) +
+  coord_flip()
+
+bep_centrality <- top30_centrality_scaled %>%
+  select(Betweenness_centrality, Eigenvector_centrality, PageRank_score)
+
+bep_centrality_long <- gather(bep_centrality, key = "CentralityMeasure", value = "CentralityScore")
+
+ridge2 <- ggplot(
+  bep_centrality_long,
+    aes(x= CentralityMeasure,
+        y = CentralityScore,
+        fill = CentralityMeasure,
+        color = CentralityMeasure)
+  ) +
+  geom_rain(
+    alpha = .6
+  ) +
+  labs(
+    title = "II. Highly skewed Distributions Indicate Potential Key Network Players",
+    x = "Centrality Score",
+    y = "Centrality Measure"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.title = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  coord_flip()
+
+ridgepatch <- ridge1 / ridge2
+ridgepatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```  
+\n
 
 
 ::: {.focusbox .focus data-latex="focus"}
@@ -1756,16 +1822,20 @@ kbl(hscode_value,
    position = "float_left")
 ```
 
-::: {.panel-tabset}
-
-## **Step 1: Filter links by hscode and year**
-
 
 ## 3: Categorizing {{< fa fish >}} *fishy* companies
 
-The network analysis metrics in section 2 are used to derive attributes of each *fishy* company:
+The network analysis metrics in section 2 are used to derive attributes of each *fishy* company, classifying them according to the following logic:
 
-::: panel-tabset
+| Centrality Measure /<br>Node Category | **In Degree** | **Out Degree** | **Betweenness<br>Centrality** | **Eigenvector<br>Centrality** | **PageRank<br>Score** |
+|---------------------------------------|:-------------:|----------------|:-----------------------------:|:-----------------------------:|:---------------------:|
+| **Central Broker**                    | -             | -              | High                          | High                          | High                  |
+| **Key Importer**                      | High          | Low            | -                             | -                             | High                  |
+| **Key Exporter**                      | Low           | High           | High                          |                               |                       |
+| **Cluster Broker**                    | High          |                | Low                           | Low                           | -                     |
+| **NetImporter**                       | High          | Low            | Low                           | Low                           | Low                   |
+| **NetExporter**                       | Low           | High         | Low                           | Low                           | Low                   |
+
 
 ## **Net Exporters or Importers?**
 
@@ -1774,107 +1844,58 @@ top30_centrality$netDegree <- ifelse(top30_centrality$OutDegree == 0 & top30_cen
                        ifelse(top30_centrality$OutDegree > 0 & top30_centrality$InDegree <= 0,"netExporter", "netImporter"))
 ```
 
-## {{< fa fish >}}**Fishyness based on Centrality?**
+## {{< fa fish >}} **Fishy Network**
+
+Labels are assigned to the companies Centrality Measures: 
 
 ```{r}
+#| code-fold: false
 top30_centrality <- top30_centrality %>%
-  mutate(Betweenness_centrality = transform_variable(Betweenness_centrality),
-         Eigenvector_centrality = transform_variable(Eigenvector_centrality),
-         PageRank_score = transform_variable(PageRank_score),
-         centrality_total = Betweenness_centrality + Eigenvector_centrality + PageRank_score)
+  mutate(
+    group = ifelse(Betweenness_centrality >0 & 
+                  Eigenvector_centrality > quantile(Eigenvector_centrality, .75) &
+                  PageRank_score > quantile(PageRank_score, .75), "centralBroker",
+            ifelse(netDegree == "netImporter" & 
+                  PageRank_score > quantile(PageRank_score, .75), "keyImporter",
+            ifelse(netDegree == "netExmporter" &
+                   Betweenness_centrality > quantile(Betweenness_centrality, .75), "keyExporter", 
+            ifelse((InDegree > quantile(InDegree, .75) | 
+                     OutDegree > quantile(OutDegree, .75)) &
+                  (Betweenness_centrality < quantile(Betweenness_centrality, .5)|
+                  Eigenvector_centrality < quantile(Eigenvector_centrality, .5)), "clusterBroker",
+            ifelse(netDegree == "netImporter", "netImporter", "netExporter"))))))
 
 ```
 
-```{r}
-source_top <- source_count %>%
-  filter(sourcecount > 100)
-
-target_top <- target_count %>%
-  filter(targetcount > 100)
-
-mc2_links_top <- mc2_links_agg %>%
-  semi_join(target_top, by = join_by(target)) %>%
-  semi_join(source_top, by = join_by(source))
-
-```
-
-## 2.3: Yearly transactions for top traderoutes by frequency of trades
-
-::: panel-tabset
-## **Step 1: Aggregating values by Year**
-
-```{r}
-links_top_year <- mc2_links_top %>%
-  group_by(
-    source, target, year) %>%
-  summarise(
-  # Number of active months in the year
-    months_active = n(),
-  # Total number of transactions per year
-    weight = sum(weight),
-  # Avg weight of trade per month
-    avg_weightkg = round((sum(weightkg)/months_active),0)) %>%
-  ungroup()
-  
-datatable(links_top_year)
-```
-
-## **Step 2: Inner join nodes and edges by overlapping companies**
-
-```{r}
-# filter distinct source and target from mc2_edges
-distinct_source <- links_top_year %>%
-    distinct(source)
-
-distinct_target <- links_top_year %>%
-    distinct(target)
-
-# Select only overlapping nodes and distinct companies from links
-nodes_source <- inner_join(
-    distinct_source, mc2_nodes,
-    by = c("source" = "id")) %>%
-  mutate(id = source)
-
-nodes_target <- inner_join(
-    distinct_target, mc2_nodes,
-    by = c("target" = "id")) %>%
-  mutate(id = target)
-
-# Create new nodes data by combining filtered dataframes
-nodes_new <- bind_rows(nodes_source, nodes_target) %>%
-  select(id, shpcountry, rcvcountry)
-```
-
-## **Step 3: Rename variables**
 
 ```{r}
 # Combine edges and nodes to a graph dataframe
-links_top_vis <- links_top_year %>% 
+vis_links <- top_30 %>% 
   rename(
     "from" = "source", 
     "to" = "target") %>%
-  select(from, to, year, months_active, weight, avg_weightkg)
+  select(from, to, year, weight)
 ```
 
 ```{r}
-nodes_vis <- nodes_new %>%
-  rename("group" = "rcvcountry")
+vis_nodes <- top30_centrality %>%
+  rename("id" = "company")
 ```
 
 ```{r}
-visNetwork(nodes_vis, links_top_vis,
+visNetwork(vis_nodes, vis_links,
           height = "500px", width = "100%") %>%
-  visIgraphLayout(layout = "layout_with_fr") %>%
-  visGroups(groupname = "Oceanus", shape = "icon", 
-            icon = list(code = "f043", color = "deepskyblue4")) %>%
-  visGroups(groupname = "Unknown", shape = "icon", 
-            icon = list(code = "f059", color = "darkslategray4")) %>%
+  visIgraphLayout(layout = "layout_with_kk") %>%
+  visGroups(groupname = "centralBroker", shape = "icon", 
+            icon = list(code = "f714")) %>%
   addFontAwesome() %>%
   visLegend() %>%
-  visEdges(arrows = "to") %>%
+  visEdges(value = "weight",
+           scaling = list(min = 10, max = 50),
+           arrows = "to") %>%
   visOptions(highlightNearest = list(enabled = T, degree = 2, hover = T),
              nodesIdSelection = TRUE,
-             selectedBy = "shpcountry",
+             selectedBy = "group",
              collapse = TRUE)
 ```
-:::
+
