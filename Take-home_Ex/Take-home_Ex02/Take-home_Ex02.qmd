@@ -153,7 +153,7 @@ mc2_nodes$uuid <- seq.int(nrow(mc2_nodes))
 colSums(is.na(mc2_links))
 ```
 
-**valueofgoods_omu** has too many missing values and will unnecessarily skew aggregated values. While some missing values could be intentional non-reporting of value and thus indicate possible IUU, there are too many to be able to filter out based on this criteria alone. This column will be dropped for the analysis, while the relationship between **weightkg**, **volumeteu** and **valueofgoodsusd** will be looked into more closely to check for possible discrepencies. 
+**valueofgoods_omu** has too many missing values and will unnecessarily skew aggregated values. While some missing values could be intentional non-reporting of value and thus indicate possible IUU, there are too many to be able to filter out based on this criteria alone. This column will be dropped for the analysis, while the relationship between **weightkg**, **volumeteu** and **valueofgoodsusd** will be looked into more closely to check for possible discrepencies.
 
 **II. Checking for Duplicates:**
 
@@ -431,12 +431,11 @@ To determine if there are specific companies or traderoutes accounting for a hig
 
 Companies' trade records are flagged as "suspicious" or "normal" based on the following logic:
 
-| **Tradecount** | **Traded<br>Product Weight(kg)** | **Trade <br>Value ($usd)** | **Flag**   |
-|----------------|----------------------------------|----------------------------|------------|
-| High           | -                                | 0                          | suspicious |
-| -              | High                             | 0                          | suspicious |
-| Low            | -                                | High                       | suspicious |
-
+| **Tradecount** | **Traded**<br>Product Weight(kg) | **Trade** <br>Value (\$usd) | **Flag**   |
+|---------------|------------------------|-------------------|---------------|
+| High           | \-                               | 0                           | suspicious |
+| \-             | High                             | 0                           | suspicious |
+| Low            | \-                               | High                        | suspicious |
 
 ```{r classify-trade-record}
 #| message: false
@@ -484,7 +483,6 @@ ggplot(mc2_links_class,
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
   )
 ```
-
 
 # 2: **Exploring** {{< fa fish >}} **Fishy Data Patterns**
 
@@ -576,7 +574,6 @@ country_graph_2030
 ```
 :::
 
-
 ```{r country-out}
 #| out-width: 100%
 #| warning: false
@@ -637,19 +634,16 @@ g2030
 ```
 
 ::: {.focusbox .focus data-latex="focus"}
-
 **Insights from Network Graph:**
 
-There are no visually *fishy* patterns identified in March 2030, compared to the other months. The links with thicker widths represent higher number of traderoutes -- these have largely remained the same throughout the year. This suggests that the abnormal increase could be detected at a company-level instead of a country-level network analysis. **However, more information is first gathered from country-level traderoute activities to sieve out possible flags for IUU activity.**  
+There are no visually *fishy* patterns identified in March 2030, compared to the other months. The links with thicker widths represent higher number of traderoutes -- these have largely remained the same throughout the year. This suggests that the abnormal increase could be detected at a company-level instead of a country-level network analysis. **However, more information is first gathered from country-level traderoute activities to sieve out possible flags for IUU activity.**
 :::
 
 ## **2.1.2: Visualising Records Across the Years**
 
-**Which countries have the heaviest trade activities?** Plotting an overall network graph would result in a dense web of links with little analytical value. To detect *fishy* temporal patterns, countries that have higher traderoute counts are used for the network analysis.  
+**Which countries have the heaviest trade activities?** Plotting an overall network graph would result in a dense web of links with little analytical value. To detect *fishy* temporal patterns, countries that have higher traderoute counts are used for the network analysis.
 
-
-::: {.panel-tabset}
-
+::: panel-tabset
 ## **Step 1: Filter countries in top 1000 by Traderoute count**
 
 ```{r filter-count}
@@ -684,7 +678,6 @@ country_graph <- tbl_graph(nodes = country_nodes,
                           directed = TRUE)
 country_graph
 ```
-
 :::
 
 **I. Out-degree centrality (Visualising top Exports)**
@@ -1022,21 +1015,15 @@ ggplot(
     panel.grid.major = element_blank(),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
   )
-```  
+```
 
-::: { .solvebox .solve data-latex="solve}
-**Insights from Network Graphs:**
-The differences in scores across centrality measures for each country suggests that there are various clusters of networks within the larger trade network, consisting of key Importers, Exporters, Intermediaries/Facilitators and Trade Hubs. **Marebak**, for instance, has a higher Out-Degree and Eigenvector Centrality value, but lower scores on other measures -- this suggests that the country is a net exporter, and may have strong ties to important trading countries. 
+::: {.solvebox .solve data-latex="\"solve"}
+**Insights from Network Graphs:** The differences in scores across centrality measures for each country suggests that there are various clusters of networks within the larger trade network, consisting of key Importers, Exporters, Intermediaries/Facilitators and Trade Hubs. **Marebak**, for instance, has a higher Out-Degree and Eigenvector Centrality value, but lower scores on other measures -- this suggests that the country is a net exporter, and may have strong ties to important trading countries.
 :::
-
 
 ## **2.2 Company Level Trade Networks:** *fishy* **Countries and Traderoutes**
 
-Network analysis at a company level requires extra filters, to narrow down the scope of the graphs:
-  - Retain companies from countries with high centrality values (key players in the network)
-  - Retain companies that have been flagged as 'suspicious' from traderoute data
-  
-
+Network analysis at a company level requires extra filters, to narrow down the scope of the graphs: - Retain companies from countries with high centrality values (key players in the network) - Retain companies that have been flagged as 'suspicious' from traderoute data
 
 ```{mermaid}
 %%| fig-width: 7
@@ -1064,9 +1051,8 @@ flowchart LR
 
 ```
 
-::: {.panel-tabset}
-
-## **Step 1: Create a dataframe containing only countries with high (> 75th Percentile) centrality values**
+::: panel-tabset
+## **Step 1: Create a dataframe containing only countries with high (\> 75th Percentile) centrality values**
 
 ```{r country-filter}
 #| message: false
@@ -1097,7 +1083,6 @@ country_filter <- country_filter %>%
            percentile_filter(PageRank_score)
           )
 ```
-
 
 ## **Step 2: Filter out nodes from country_filter**
 
@@ -1131,8 +1116,7 @@ ungroup()
 datatable(head(routes_by_count,10))
 
 ```
-:::  
-  
+:::
 
 ::: {.focusbox .focus data-latex="focus"}
 **Insights from Table:**\
@@ -1256,8 +1240,7 @@ countpatch <- (source / target) +
                               theme = theme(plot.title = element_text(size = 16)))
 countpatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
-  
-  
+
 ::: {.focusbox .focus data-latex="focus"}
 **Insights from Distribution of traderoute counts:**
 
@@ -1267,7 +1250,6 @@ The density raincloud plots of traderoute counts reveal the presence of outliers
 ## 2.3: **Who are the Top players in the Network by Tradecount?**
 
 ::: panel-tabset
-
 ## **Step 1: Filter links by Country and Yearly Frequency**
 
 ```{r links-sorted}
@@ -1537,7 +1519,8 @@ ttg3 <-
   geom_node_text(
   # Only show labels of top 75th percentile by betweenness centrality
     aes(label = ifelse(eigencentrality > quantile(eigencentrality, .75), uuid, "")),
-    repel = TRUE,
+    nudge_x = -.5,
+    nudge_y = -.2,
     size = 2
   ) +
   theme(
@@ -1562,7 +1545,7 @@ ttg3 <-
   exit_fade()
 
 ttg3
-``` 
+```
 
 ```{r top30-pr}
 # Calculate pageRank Score and save values to new column
@@ -1592,8 +1575,8 @@ ttg4 <-
   # Only show labels of top 75th percentile by betweenness centrality
     aes(label = ifelse(pagerank > quantile(pagerank, .75), uuid, "")),
     nudge_x = -.5,
-    nudge_y = -.2
-    size = 3
+    nudge_y = -.2,
+    size = 2
   ) +
   theme(
     plot.title = element_text(size = 16,
@@ -1624,7 +1607,6 @@ ttg4
 Data Preparation:
 
 ::: panel-tabset
-
 ## **Create dataframe with centrality measures**
 
 ```{r top30-centrality}
@@ -1781,38 +1763,34 @@ ridge2 <- ggplot(
 
 ridgepatch <- ridge1 / ridge2
 ridgepatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
-```  
-\n
+```
 
+\n
 
 ::: {.focusbox .focus data-latex="focus"}
 **Insights from Network Graphs and Centrality Measure Distributions:**
 
-  - From the network graphs, we can see that key nodes are unchanged for the entire time period (2028-2034), but **heavier traderoutes (identified by thicker links) seem to vary from key nodes through the years.** This could be indicative of IUU activity, with *fishy* trading partners. The distribution graphs show intensely skewed distributions of centrality measures. This enables us to classify companies based on their relative centrality in the network.  
-  - Comparing the distribution of centrality measures, there are significantly more nodes with higher in/out degree but lower betweenness centrality. **This suggests that there are clusters of nodes in the network, and that these nodes are well-connected within their clusters but not to the rest of the nodes in other clusters. This could be indicative of various smaller IUU networks operating within the overall network.**
-  
+-   From the network graphs, we can see that key nodes are unchanged for the entire time period (2028-2034), but **heavier traderoutes (identified by thicker links) seem to vary from key nodes through the years.** This could be indicative of IUU activity, with *fishy* trading partners. The distribution graphs show intensely skewed distributions of centrality measures. This enables us to classify companies based on their relative centrality in the network.\
+-   Comparing the distribution of centrality measures, there are significantly more nodes with higher in/out degree but lower betweenness centrality. **This suggests that there are clusters of nodes in the network, and that these nodes are well-connected within their clusters but not to the rest of the nodes in other clusters. This could be indicative of various smaller IUU networks operating within the overall network.**
 :::
-
-
 
 ## 3: Categorizing {{< fa fish >}} *fishy* companies
 
 The network analysis metrics in section 2 are used to derive attributes of each *fishy* company, classifying them according to the following logic:
 
-| Centrality Measure /<br>Node Category | **In Degree** | **Out Degree** | **Betweenness<br>Centrality** | **Eigenvector<br>Centrality** | **PageRank<br>Score** |
-|---------------------------------------|:-------------:|----------------|:-----------------------------:|:-----------------------------:|:---------------------:|
-| **Central Broker**                    | -             | -              | High                          | High                          | High                  |
-| **Key Importer**                      | High          | Low            | -                             | -                             | High                  |
-| **Key Exporter**                      | Low           | High           | High                          | -                              | -                       |
-| **Cluster Broker**                    | High          | -              | Low                           | Low                           | -                     |
-| **NetImporter**                       | High          | Low            | Low                           | Low                           | Low                   |
-| **NetExporter**                       | Low           | High         | Low                           | Low                           | Low                   |
-
+| Centrality Measure /<br>Node Category | **In Degree** | **Out Degree** | **Betweenness**<br>Centrality | **Eigenvector**<br>Centrality | **PageRank**<br>Score |
+|------------|:----------:|------------|:----------:|:----------:|:----------:|
+| **Central Broker**                    |      \-       | \-             |             High              |             High              |         High          |
+| **Key Importer**                      |     High      | Low            |              \-               |              \-               |         High          |
+| **Key Exporter**                      |      Low      | High           |             High              |              \-               |          \-           |
+| **Cluster Broker**                    |     High      | \-             |              Low              |              Low              |          \-           |
+| **NetImporter**                       |     High      | Low            |              Low              |              Low              |          Low          |
+| **NetExporter**                       |      Low      | High           |              Low              |              Low              |          Low          |
 
 ## **3.1: Net Exporters or Importers?**
 
- Since net Degree Centrality has been established as the sum of In and Out Degree for each node in Section 2.3.1, the same logic will be applied to companies to classify them as Net Importers (higher In-degree) or Net Exporters (higher Out-degree):
- 
+Since net Degree Centrality has been established as the sum of In and Out Degree for each node in Section 2.3.1, the same logic will be applied to companies to classify them as Net Importers (higher In-degree) or Net Exporters (higher Out-degree):
+
 ```{r classifying-top30}
 #| code-fold: false
 top30_centrality$netDegree <- 
@@ -1822,11 +1800,10 @@ top30_centrality$netDegree <-
 
 ## 3.2: {{< fa fish >}} **A Fishy Network**
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## **Classifying Nodes by Centrality Measures**
 
-Labels are assigned to the companies Centrality Measures, based on the distribution of values as visualised in Section 2.3.1. These are stored under a new column variable, 'group', which will be used in the plotting of a visNetwork graph: 
+Labels are assigned to the companies Centrality Measures, based on the distribution of values as visualised in Section 2.3.1. These are stored under a new column variable, 'group', which will be used in the plotting of a visNetwork graph:
 
 ```{r group-top30}
 #| code-fold: false
@@ -1901,10 +1878,8 @@ visNetwork(
 
 # 4: Limitations of the Investigation
 
-While the network graphs provide some insight into {{< fa fish >}} *fishy* trading patterns, the analysis is limited by scale and complexity, arising from missing data as well as computational limitations. Some assumptions and constraints to be considered: 
+While the network graphs provide some insight into {{< fa fish >}} *fishy* trading patterns, the analysis is limited by scale and complexity, arising from missing data as well as computational limitations. Some assumptions and constraints to be considered:
 
-  - **Filtering the nodes** gives a broader overview by stipulated thresholds of suspicion, which shed some insight into the larger or key figures in the network; however, clusters may not be clearly defined in these simpler network graphs. 
-  - **Assumptions of centrality measures** used in this analysis are that edges and nodes are assigned equal importance. Further study is needed to interpret these measures and assign 'weights' to them in order to determine the true influence of the key players in the network. 
-  - **Hidden Relationships** from unobserved or unrecorded data may not be captured in the analysis. For the purpose of this analysis, missing and incomplete data sources were assumed to be *intentional*, but may instead  be due to lapses in administrative functions. This would also affect the accuracy and completeness of results. 
-
-
+-   **Filtering the nodes** gives a broader overview by stipulated thresholds of suspicion, which shed some insight into the larger or key figures in the network; however, clusters may not be clearly defined in these simpler network graphs.
+-   **Assumptions of centrality measures** used in this analysis are that edges and nodes are assigned equal importance. Further study is needed to interpret these measures and assign 'weights' to them in order to determine the true influence of the key players in the network.
+-   **Hidden Relationships** from unobserved or unrecorded data may not be captured in the analysis. For the purpose of this analysis, missing and incomplete data sources were assumed to be *intentional*, but may instead be due to lapses in administrative functions. This would also affect the accuracy and completeness of results.
