@@ -1,0 +1,36 @@
+---
+title: "Take-home Exercise 3"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: true
+    code-summary: "code block"
+---
+
+```{r intstall-packages}
+#| code-fold: false
+pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,
+               visNetwork, tidygraph, ggraph, ggiraph, igraph, scales, ggplot2, 
+               gganimate, ggstatsplot, ggrain, ggridges, graphlayouts, plotly, patchwork,
+               kableExtra, ggpubr, ggrepel)
+```
+
+## Loading the json Data
+
+Use `jsonlite` package to read .json files
+
+```{r load-mc2}
+#| code-fold: false
+mc3 <- jsonlite::fromJSON("data/MC3.json")
+```
+
+```{r}
+mc3_links <- as_tibble(mc3$links)
+
+mc3_nodes <- as_tibble(mc3$nodes) %>%
+  select(id, type, country, revenue_omu, product_services)
+```
+
+```{r}
+describe(mc3_nodes$type)
+```
