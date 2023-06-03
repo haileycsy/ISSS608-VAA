@@ -32,6 +32,8 @@ website:
             href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html
           - text: "Hands-on Ex 6"
             href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex06.html
+          - text: "Hands-on Ex 7"
+            href: Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
           - text: "In-class Ex 3"

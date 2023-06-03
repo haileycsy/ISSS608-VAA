@@ -11,7 +11,7 @@ format:
 #| code-fold: false
 pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,
                visNetwork, tidygraph, ggraph, ggiraph, igraph, scales, ggplot2, 
-               gganimate, ggstatsplot, ggrain, ggridges, graphlayouts, plotly, patchwork,
+               gganimate, ggstatsplot, ggrain, ggridges, graphlayouts, plotly, patchwork, purrr,
                kableExtra, ggpubr, ggrepel)
 ```
 
@@ -31,6 +31,44 @@ mc3_nodes <- as_tibble(mc3$nodes) %>%
   select(id, type, country, revenue_omu, product_services)
 ```
 
+## Data Health
+
+::: {.panel-tabset}
+
+## **Nodes**
+
+**I. Checking for Missing Values:**
 ```{r}
-describe(mc3_nodes$type)
+# Check for columns with missing values
+colSums(is.na(mc3_nodes))
+```
+
+**II. Splitting product_services column by delimiter:**
+
+`separate_longer_delim` is used to split the **product_services** column due to the varying number of components:
+
+```{r}
+#| warning: false
+mc3_nodes_unnest <- mc3_nodes %>%
+  unnest(id) %>%
+  unnest(type) %>%
+  unnest(country)
+
+```
+
+```{r}
+
+```
+
+## **Links**
+
+**I. Checking for Missing Values:**
+```{r}
+# Check for columns with missing values
+colSums(is.na(mc3_links))
+```
+
+**II. Checking for Duplicates:**
+```{r}
+mc3_links[duplicated(mc3_links),]
 ```

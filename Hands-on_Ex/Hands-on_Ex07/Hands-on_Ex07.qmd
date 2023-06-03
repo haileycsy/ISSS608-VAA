@@ -1,0 +1,66 @@
+---
+title: "Hands on Exercise 7"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: false
+    code-summary: "code block"
+---
+
+<font size ="5">**It's About Time**</font>
+
+## Preparation
+
+R Packages:
+
+```{r}
+#| message: false
+pacman::p_load(ggHoriPlot, ggthemes, tidyverse)
+```
+
+Loading the Data:
+
+```{r}
+averp <- read_csv("data/AVERP.csv") %>%
+  mutate(Date = dmy(Date)) %>%
+  rename(Consumer_items = 'Consumer Items')
+```
+
+## Plotting the Horizon Plot
+
+```{r}
+#| fig-width: 8
+#| fig-height: 9
+averp %>% 
+  filter(Date >= "2018-01-01") %>%
+  ggplot() +
+  geom_horizon(
+    aes(x = Date, y = Values), 
+    origin = "midpoint", 
+    horizonscale = 6
+  )+
+  facet_grid(Consumer_items~.) +
+  theme_few() +
+  scale_fill_hcl(palette = 'RdBu') +
+  scale_x_date(
+    expand=c(0,0), 
+    date_breaks = "3 month", 
+    date_labels = "%b%y"
+  ) +
+  labs(
+    title = "Average Retail Prices of Selected Consumer Items (Jan 2018 to Dec 2022)"
+  ) +
+  theme(
+    panel.spacing.y = unit(0, "lines"), 
+    strip.text.y = element_text(size = 5, angle = 0, hjust = 0),
+    legend.position = "none",
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size = 7, angle = 90),
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"),
+    plot.background = element_rect(fill = "#F8F3E6", color = "#F8F3E6"))
+
+```
