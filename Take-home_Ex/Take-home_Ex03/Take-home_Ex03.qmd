@@ -9,10 +9,12 @@ format:
 
 ```{r intstall-packages}
 #| code-fold: false
-pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,
-               visNetwork, tidygraph, ggraph, ggiraph, igraph, scales, ggplot2, 
-               gganimate, ggstatsplot, ggrain, ggridges, graphlayouts, plotly, patchwork, purrr,
-               kableExtra, ggpubr, ggrepel)
+pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, 
+               urbnthemes,visNetwork, tidygraph, ggraph, 
+               ggiraph, igraph, scales, ggplot2, 
+               gganimate, ggstatsplot, ggrain, ggridges, 
+               graphlayouts, plotly, patchwork, kableExtra, 
+               ggpubr, ggrepel)
 ```
 
 ## Loading the json Data
@@ -38,6 +40,7 @@ mc3_nodes <- as_tibble(mc3$nodes) %>%
 ## **Nodes**
 
 **I. Checking for Missing Values:**
+
 ```{r}
 # Check for columns with missing values
 colSums(is.na(mc3_nodes))
@@ -63,12 +66,14 @@ mc3_nodes_unnest <- mc3_nodes %>%
 ## **Links**
 
 **I. Checking for Missing Values:**
+
 ```{r}
 # Check for columns with missing values
 colSums(is.na(mc3_links))
 ```
 
 **II. Checking for Duplicates:**
+
 ```{r}
 mc3_links[duplicated(mc3_links),]
 ```

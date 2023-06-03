@@ -165,7 +165,7 @@ pacman::p_load(corrplot, ggstatsplot, tidyverse)
 A [Wine Quality Data Set](https://archive.ics.uci.edu/ml/datasets/wine+quality) from the UCI Machine Learning Repository is used for this study.
 
 | **Input Variables**  | fixed acidity  |  volatile acidity   | citric acid |    residual sugar    | density |
-|:----------:|:----------:|:----------:|:----------:|:----------:|------------|
+|:--------------------:|:--------------:|:-------------------:|:-----------:|:--------------------:|---------|
 |                      |   chlorides    | free sulfur dioxide |     Yes     | total sulfur dioxide | pH      |
 | **Output Variables** | quality (0-10) |                     |             |                      |         |
 

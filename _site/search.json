@@ -469,6 +469,27 @@
     "text": "5.2: Interactive Heatmap with heatmaply\n\n\ncode block\nheatmaply(mtcars)\n\n\n\n\n\n\n\n5.2.1: Column and Row Scaling\nWhen variables come from normal distribution, scaling will bring them closer to standard normal distribution\n\n\ncode block\nheatmaply(wh_matrix[, -c(1, 2, 4, 5)],\n          scale = \"column\")\n\n\n\n\n\n\n\n\n5.2.2: Normal Standardisation\nWhen variables in the data comes from possibly different (and non-normal) distributions, the normalize function can be used to bring data to the 0 to 1 scale by subtracting the minimum and dividing by the maximum of all observations.\n\n\ncode block\nheatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]))"
   },
   {
+    "objectID": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html",
+    "href": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html",
+    "title": "Hands on Exercise 7",
+    "section": "",
+    "text": "It’s About Time"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#preparation",
+    "href": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#preparation",
+    "title": "Hands on Exercise 7",
+    "section": "Preparation",
+    "text": "Preparation\nR Packages:\n\npacman::p_load(ggHoriPlot, ggthemes, tidyverse)\n\nLoading the Data:\n\naverp <- read_csv(\"data/AVERP.csv\") %>%\n  mutate(Date = dmy(Date)) %>%\n  rename(Consumer_items = 'Consumer Items')\n\nRows: 7452 Columns: 3\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (2): Date, Consumer Items\ndbl (1): Values\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#plotting-the-horizon-plot",
+    "href": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#plotting-the-horizon-plot",
+    "title": "Hands on Exercise 7",
+    "section": "Plotting the Horizon Plot",
+    "text": "Plotting the Horizon Plot\n\naverp %>% \n  filter(Date >= \"2018-01-01\") %>%\n  ggplot() +\n  geom_horizon(\n    aes(x = Date, y = Values), \n    origin = \"midpoint\", \n    horizonscale = 6\n  )+\n  facet_grid(Consumer_items~.) +\n  theme_few() +\n  scale_fill_hcl(palette = 'RdBu') +\n  scale_x_date(\n    expand=c(0,0), \n    date_breaks = \"3 month\", \n    date_labels = \"%b%y\"\n  ) +\n  labs(\n    title = \"Average Retail Prices of Selected Consumer Items (Jan 2018 to Dec 2022)\"\n  ) +\n  theme(\n    panel.spacing.y = unit(0, \"lines\"), \n    strip.text.y = element_text(size = 5, angle = 0, hjust = 0),\n    legend.position = \"none\",\n    axis.text.y = element_blank(),\n    axis.text.x = element_text(size = 7, angle = 90),\n    axis.title.y = element_blank(),\n    axis.title.x = element_blank(),\n    axis.ticks.y = element_blank(),\n    panel.border = element_blank(),\n    panel.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"),\n    plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\nWarning: Using the `size` aesthetic in this geom was deprecated in ggplot2 3.4.0.\nℹ Please use `linewidth` in the `default_aes` field and elsewhere instead."
+  },
+  {
     "objectID": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
     "href": "In-class_Ex/In-class_Ex03/In-class_Ex03.html",
     "title": "In-class Exercise 3",
@@ -728,18 +749,11 @@
     "text": "3.2:  A Fishy Network\n\nClassifying Nodes by Centrality MeasuresCreating visNetwork graph object\n\n\nLabels are assigned to the companies Centrality Measures, based on the distribution of values as visualised in Section 2.3.1. These are stored under a new column variable, ‘group’, which will be used in the plotting of a visNetwork graph:\n\ntop30_centrality <- top30_centrality %>%\n  mutate(\n    group = ifelse(Betweenness_centrality >0 & \n                  Eigenvector_centrality > quantile(Eigenvector_centrality, .75) &\n                  PageRank_score > quantile(PageRank_score, .75), \"centralBroker\",\n            ifelse(netDegree == \"netImporter\" & \n                  PageRank_score > quantile(PageRank_score, .75), \"keyImporter\",\n            ifelse(netDegree == \"netExmporter\" &\n                   Betweenness_centrality > quantile(Betweenness_centrality, .75), \"keyExporter\", \n            ifelse((InDegree > quantile(InDegree, .75) | \n                     OutDegree > quantile(OutDegree, .75)) &\n                  (Betweenness_centrality < quantile(Betweenness_centrality, .5)|\n                  Eigenvector_centrality < quantile(Eigenvector_centrality, .5)), \"clusterBroker\",\n            ifelse(netDegree == \"netImporter\", \"netImporter\", \"netExporter\"))))))\n\n\n\n\n# Combine edges and nodes to a graph dataframe\nvis_links <- top_30 %>% \n  rename(\n  # visNetwork edges need to be renamed in order to parse through as directed links\n    \"from\" = \"source\", \n    \"to\" = \"target\") %>%\n  select(from, to, year, weight)\n\n# Renaming company name variable to 'id' for use as a filter in the network graph\nvis_nodes <- top30_centrality %>%\n  rename(\"id\" = \"company\")\n\n\n\n\n\n\ncode block\nvisNetwork(\n    vis_nodes, \n    vis_links,\n    height = \"500px\", \n    width = \"100%\"\n  ) %>%\n  visIgraphLayout(\n    layout = \"layout_with_kk\"\n  ) %>%\n  visGroups(\n    # Add icon to key Player to identify it in the graph\n    groupname = \"centralBroker\", \n    shape = \"icon\", \n    # Make icon larger and of a darker color so that it stands out\n    icon = list(code = \"f714\", size = 75, color = \"grey20\")\n  ) %>%\n  addFontAwesome() %>%\n  # Color nodes by group\n  visLegend() %>%\n  visEdges(\n    value = \"weight\",\n    arrows = \"to\"\n  ) %>%\n  visOptions(\n  # Specify additional Interactive Elements\n    highlightNearest = list(enabled = T, degree = 2, hover = T),\n  # Add drop-down menu to filter by company name\n    nodesIdSelection = TRUE,\n  # Add drop-down menu to filter by category\n    selectedBy = \"group\",\n    collapse = TRUE)"
   },
   {
-    "objectID": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html",
-    "href": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html",
-    "title": "Hands on Exercise 7",
-    "section": "",
-    "text": "It’s About Time"
-  },
-  {
     "objectID": "Take-home_Ex/Take-home_Ex03/Take-home_Ex03.html",
     "href": "Take-home_Ex/Take-home_Ex03/Take-home_Ex03.html",
     "title": "Take-home Exercise 3",
     "section": "",
-    "text": "pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, urbnthemes,\n               visNetwork, tidygraph, ggraph, ggiraph, igraph, scales, ggplot2, \n               gganimate, ggstatsplot, ggrain, ggridges, graphlayouts, plotly, patchwork, purrr,\n               kableExtra, ggpubr, ggrepel)"
+    "text": "pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, \n               urbnthemes,visNetwork, tidygraph, ggraph, \n               ggiraph, igraph, scales, ggplot2, \n               gganimate, ggstatsplot, ggrain, ggridges, \n               graphlayouts, plotly, patchwork, kableExtra, \n               ggpubr, ggrepel)"
   },
   {
     "objectID": "Take-home_Ex/Take-home_Ex03/Take-home_Ex03.html#loading-the-json-data",
@@ -768,19 +782,5 @@
     "title": "Take-home Exercise 3",
     "section": "Links",
     "text": "Links\nI. Checking for Missing Values:\n\n\ncode block\n# Check for columns with missing values\ncolSums(is.na(mc3_links))\n\n\nsource target   type \n     0      0      0 \n\n\nII. Checking for Duplicates:\n\n\ncode block\nmc3_links[duplicated(mc3_links),]\n\n\n# A tibble: 2 × 3\n  source    target    type     \n  <list>    <list>    <list>   \n1 <chr [1]> <chr [1]> <chr [1]>\n2 <chr [1]> <chr [1]> <chr [1]>"
-  },
-  {
-    "objectID": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#preparation",
-    "href": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#preparation",
-    "title": "Hands on Exercise 7",
-    "section": "Preparation",
-    "text": "Preparation\nR Packages:\n\npacman::p_load(ggHoriPlot, ggthemes, tidyverse)\n\nLoading the Data:\n\naverp <- read_csv(\"data/AVERP.csv\") %>%\n  mutate(Date = dmy(Date)) %>%\n  rename(Consumer_items = 'Consumer Items')\n\nRows: 7452 Columns: 3\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (2): Date, Consumer Items\ndbl (1): Values\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message."
-  },
-  {
-    "objectID": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#plotting-the-horizon-plot",
-    "href": "Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html#plotting-the-horizon-plot",
-    "title": "Hands on Exercise 7",
-    "section": "Plotting the Horizon Plot",
-    "text": "Plotting the Horizon Plot\n\naverp %>% \n  filter(Date >= \"2018-01-01\") %>%\n  ggplot() +\n  geom_horizon(\n    aes(x = Date, y = Values), \n    origin = \"midpoint\", \n    horizonscale = 6\n  )+\n  facet_grid(Consumer_items~.) +\n  theme_few() +\n  scale_fill_hcl(palette = 'RdBu') +\n  scale_x_date(\n    expand=c(0,0), \n    date_breaks = \"3 month\", \n    date_labels = \"%b%y\"\n  ) +\n  labs(\n    title = \"Average Retail Prices of Selected Consumer Items (Jan 2018 to Dec 2022)\"\n  ) +\n  theme(\n    panel.spacing.y = unit(0, \"lines\"), \n    strip.text.y = element_text(size = 5, angle = 0, hjust = 0),\n    legend.position = \"none\",\n    axis.text.y = element_blank(),\n    axis.text.x = element_text(size = 7, angle = 90),\n    axis.title.y = element_blank(),\n    axis.title.x = element_blank(),\n    axis.ticks.y = element_blank(),\n    panel.border = element_blank(),\n    panel.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"),\n    plot.background = element_rect(fill = \"#F8F3E6\", color = \"#F8F3E6\"))\n\nWarning: Using the `size` aesthetic in this geom was deprecated in ggplot2 3.4.0.\nℹ Please use `linewidth` in the `default_aes` field and elsewhere instead."
   }
 ]
