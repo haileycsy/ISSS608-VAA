@@ -1,0 +1,208 @@
+---
+title: "Hands-on Exercise 8"
+date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    code-fold: false
+    code-summary: "code block"
+---
+
+# Cloropleth Mapping in R
+
+## Loading the packages
+```{r}
+pacman::p_load(sf, tmap, tidyverse, skimr)
+```
+
+## Importing data  
+Dataset types used for this study are:  
+
+* ESRI Shapefile: `MP14_SUBZONE_WEB_PL`
+* aspatial data file: `respopagesextod2011to2020.csv`, with fields used as unique identifiers to geocode the shapefile
+
+::: panel-tabset
+## **ESRI Shapefile**
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", 
+                layer = "MP14_SUBZONE_WEB_PL")
+
+skim(mpsz)
+```
+## **aspatial data**
+```{r}
+popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
+skim(popdata)
+```
+
+:::
+
+## Data Preparation
+
+Only selected variables from year 2020 will be used for the study:  
+
+* YOUNG: age group 0 to 4 until age groyup 20 to 24,
+* ECONOMY ACTIVE: age group 25-29 until age group 60-64,
+* AGED: age group 65 and above,
+* TOTAL: all age group, and
+* DEPENDENCY: the ratio between young and aged against economy active group
+
+```{r}
+# Preparing the attribute dataframe
+
+popdata2020 <- popdata %>%
+  filter(Time == 2020) %>%
+  group_by(PA, SZ, AG) %>%
+  summarise(`POP` = sum(`Pop`)) %>%
+  ungroup()%>%
+  pivot_wider(names_from=AG, 
+              values_from=POP) %>%
+  mutate(YOUNG = rowSums(.[3:6])
+         +rowSums(.[12])) %>%
+mutate(`ECONOMICALLY ACTIVE` = rowSums(.[7:11])+
+rowSums(.[13:15]))%>%
+mutate(`AGED`=rowSums(.[16:21])) %>%
+mutate(`TOTAL`=rowSums(.[3:21])) %>%  
+mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
+/`ECONOMICALLY ACTIVE`) %>%
+  select(`PA`, `SZ`, `YOUNG`, 
+       `ECONOMICALLY ACTIVE`, `AGED`, 
+       `TOTAL`, `DEPENDENCY`)
+```
+### Standardising uppercase of fields 
+```{r}
+popdata2020 <- popdata2020 %>%
+  mutate(PA = toupper(PA), 
+         SZ = toupper(SZ)) %>%
+  filter(`ECONOMICALLY ACTIVE` > 0)
+```
+
+### Left join on identifier
+`left_join()` of dplyr is used to join the geographical data and attribute table using planning subzone name e.g. SUBZONE_N and SZ as the common identifier.
+```{r}
+mpsz_pop2020 <- left_join(
+  mpsz, 
+  popdata2020,
+  by = c("SUBZONE_N" = "SZ"))
+```
+
+### write rds file
+```{r}
+write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
+```
+
+## Choropleth Mapping Geospatial Data Using `tmap`
+
+### Using `qtm()`
+
+This creates a quick cartographic standard choropleth map:  
+
+* `tmap_mode()` with “plot” option is used to produce a static map. For interactive mode, “view” option should be used.
+* `fill` argument is used to map the attribute (i.e. DEPENDENCY)
+
+```{r}
+tmap_mode("plot")
+qtm(mpsz_pop2020, 
+    fill = "DEPENDENCY")
+```
+
+##  Using tmap’s elements
+
+`tmap` has highly customizable options, with more control over map aesthetics:
+```{r}
+#| fig-width: 8
+
+tm_shape(mpsz_pop2020)+
+  tm_fill(
+    "DEPENDENCY", 
+    style = "quantile", 
+    palette = "Purples",
+    title = "Dependency ratio"
+  ) +
+  tm_layout(
+    main.title = "Distribution of Dependency Ratio by planning subzone",
+    main.title.position = "center",
+    main.title.size = 1.2,
+    legend.height = 0.45, 
+    legend.width = 0.3,
+    frame = FALSE,
+    bg.color = "#F8F3E6"
+  ) +
+  tm_borders(alpha = 0.3) +
+  tm_compass(
+    type="8star", 
+    size = 1
+  ) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits(
+    "Source: Planning Sub-zone boundary from URA\n and Population data from Department of Statistics DOS", 
+   position = c("left", "bottom")
+  )
+
+```
+### tmap: custom breaks
+
+Understanding distribution of **DEPENDENCY** values:
+
+```{r}
+summary(mpsz_pop2020$DEPENDENCY)
+```
+
+Adding `breaks` argument to `tm_fill()`:
+
+```{r}
+#| warning: false
+tm_shape(mpsz_pop2020)+
+  tm_fill(
+    "DEPENDENCY",
+    breaks = c(0, 0.60, 0.70, 0.80, 0.90, 1.00)
+  ) +
+  tm_layout( bg.color = "#F8F3E6") +
+  tm_borders(alpha = 0.5)
+```
+
+### Assigning custom colors using `RcolorBrewer` palettes:
+
+```{r}
+tm_shape(mpsz_pop2020)+
+  tm_fill("DEPENDENCY",
+          n = 6,
+          style = "quantile",
+          # Use '-' to reverse color
+          palette = "-Purples"
+  ) +
+  tm_layout( bg.color = "#F8F3E6") +
+  tm_borders(alpha = 0.5)
+```
+
+### Adding map legends
+
+```{r}
+tm_shape(mpsz_pop2020)+
+  tm_fill("DEPENDENCY", 
+          style = "jenks", 
+          palette = "Purples", 
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone \n(Jenks classification)",
+            main.title.position = "center",
+            main.title.size = 1,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            legend.outside = FALSE,
+            legend.position = c("right", "bottom"),
+            frame = FALSE,
+             bg.color = "#F8F3E6") +
+  tm_borders(alpha = 0.5)
+```
+
+### Changing map styles:
+```{r}
+tm_shape(mpsz_pop2020)+
+  tm_fill("DEPENDENCY", 
+          style = "quantile", 
+          palette = "-Greens") +
+  tm_borders(alpha = 0.5) +
+  tmap_style("classic")
+```

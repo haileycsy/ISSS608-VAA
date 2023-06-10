@@ -3,40 +3,73 @@ title: "Take-home Exercise 3"
 date: "Last updated on `r format(Sys.time(), '%d %B, %Y')`"
 format:
   html:
-    code-fold: true
+    code-fold: false
     code-summary: "code block"
 ---
 
+<font size = "5">**VAST Challenge: Mini-Challenge 3**</font>
+
+# Project Brief
+
+FishEye International, a non-profit focused on countering illegal, unreported, and unregulated (IUU) fishing, has been given access to an international finance corporation's database on **fishing related companies.** In the past, FishEye has determined that companies with anomalous structures are far more likely to be involved in IUU (or other *fishy* business). FishEye has transformed the database into a knowledge graph, including information about companies, owners, workers, and financial status. FishEye is aiming to use this graph to identify anomalies that could indicate if a company is involved in IUU.
+
+# Project Objectives
+
+This study aims to use visual analytics to understand patterns of groups in the knowledge graph and **identify anomalies in the business groups present in the knowledge graph**
+
+# Data Preparation
+
+## Loading R Packages
+
 ```{r intstall-packages}
-#| code-fold: false
 pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, 
                urbnthemes,visNetwork, tidygraph, ggraph, 
                ggiraph, igraph, scales, ggplot2, 
                gganimate, ggstatsplot, ggrain, ggridges, 
                graphlayouts, plotly, patchwork, kableExtra, 
-               ggpubr, ggrepel)
+               ggpubr, ggrepel, ggforce, tidytext,
+               tm, wordcloud2, forcats, skimr)
 ```
 
-## Loading the json Data
+## Loading the Data
 
 Use `jsonlite` package to read .json files
 
 ```{r load-mc2}
-#| code-fold: false
-mc3 <- jsonlite::fromJSON("data/MC3.json")
+mc3 <- fromJSON("data/MC3.json")
 ```
 
+**mc3** data consists of undirected graph data, with links and nodes. These are stored as *lists* instead of vector columns. To transform this into a dataframe, each column is mutated into a character data type using `mutate()` and `as.character()` methods.
+
 ```{r}
-mc3_links <- as_tibble(mc3$links)
+#| warning: false
+
+mc3_links <- as_tibble(mc3$links) %>%
+  distinct() %>%
+  # Change all variable types to character to create dataframe
+  mutate(source = as.character(source),
+         target = as.character(target),
+         type = as.character(type)) %>%
+  group_by(source, target, type) %>%
+  summarise(weights = n()) %>%
+  filter(source != target) %>%
+  select(-weights) %>%
+  ungroup
 
 mc3_nodes <- as_tibble(mc3$nodes) %>%
-  select(id, type, country, revenue_omu, product_services)
+  mutate(id = as.character(id), 
+         type = as.character(type), 
+         country = as.character(country), 
+         product_services = as.character(product_services),
+  # Convert to character first to unlist, then revert to numeric form 
+         revenue_omu = as.numeric(as.character(revenue_omu))) %>%
+  # Reorganize columns 
+  select(id, country, type, revenue_omu, product_services)
 ```
 
 ## Data Health
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## **Nodes**
 
 **I. Checking for Missing Values:**
@@ -46,22 +79,15 @@ mc3_nodes <- as_tibble(mc3$nodes) %>%
 colSums(is.na(mc3_nodes))
 ```
 
-**II. Splitting product_services column by delimiter:**
+There are 21,515 missing values from the **revenue_omu** column.
 
-`separate_longer_delim` is used to split the **product_services** column due to the varying number of components:
-
-```{r}
-#| warning: false
-mc3_nodes_unnest <- mc3_nodes %>%
-  unnest(id) %>%
-  unnest(type) %>%
-  unnest(country)
-
-```
+**II. Checking for Duplicates**
 
 ```{r}
-
+mc3_nodes[duplicated(mc3_nodes),]
 ```
+
+There are 2,595 duplicated entries.
 
 ## **Links**
 
@@ -72,8 +98,222 @@ mc3_nodes_unnest <- mc3_nodes %>%
 colSums(is.na(mc3_links))
 ```
 
+There are no missing values in mc3_links
+
 **II. Checking for Duplicates:**
 
 ```{r}
 mc3_links[duplicated(mc3_links),]
+```
+
+There are no duplicated rows for **mc3_links** data.
+:::
+
+## **Summary Statistics**
+
+```{r}
+skim(mc3_nodes)
+```
+
+Aggregating Nodes Data to understand distribution of Companies, Company Contacts and Beneficial Owners
+
+```{r}
+#| fig-height: 6
+# Aggregate data frame by country and type
+nodes_agg <- mc3_nodes %>%
+  group_by(country, type) %>%
+  # Count number of companies per country
+  summarise(count = n(),
+  # Calculate total revenue per country
+            revenue_omu = sum(revenue_omu)) %>%
+  ungroup()
+
+# Set default plot theme
+set_urbn_defaults(style = "print")
+
+# Create separate plots for each type
+p_company <- nodes_agg %>%
+  # Only plot countries with more than 100 companies
+  filter(type == "Company" &
+           count > 100) %>%
+  ggplot(
+  # Arrange in Descending order of count
+    aes(x = fct_rev(fct_reorder(country, count)),
+        y = count)
+  ) +
+  geom_col() +
+  # Set to prevent trunctation when patched
+  ylim(0,3800) +
+  geom_text(
+    aes(label = count),
+    vjust = -1
+  ) +  #< Set count annotations above bar
+  labs(
+    title = "Most Number of Companies Operating from ZH"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+# Plot for company contacts
+p_contact <- nodes_agg %>%
+  # Only plot countries with more than 100 companies
+  filter(type == "Company Contacts") %>%
+  ggplot(
+  # Arrange in Descending order of count
+    aes(x = fct_rev(fct_reorder(country, count)),
+        y = count)
+  ) +
+  geom_col() +
+  geom_text(
+    aes(label = count),
+    vjust = -1
+  ) + 
+  ylim(0,10000) +
+  labs(
+    title = "Company Contacts"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+# Plot for beneficial owners
+p_owner <- nodes_agg %>%
+  # Only plot countries with more than 100 companies
+  filter(type == "Beneficial Owner") %>%
+  ggplot(
+  # Arrange in Descending order of count
+    aes(x = fct_rev(fct_reorder(country, count)),
+        y = count)
+  ) +
+  geom_col() +
+  geom_text(
+    aes(label = count),
+    vjust = -1
+  ) +
+  ylim(0,13000) +
+  labs(
+    title = "Beneficial Owners"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+bottompatch <- (p_contact + p_owner) +
+  plot_annotation(title = "Almost all Company Contacts & Beneficial Owners from ZH")
+
+fullpatch <- p_company / bottompatch
+fullpatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```
+
+```{r}
+nodes_type <- mc3_nodes %>%
+  ggplot(
+    aes(x = type)
+  ) +
+  geom_bar() +
+ # Set count annotations above bar
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +  
+  labs(
+    title = "Highest Count of Beneficial Owners"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+nodes_type
+  
+```
+
+## Data Preparation: Tokenisation
+
+```{r}
+# Replace all 'character(0)' values as unknown
+mc3_nodes$product_services[mc3_nodes$product_services == "character(0)"] <- "Unknown"
+
+# Create new dataframe with words split into separate rows
+nodes_unnest <- mc3_nodes %>%
+  # Create new column 'word' to store split words
+  unnest_tokens(word, 
+                product_services,
+    # Change all words to lowercase for more accurate tokenisation
+                to_lower = TRUE,
+    # Remove punctuation to exclude from tokenisation
+                strip_punct = TRUE)
+```
+
+## **What are the most common words in product_services**?
+
+::: panel-tabset
+## **Step 1: Extract the Text**
+
+```{r}
+# Create a vector containing only the text
+nodes_text <- nodes_unnest$word 
+
+# Create a corpus
+text <- Corpus(VectorSource(nodes_text))
+```
+
+## **Step 2: Clean the text data**
+
+The process of removing specific stopwords using `removeWords` is an iterative process, where higher frequency words are removed if deemed out of context (such as 'well', 'including', 'related' or unproductive in giving specific information about the nature of products or services (such as 'services').
+
+```{r}
+#| warning: false
+text <- text %>%
+  # Remove any whitespace
+  tm_map(stripWhitespace) %>%
+  # remove stopwords
+  tm_map(removeWords, stopwords(kind = "en")) %>%
+  # Specity stopwords based on initial analysis of word frequency
+  tm_map(removeWords, c("products", "including", "well", "related", "services", "source", "materials", "goods"))
+```
+
+## **Step 3: Create a document-term-matrix to count frequency of words**
+
+```{r}
+# Generate a document-term-matrix
+dtm <- TermDocumentMatrix(text) 
+matrix <- as.matrix(dtm) 
+# Sort matrix according to frequency
+words <- sort(rowSums(matrix),decreasing = TRUE) 
+# Count frequency of each word and save as new column in dataframe
+text_df <- data.frame(word = names(words),freq = words)
+
+kable(head(text_df,15))
+```
+
+The table output shows that "Unknown" products and services are the most frequently listed. While this could possibly point to {{< fa fish-fins >}} *fishy* business relationships, these records may also be masking other anomalies present. A separate text dataframe is created without "unknown" products and services:
+
+```{r}
+text_df_known <- text_df[-1,]
+```
+:::
+
+```{r}
+#| code-fold: true
+wordcloud2(text_df_known, 
+           color = "random-dark", 
+           backgroundColor = "#F8F3E6")
+```
+
+```{r}
+findFreqTerms(dtm, lowfreq = 100)
 ```

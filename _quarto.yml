@@ -34,6 +34,8 @@ website:
             href: Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex06.html
           - text: "Hands-on Ex 7"
             href: Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html
+          - text: "Hands-on Ex 8"
+            href: Hands-on_Ex/Hands-on_Ex08/Hands-on_Ex08.html
       - text: "{{< fa pen-to-square >}} In-class Ex"
         menu:
           - text: "In-class Ex 3"
@@ -48,6 +50,8 @@ website:
             href: Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html
           - text: "Take-home Ex 2"
             href: Take-home_Ex/Take-home_Ex02/Take-home_Ex02.html
+          - text: "Take-home Ex 3"
+            href: Take-home_Ex/Take-home_Ex03/Take-home_Ex03.html
       - text: "{{< fa laptop-code >}} Projects"
         menu:
           - text: "Superstore Orders"
