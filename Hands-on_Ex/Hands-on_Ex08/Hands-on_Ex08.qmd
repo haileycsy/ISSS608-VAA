@@ -261,3 +261,61 @@ tm_shape(mpsz_pop2020)+
   tmap_style("white")
 
 ```
+
+### using `facet_map()` argument
+
+```{r}
+tm_shape(mpsz_pop2020) +
+  tm_fill("DEPENDENCY",
+          style = "quantile",
+          palette = "Purples",
+          thres.poly = 0) + 
+  tm_facets(by="REGION_N", 
+            free.coords=TRUE, 
+            drop.shapes=TRUE) +
+  tm_layout(legend.show = FALSE,
+            title.position = c("center", "center"), 
+            title.size = 20,
+            bg.color = "#F8F3E6") +
+  tm_borders(alpha = 0.5)
+```
+
+### Creating multiple maps using `tm_arrange()`
+
+```{r}
+youngmap <- tm_shape(mpsz_pop2020)+ 
+  tm_polygons("YOUNG", 
+              style = "quantile", 
+              palette = "Blues")
+
+agedmap <- tm_shape(mpsz_pop2020)+ 
+  tm_polygons("AGED", 
+              style = "quantile", 
+              palette = "Purples")
+
+tmap_arrange(youngmap, agedmap, asp=1, ncol=2)
+
+```
+
+## Conditional Mapping
+
+```{r}
+tm_shape(
+  # Only plotting dependency for central region
+  mpsz_pop2020[mpsz_pop2020$REGION_N=="CENTRAL REGION", ]
+  )+
+  tm_fill("DEPENDENCY", 
+          style = "quantile", 
+          palette = "Purples", 
+          legend.hist = TRUE, 
+          legend.is.portrait = TRUE,
+          legend.hist.z = 0.1) +
+  tm_layout(legend.outside = TRUE,
+            legend.height = 0.45, 
+            legend.width = 5.0,
+            legend.position = c("right", "bottom"),
+            frame = FALSE,
+            bg.color = "#F8F3E6") +
+  tm_borders(alpha = 0.5)
+
+```
