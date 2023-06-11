@@ -109,7 +109,7 @@ qtm(mpsz_pop2020,
 
 `tmap` has highly customizable options, with more control over map aesthetics:
 ```{r}
-#| fig-width: 8
+#| fig-width: 9
 
 tm_shape(mpsz_pop2020)+
   tm_fill(
@@ -151,6 +151,7 @@ summary(mpsz_pop2020$DEPENDENCY)
 Adding `breaks` argument to `tm_fill()`:
 
 ```{r}
+#| fig-width: 9
 #| warning: false
 tm_shape(mpsz_pop2020)+
   tm_fill(
@@ -164,6 +165,7 @@ tm_shape(mpsz_pop2020)+
 ### Assigning custom colors using `RcolorBrewer` palettes:
 
 ```{r}
+#| fig-width: 9
 tm_shape(mpsz_pop2020)+
   tm_fill("DEPENDENCY",
           n = 6,
@@ -178,6 +180,7 @@ tm_shape(mpsz_pop2020)+
 ### Adding map legends
 
 ```{r}
+#| fig-width: 9
 tm_shape(mpsz_pop2020)+
   tm_fill("DEPENDENCY", 
           style = "jenks", 
@@ -199,6 +202,7 @@ tm_shape(mpsz_pop2020)+
 
 ### Changing map styles:
 ```{r}
+#| fig-width: 9
 tm_shape(mpsz_pop2020)+
   tm_fill("DEPENDENCY", 
           style = "quantile", 
@@ -212,6 +216,7 @@ tm_shape(mpsz_pop2020)+
 tm_compass(), tm_scale_bar() and tm_grid() are used to add compass, scale bar and grid lines onto the choropleth map:
 
 ```{r}
+#| fig-width: 9
 tm_shape(mpsz_pop2020)+
   tm_fill("DEPENDENCY", 
           style = "quantile", 
@@ -249,6 +254,7 @@ In tmap, small multiple maps can be plotted in three ways:
 ### Assigning multiple `fill` values:
 
 ```{r}
+#| fig-width: 9
 tm_shape(mpsz_pop2020)+
   tm_fill(c("YOUNG", "AGED"),
           style = c("equal", "quantile"), 
@@ -265,6 +271,7 @@ tm_shape(mpsz_pop2020)+
 ### using `facet_map()` argument
 
 ```{r}
+#| fig-width: 9
 tm_shape(mpsz_pop2020) +
   tm_fill("DEPENDENCY",
           style = "quantile",
@@ -283,6 +290,7 @@ tm_shape(mpsz_pop2020) +
 ### Creating multiple maps using `tm_arrange()`
 
 ```{r}
+#| fig-width: 9
 youngmap <- tm_shape(mpsz_pop2020)+ 
   tm_polygons("YOUNG", 
               style = "quantile", 
@@ -300,6 +308,7 @@ tmap_arrange(youngmap, agedmap, asp=1, ncol=2)
 ## Conditional Mapping
 
 ```{r}
+#| fig-width: 9
 tm_shape(
   # Only plotting dependency for central region
   mpsz_pop2020[mpsz_pop2020$REGION_N=="CENTRAL REGION", ]

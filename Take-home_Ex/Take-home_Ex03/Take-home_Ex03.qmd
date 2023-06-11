@@ -15,13 +15,43 @@ FishEye International, a non-profit focused on countering illegal, unreported, a
 
 # Project Objectives
 
-This study aims to use visual analytics to understand patterns of groups in the knowledge graph and **identify anomalies in the business groups present in the knowledge graph**
+This study aims to use visual analytics to understand patterns of groups in the knowledge graph. This will endeavour to:
 
-# Data Preparation
+* **develop a visual analytics process to find similar companies and group them**
+* **focus on presenting key features of the business to the user**
 
-## Loading R Packages
+This will be done through investigating the following variables:
+
+```{mermaid}
+%%{
+  init: {
+    "theme": "base",
+    "themeVariables": {
+      "primaryColor": "#d8e8e6",
+      "primaryTextColor": "#325985",
+      "primaryBorderColor": "#325985",
+      "lineColor": "#325985",
+      "secondaryColor": "#cedded",
+      "tertiaryColor": "#fff" 
+      }
+  }
+}%%
+
+flowchart LR
+    A{Overall\nNetwork} --> B{Companies}
+    B -->|Similarities?| C(Company Structure)
+    B -->|Similarities?| D(Location)
+    B -->|Similarities?| E(Business Type)
+    B -->|Similarities?| F(Financial Status)
+
+```
+
+# 1: Data Preparation
+
+## 1.1: Loading R Packages
 
 ```{r intstall-packages}
+#| code-fold: true
 pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc, 
                urbnthemes,visNetwork, tidygraph, ggraph, 
                ggiraph, igraph, scales, ggplot2, 
@@ -31,7 +61,7 @@ pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc,
                tm, wordcloud2, forcats, skimr)
 ```
 
-## Loading the Data
+## 1.2: Loading the Data
 
 Use `jsonlite` package to read .json files
 
@@ -43,7 +73,7 @@ mc3 <- fromJSON("data/MC3.json")
 
 ```{r}
 #| warning: false
-
+#| code-fold: true
 mc3_links <- as_tibble(mc3$links) %>%
   distinct() %>%
   # Change all variable types to character to create dataframe
@@ -67,7 +97,7 @@ mc3_nodes <- as_tibble(mc3$nodes) %>%
   select(id, country, type, revenue_omu, product_services)
 ```
 
-## Data Health
+## 1.3: Data Health
 
 ::: panel-tabset
 ## **Nodes**
@@ -87,7 +117,11 @@ There are 21,515 missing values from the **revenue_omu** column.
 mc3_nodes[duplicated(mc3_nodes),]
 ```
 
-There are 2,595 duplicated entries.
+There are 2,595 duplicated entries. These are removed so as to prevent skewing of aggregate figures in subsequent analyses:
+
+```{r}
+mc3_nodes <- unique(mc3_nodes)
+```
 
 ## **Links**
 
@@ -109,16 +143,60 @@ mc3_links[duplicated(mc3_links),]
 There are no duplicated rows for **mc3_links** data.
 :::
 
-## **Summary Statistics**
+# 2: Exploratory Analysis
 
 ```{r}
-skim(mc3_nodes)
+skim(mc3_links)
 ```
 
-Aggregating Nodes Data to understand distribution of Companies, Company Contacts and Beneficial Owners
+
+## **What are the most frequent company roles?**  
+
+:::{ .solvebox .solve data-latex="solve"}  
+
+**Nodes** data is aggregated by country and type to visualise frequency of roles, as well as where each company or person is operating geographically.
+
+:::
+
+```{r}
+#| code-fold: true
+# Set default plot theme
+set_urbn_defaults(style = "print")
+
+nodes_type <- mc3_nodes %>%
+  ggplot(
+    aes(x = type)
+  ) +
+  geom_bar() +
+ # Set count annotations above bar
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +  
+ # Ensure than annotations are not cut off
+  ylim(0, 11000) +
+  labs(
+    title = "Highest Count of Beneficial Owners"
+  ) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+nodes_type
+  
+```  
+
+
+## **Where are these companies operating from?**  
 
 ```{r}
 #| fig-height: 6
+#| message: false
+#| code-fold: true
 # Aggregate data frame by country and type
 nodes_agg <- mc3_nodes %>%
   group_by(country, type) %>%
@@ -128,8 +206,6 @@ nodes_agg <- mc3_nodes %>%
             revenue_omu = sum(revenue_omu)) %>%
   ungroup()
 
-# Set default plot theme
-set_urbn_defaults(style = "print")
 
 # Create separate plots for each type
 p_company <- nodes_agg %>%
@@ -214,36 +290,158 @@ bottompatch <- (p_contact + p_owner) +
 fullpatch <- p_company / bottompatch
 fullpatch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
 ```
+## **Who are the companies connected to?**  
 
 ```{r}
-nodes_type <- mc3_nodes %>%
+#| message: false
+#| code-fold: true
+#| fig-height: 3
+# Get number of type by source (Company)
+links_count <- mc3_links %>%
+  group_by(source, type) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+# Plot strip chart to show distibution
+
+links_count %>%
   ggplot(
-    aes(x = type)
+    aes(x = count, 
+        y = type)
+  ) +
+  geom_point(
+    alpha = .2, 
+    size = 7
+  ) +
+  scale_x_continuous() +  
+  stat_summary(
+    color = "salmon", 
+    fun = "median", 
+    geom = "point", 
+    size = 3.5, 
+    alpha = .9
+  ) +
+  labs(title = "Higher Number of Beneficial Owners Indicative of Publicly Listed Companies",
+       subtitle = "Highlighted points represent median values",
+       x = NULL,
+       y = NULL
+  ) +
+  theme(axis.ticks.y = element_blank(),
+        plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+```
+:::{ .focusbox .focus data-latex="focus"}  
+
+**Initial Insights:**  
+* **Nodes data** seems to list all names of Companies, Beneficial Owners as well as Company Contacts in the Fishing Network. Majority of the companies are based in *ZH** and **Oceanus**, with Company Contacts and Beneficial Owners overwhelmingly from **ZH**. This suggests that the businesses are concentrated within a smaller geographical scope.  
+* **Links Data** has 'source' and 'target' columns, and seem to denote the relationship of individuals (target) to companies (source), as well as classifying the relationship as **type: Company Contact** or **Beneficial Owner**.  
+* Counting the number of individuals per type revealed a much larger variation in **Beneficial Owner** Count, which could be a good variable to use in classifying the company as Publicly listed (high number of beneficial owners - shareholders) or Sole Proprietorship (Single Beneficial Owner). However, this will also have to be further analysed in tandem with company revenue when grouping similar companies together. 
+
+:::
+
+
+## **How much revenue is being reported by the Companies?**  
+
+```{r}
+#| warning: false
+#| code-fold: true
+#| fig-height: 3
+
+# Only feature data from Companies
+company_nodes <- mc3_nodes %>%
+  filter(type == "Company")
+
+company_rev <-
+  ggplot(company_nodes, 
+       aes(x = 1, 
+           y = revenue_omu)
+  ) +
+  geom_rain(
+    color = "#1696d2",
+    alpha = .5
+  ) +
+  scale_y_continuous(
+    breaks = scales::pretty_breaks(n=5),
+    labels = scales::dollar
+  ) +
+  labs(
+    title = "Skewed Distribution of Revenue Suggests Range of Company Sizes"
+  ) +
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  ) +
+  coord_flip()
+
+company_rev
+
+```
+
+```{r}
+skim(company_nodes$revenue_omu)
+```
+:::{ .focusbox .focus data-latex="focus"}  
+
+Distribution of company revenue as well as quantile values show a **highly right-skewed distribution**, which could be an indication of company size. To use this variable for further classification of companies, revenue is binned by percentile and assigned a label:  
+
+* Above 80th Percentile: 1
+* 60-80th Percentile: 2
+* 40-60th Percentile: 3
+* 20-40th Percentile: 4
+* Below 20th Percentile: 5
+* Missing Values : NA
+
+:::
+
+```{r}
+#| code-fold: true
+# Calculate the percentiles
+percentiles <- quantile(company_nodes$revenue_omu, 
+                        probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
+                        na.rm = TRUE)
+
+# Create a new column and assign labels based on percentiles
+company_nodes$revenue_group <- cut(company_nodes$revenue_omu, 
+                                   breaks = percentiles, 
+                                   labels = c(5, 4, 3, 2, 1), 
+                                   include.lowest = TRUE)
+```
+
+```{r}
+#| code-fold: true
+# Barchart of revenue group
+ggplot(
+  company_nodes, 
+  aes(x = revenue_group)
   ) +
   geom_bar() +
- # Set count annotations above bar
+  labs(
+    # Linebreak added to title so it does not get truncated
+    title = "Highest Count of Missing Revenue Reports", 
+    x = "Revenue Group",
+    y = NULL
+  ) +
+  ylim(0, 2700) +
   geom_text(
     stat = "count",
     aes(label = after_stat(count)),
     vjust = -1
-  ) +  
-  labs(
-    title = "Highest Count of Beneficial Owners"
   ) +
   theme(
-    axis.title.y = element_blank(),
-    axis.title.x = element_blank(),
-    axis.text.y = element_blank(),
+    text = element_text(size = 12),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
   )
 
-nodes_type
-  
 ```
 
-## Data Preparation: Tokenisation
+## **What are the most common products/services**?
+
+### Data Preparation: Tokenisation
 
 ```{r}
+#|code-fold: true
 # Replace all 'character(0)' values as unknown
 mc3_nodes$product_services[mc3_nodes$product_services == "character(0)"] <- "Unknown"
 
@@ -258,7 +456,6 @@ nodes_unnest <- mc3_nodes %>%
                 strip_punct = TRUE)
 ```
 
-## **What are the most common words in product_services**?
 
 ::: panel-tabset
 ## **Step 1: Extract the Text**
@@ -273,7 +470,7 @@ text <- Corpus(VectorSource(nodes_text))
 
 ## **Step 2: Clean the text data**
 
-The process of removing specific stopwords using `removeWords` is an iterative process, where higher frequency words are removed if deemed out of context (such as 'well', 'including', 'related' or unproductive in giving specific information about the nature of products or services (such as 'services').
+The process of removing specific stopwords using `removeWords` is an iterative process, where higher frequency words are removed if deemed out of context (such as 'well', 'including', 'related' or unproductive in giving specific information about the nature of businesses (such as 'source', 'materials', etc).
 
 ```{r}
 #| warning: false
@@ -283,7 +480,7 @@ text <- text %>%
   # remove stopwords
   tm_map(removeWords, stopwords(kind = "en")) %>%
   # Specity stopwords based on initial analysis of word frequency
-  tm_map(removeWords, c("products", "including", "well", "related", "services", "source", "materials", "goods"))
+  tm_map(removeWords, c("products", "including", "well", "related", "services", "source", "materials", "goods", "offers", "range"))
 ```
 
 ## **Step 3: Create a document-term-matrix to count frequency of words**
@@ -314,6 +511,131 @@ wordcloud2(text_df_known,
            backgroundColor = "#F8F3E6")
 ```
 
+
+## Plotting a Bigram of frequent Products/Services
+
+::: panel-tabset
+
+## **Step 1: Unnesting tokens as bigrams**
+
 ```{r}
-findFreqTerms(dtm, lowfreq = 100)
+#| warning: false
+nodes_unnest2 <- mc3_nodes %>%
+   unnest_tokens(bigram, 
+                 product_services, 
+                 token = "ngrams", 
+                 n = 2, 
+                 to_lower = TRUE,) %>%
+  # remove empty rows
+   filter(!is.na(bigram)) %>%
+  # Remove specific stopwords from bigrams
+   filter(!str_detect(bigram,"including|range"))
+```
+
+## **Step 2: Creating Links**
+
+```{r}
+product_bigram <- nodes_unnest2 %>%
+    count(bigram, sort = TRUE) %>%
+  # Split bigram words into separate columns, uding space as delimiter
+    separate(bigram, c("word1", "word2"), sep = " ") %>%
+  # Only match words not in stopwords
+    anti_join(stop_words, by = c("word1" = "word")) %>%
+    anti_join(stop_words, by = c("word2" = "word")) %>%
+  # Keep only characters, dropping numbers 
+    filter(str_detect(word1, "[a-z]") & str_detect(word2, "[a-z]"))
+```
+
+## **Step 3: Creating Graph Object**  
+
+Applying a `filter` to keep only most frequently related bigrams
+
+```{r}
+product_bigram_graph <- product_bigram %>%
+  filter(n >15) %>%
+  graph_from_data_frame()
+```
+
+:::
+
+```{r}
+#| fig-width: 8
+#| fig-height: 8
+#| code-fold: true
+#| warning: false
+
+set.seed(1234)
+ggraph(
+  product_bigram_graph, 
+  layout = "nicely"
+  ) +
+  geom_edge_link(
+    # Adjust transparency of link based on how common the bigram is
+    aes(edge_alpha = n),
+    arrow = grid::arrow(type = "closed", 
+                        length = unit(.2, "cm")),
+    # Leave a gap between arrow head and circle
+    end_cap = circle(.2, 'cm'),
+    show.legend = FALSE
+  ) +
+  geom_node_point(
+    alpha = .7,
+    size = 3) +
+  geom_node_text(
+    aes(label = name), 
+    repel = TRUE
+  ) +
+  labs(title = "High Frequency of Companies Dealing in Seafood Products",
+       subtitle = "Darker links indicate higher commonality of related terms"
+  ) +
+  theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+```
+
+## **How well-connected are the companies?**
+
+```{r}
+mc3_links_new <- mc3_links %>%
+  inner_join(links_count, 
+             by = c("source" = "source", "type" = "type")) %>%
+  select(source, target, type, count)
+```
+
+```{r}
+# Select only people connected to >5 companies
+most_connected <- links_targetcount %>%
+  filter(company_count >7)
+
+# Create nodes dataframe from filtered links
+mc_source <- most_connected %>%
+  distinct(source) %>%
+  rename("id" = "source")
+mc_target <- most_connected %>%
+  distinct(target) %>%
+  rename("id" = "target")
+
+most_connected_nodes <- bind_rows(mc_source, mc_target)
+```
+
+```{r}
+most_connected_graph <- tbl_graph(nodes = most_connected_nodes,
+                          edges = most_connected, 
+                          directed = TRUE)
+most_connected_graph
+```
+```{r}
+
+
+ggraph(most_connected_graph, 
+            layout = "nicely") + 
+  geom_edge_link(aes(colour = type)) +
+   scale_edge_width(
+    range = c(0.1, 4)
+  ) +
+  geom_node_point() +
+  geom_node_label(
+    aes(label = id), 
+    size = 2,
+    repel = TRUE
+  )
 ```
