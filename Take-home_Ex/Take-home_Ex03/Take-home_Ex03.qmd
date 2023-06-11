@@ -384,7 +384,7 @@ skim(company_nodes$revenue_omu)
 ```
 :::{ .focusbox .focus data-latex="focus"}  
 
-Distribution of company revenue as well as quantile values show a **highly right-skewed distribution**, which could be an indication of company size. To use this variable for further classification of companies, revenue is binned by percentile and assigned a label:  
+Distribution of  revenue as well as quantile values show a **highly right-skewed distribution**, which could be an indication of company size. To use this variable for further classification of anomalous groups, revenue is binned by percentile and assigned a label:  
 
 * Above 80th Percentile: 1
 * 60-80th Percentile: 2
@@ -398,12 +398,12 @@ Distribution of company revenue as well as quantile values show a **highly right
 ```{r}
 #| code-fold: true
 # Calculate the percentiles
-percentiles <- quantile(company_nodes$revenue_omu, 
+percentiles <- quantile(mc3_nodes$revenue_omu, 
                         probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
                         na.rm = TRUE)
 
 # Create a new column and assign labels based on percentiles
-company_nodes$revenue_group <- cut(company_nodes$revenue_omu, 
+mc3_nodes$revenue_group <- cut(mc3_nodes$revenue_omu, 
                                    breaks = percentiles, 
                                    labels = c(5, 4, 3, 2, 1), 
                                    include.lowest = TRUE)
@@ -413,28 +413,141 @@ company_nodes$revenue_group <- cut(company_nodes$revenue_omu,
 #| code-fold: true
 # Barchart of revenue group
 ggplot(
-  company_nodes, 
+  mc3_nodes, 
   aes(x = revenue_group)
   ) +
   geom_bar() +
   labs(
     # Linebreak added to title so it does not get truncated
-    title = "Highest Count of Missing Revenue Reports", 
+    title = "Highest Count of Missing Revenue Reports for Beneficial Owners", 
     x = "Revenue Group",
     y = NULL
   ) +
-  ylim(0, 2700) +
   geom_text(
     stat = "count",
     aes(label = after_stat(count)),
     vjust = -1
   ) +
+  ylim(0,10500) +
   theme(
     text = element_text(size = 12),
     plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
-  )
+  ) +
+  facet_wrap(~type)
 
 ```
+
+# 3: Exploring Anomalous Structures  
+
+Based on initial analysis, there is an avenue to explore the relationship between different variables to sieve out anomalous groups within the overall network: 
+
+```{mermaid}
+%%{
+  init: {
+    "theme": "base",
+    "themeVariables": {
+      "primaryColor": "#d8e8e6",
+      "primaryTextColor": "#325985",
+      "primaryBorderColor": "#325985",
+      "lineColor": "#325985",
+      "secondaryColor": "#cedded",
+      "tertiaryColor": "#fff" 
+      }
+  }
+}%%
+
+flowchart LR
+    A{Overall\nNetwork} --> B{Companies}
+    B --> C(Company Structure)
+    B --> D(Financial Status)
+    C -.-|Ownership| D
+
+```
+
+## **What is the structure of companies based on revenue?**
+
+::: panel-tabset
+
+## **Extracting Nodes and Links**
+
+```{r}
+# Extract nodes from Highest revenue band
+nodes_highrev <- mc3_nodes %>%
+  filter(revenue_group == "1")
+
+high_target_count <- links_count %>%
+  filter(count >20)
+
+links_highrev <- mc3_links %>%
+  filter(type == "Beneficial Owner") %>%
+  filter(source %in% high_target_count$source) %>%
+  filter(source %in% nodes_highrev$id) %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+hirev_source <- links_highrev %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+hirev_target <- links_highrev %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **Creating Graph Object**
+
+```{r}
+# Bind into single dataframe
+nodes_hirev_new <- bind_rows(hirev_source, hirev_target)
+
+nodes_hirev_new$group <- ifelse(nodes_hirev_new$id %in% company_nodes$id, "Company", "Beneficial Owner")
+
+
+# Create graph object
+hirev_graph <- tbl_graph(nodes = nodes_hirev_new,
+                          edges = links_highrev, 
+                          directed = TRUE)
+hirev_graph
+```
+:::
+
+```{r}
+#| code-fold: true
+#| fig-height: 7
+
+visNetwork(
+    nodes_hirev_new, 
+    links_highrev,
+    width = "100%"
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Beneficial Owner",
+            color = "#fccb41") %>%
+  visLegend() %>%
+  visEdges(
+    arrows = "to"
+  ) %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```
+
+
 
 ## **What are the most common products/services**?
 
@@ -592,50 +705,9 @@ ggraph(
   )
 ```
 
+
+
+
 ## **How well-connected are the companies?**
 
-```{r}
-mc3_links_new <- mc3_links %>%
-  inner_join(links_count, 
-             by = c("source" = "source", "type" = "type")) %>%
-  select(source, target, type, count)
-```
 
-```{r}
-# Select only people connected to >5 companies
-most_connected <- links_targetcount %>%
-  filter(company_count >7)
-
-# Create nodes dataframe from filtered links
-mc_source <- most_connected %>%
-  distinct(source) %>%
-  rename("id" = "source")
-mc_target <- most_connected %>%
-  distinct(target) %>%
-  rename("id" = "target")
-
-most_connected_nodes <- bind_rows(mc_source, mc_target)
-```
-
-```{r}
-most_connected_graph <- tbl_graph(nodes = most_connected_nodes,
-                          edges = most_connected, 
-                          directed = TRUE)
-most_connected_graph
-```
-```{r}
-
-
-ggraph(most_connected_graph, 
-            layout = "nicely") + 
-  geom_edge_link(aes(colour = type)) +
-   scale_edge_width(
-    range = c(0.1, 4)
-  ) +
-  geom_node_point() +
-  geom_node_label(
-    aes(label = id), 
-    size = 2,
-    repel = TRUE
-  )
-```
