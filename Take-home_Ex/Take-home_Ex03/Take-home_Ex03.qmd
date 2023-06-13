@@ -150,7 +150,7 @@ skim(mc3_links)
 ```
 
 
-## **What are the most frequent company roles?**  
+## **Who are the Stakeholders?**  
 
 :::{ .solvebox .solve data-latex="solve"}  
 
@@ -191,7 +191,7 @@ nodes_type
 ```  
 
 
-## **Where are these companies operating from?**  
+## **Where are they operating from?**  
 
 ```{r}
 #| fig-height: 6
@@ -333,8 +333,11 @@ links_count %>%
 :::{ .focusbox .focus data-latex="focus"}  
 
 **Initial Insights:**  
-* **Nodes data** seems to list all names of Companies, Beneficial Owners as well as Company Contacts in the Fishing Network. Majority of the companies are based in *ZH** and **Oceanus**, with Company Contacts and Beneficial Owners overwhelmingly from **ZH**. This suggests that the businesses are concentrated within a smaller geographical scope.  
+
+* **Nodes data** seems to list all names of Companies, Beneficial Owners as well as Company Contacts in the Fishing Network. Majority of the companies are based in *ZH** and **Oceanus**, with Company Contacts and Beneficial Owners overwhelmingly from **ZH**. This suggests that the businesses are concentrated within a smaller geographical scope.   
+
 * **Links Data** has 'source' and 'target' columns, and seem to denote the relationship of individuals (target) to companies (source), as well as classifying the relationship as **type: Company Contact** or **Beneficial Owner**.  
+
 * Counting the number of individuals per type revealed a much larger variation in **Beneficial Owner** Count, which could be a good variable to use in classifying the company as Publicly listed (high number of beneficial owners - shareholders) or Sole Proprietorship (Single Beneficial Owner). However, this will also have to be further analysed in tandem with company revenue when grouping similar companies together. 
 
 :::
@@ -379,12 +382,9 @@ company_rev
 
 ```
 
-```{r}
-skim(company_nodes$revenue_omu)
-```
 :::{ .focusbox .focus data-latex="focus"}  
 
-Distribution of  revenue as well as quantile values show a **highly right-skewed distribution**, which could be an indication of company size. To use this variable for further classification of anomalous groups, revenue is binned by percentile and assigned a label:  
+Distribution of  revenue as well as quantile values show a **highly right-skewed distribution**, which could be an indication of company size. To use this variable for further classification of anomalous groups, revenue is binned by percentile and assigned a label. As missing Revenue values could be a data lapse issue, or a sign of concealing possible *fishy* actvity, whis is kept as a separate category for further analysis:
 
 * Above 80th Percentile: 1
 * 60-80th Percentile: 2
@@ -442,6 +442,7 @@ ggplot(
 Based on initial analysis, there is an avenue to explore the relationship between different variables to sieve out anomalous groups within the overall network: 
 
 ```{mermaid}
+%%| fig-width: 7
 %%{
   init: {
     "theme": "base",
@@ -457,14 +458,27 @@ Based on initial analysis, there is an avenue to explore the relationship betwee
 }%%
 
 flowchart LR
-    A{Overall\nNetwork} --> B{Companies}
+    A{Overall\nNetwork} --> B{Fishy\nCompanies}
     B --> C(Company Structure)
-    B --> D(Financial Status)
-    C -.-|Ownership| D
+    B --> D(Financial Status) -.->E[High Revenue]
+    D -.-> F[Unreported Revenue]
+    C -.->|Overlapping?|G[Beneficial Owners]
+    C -.->|Overlapping?|H[Company Contacts]
 
 ```
+Firstly, the company ownership and company contact structure can be visualised through plotting network graphs. This will give a better sense of how the individual records listed in the **links** data are related, as well as sieve out possible *fishy* patterns. The following filters are used to investigate possible 'groups' and anomalies:  
 
-## **What is the structure of companies based on revenue?**
+* High Revenue & Companies with Higher numbers of Beneficial Owners
+* Company Contacts of High Revenue Companies
+* Unreported Revenue & Higher numbers of Beneficial Owners
+* Company Contacts of Companies with Unreported Revenue 
+
+
+
+## **3.1: What is the structure of companies based on revenue?**
+
+
+### **3.1.1: High Revenue Groups**  
 
 ::: panel-tabset
 
@@ -475,12 +489,14 @@ flowchart LR
 nodes_highrev <- mc3_nodes %>%
   filter(revenue_group == "1")
 
-high_target_count <- links_count %>%
+# Only get Beneficial Owners from companies with higher counts
+high_owner_count <- links_count %>%
+  filter(type == "Beneficial Owner") %>%
   filter(count >20)
 
 links_highrev <- mc3_links %>%
   filter(type == "Beneficial Owner") %>%
-  filter(source %in% high_target_count$source) %>%
+  filter(source %in% high_owner_count$source) %>%
   filter(source %in% nodes_highrev$id) %>%
   rename("from" = "source",
          "to" = "target")
@@ -499,7 +515,7 @@ hirev_target <- links_highrev %>%
   rename("id" = "to")
 ```
 
-## **Creating Graph Object**
+## **Creating Nodes and Edges Dataframes**
 
 ```{r}
 # Bind into single dataframe
@@ -507,23 +523,21 @@ nodes_hirev_new <- bind_rows(hirev_source, hirev_target)
 
 nodes_hirev_new$group <- ifelse(nodes_hirev_new$id %in% company_nodes$id, "Company", "Beneficial Owner")
 
-
-# Create graph object
-hirev_graph <- tbl_graph(nodes = nodes_hirev_new,
-                          edges = links_highrev, 
-                          directed = TRUE)
-hirev_graph
 ```
 :::
 
 ```{r}
 #| code-fold: true
-#| fig-height: 7
+#| fig-height: 6
 
 visNetwork(
     nodes_hirev_new, 
     links_highrev,
-    width = "100%"
+    width = "100%",
+    main = list(text = "High Revenue Companies Feature Overlapping Owners",
+                style = "font-size:17x;
+                weight:bold;
+                text-align:right;")
   ) %>%
   visIgraphLayout(
     layout = "layout_with_fr"
@@ -549,9 +563,441 @@ visNetwork(
 
 
 
-## **What are the most common products/services**?
+```{r}
+#| code-fold: true
+links_highrev_cc <- mc3_links %>%
+  filter(type == "Company Contacts") %>%
+  filter(source %in% nodes_highrev$id) %>%
+  rename("from" = "source",
+         "to" = "target")
 
-### Data Preparation: Tokenisation
+# Get distinct Source and Target
+hirev_source_cc <- links_highrev_cc %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+hirev_target_cc <- links_highrev_cc %>%
+  distinct(to) %>%
+  rename("id" = "to")
+
+# Bind into single dataframe
+nodes_hirev_cc <- bind_rows(hirev_source_cc, hirev_target_cc)
+
+nodes_hirev_cc$group <- ifelse(nodes_hirev_cc$id %in% company_nodes$id, "Company", "Company Contacts")
+```
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    nodes_hirev_cc, 
+    links_highrev_cc,
+    width = "100%",
+    main = list(text = "Few Interlinks between Company Contacts for High Revenue Group ",
+                style = "font-size:17px;
+                weight:bold;
+                text-align:right;")
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_graphopt"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Company Contacts",
+            color = "#eb99c2") %>%
+  visLegend() %>%
+  visEdges(
+    arrows = "to"
+  ) %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```  
+  
+  
+  
+:::{ .focusbox .focus data-latex="focus"}  
+
+**Insights from Visualisations:**  
+
+* 'Clusters' of Beneficial Owners in the network graph suggest that the companies are large or publicly-listed
+* Several common Beneficial Owners can be observed in the network, which also form links to other 'clusters' or companies. This could be suggestive of more complex ownership patterns or related companies 
+* Network of Company Contacts show that most companies in the High Revenue band have a single contact. Identifying companies with abnormally large numbers of contacts could be a possible sign of *fishy* company structure
+
+:::
+
+
+### **3.1.2: Unreported Revenue but high number of links**
+
+::: panel-tabset
+
+## **Extracting Nodes and Links**
+
+```{r}
+# Extract nodes that have unreported revenue
+nodes_missingrev <- mc3_nodes %>%
+  filter(is.na(revenue_group))
+
+
+links_missingrev <- mc3_links %>%
+  filter(type == "Beneficial Owner") %>%
+  filter(source %in% high_owner_count$source) %>%
+  filter(source %in% nodes_missingrev$id) %>%
+  distinct() %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+missingrev_source <- links_missingrev %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+missingrev_target <- links_missingrev %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **Creating Nodes and Edges Dataframes**
+
+```{r}
+# Bind into single dataframe
+nodes_missingrev_new <- bind_rows(missingrev_source, missingrev_target)
+
+nodes_missingrev_new$group <- ifelse(nodes_missingrev_new$id %in% company_nodes$id, "Company", "Beneficial Owner")
+
+```
+
+:::
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    nodes_missingrev_new, 
+    links_missingrev,
+    width = "100%",
+    main = list(text = "Highly Clustered Network with Only Single Overlapping Owner",
+                style = "font-size:17x;
+                weight:bold;
+                text-align:right;")
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Beneficial Owner",
+            color = "#fccb41") %>%
+  visLegend() %>%
+  visEdges(
+    arrows = "to"
+  ) %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```
+
+
+::: panel-tabset
+
+## **Extracting Nodes and Links**
+
+```{r}
+high_cc_count <- links_count %>%
+  filter(count >= 4)
+
+links_missingrev_cc <- mc3_links %>%
+  filter(type == "Company Contacts") %>%
+  filter(source %in% high_cc_count$source) %>%
+  filter(source %in% nodes_missingrev$id) %>%
+  distinct() %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+missingrev_source_cc <- links_missingrev_cc %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+missingrev_target_cc <- links_missingrev_cc %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **Creating Nodes and Edges Dataframes**
+
+```{r}
+# Bind into single dataframe
+nodes_missingrev_new_cc <- bind_rows(missingrev_source_cc, missingrev_target_cc)
+
+nodes_missingrev_new_cc$group <- ifelse(nodes_missingrev_new_cc$id %in% company_nodes$id, "Company", "Company Contacts")
+
+```
+
+:::
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    nodes_missingrev_new_cc, 
+    links_missingrev_cc,
+    width = "100%",
+    main = list(text = "Companies Mostly with Fewer Contacts",
+                style = "font-size:17px;
+                weight:bold;
+                text-align:right;")
+    
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Company Contacts",
+            color = "#eb99c2") %>%
+  visLegend() %>%
+  visEdges(
+    arrows = "from"
+  ) %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```
+
+:::{ .focusbox .focus data-latex="focus"}  
+
+**Insights from Visualisations:**  
+
+* Similar 'clusters' of companies can be observed in the unreported revenue group (compared to high revenue group), although with far fewer common Beneficial Owners. 
+* A couple of companies with abnormally higher count of company contacts can be observed in the second network graph. This could be a possible flag for anomalous structures. 
+* Some Company Contacts also form a network amongst themselves, and are not linked to a Company. This could be indicative of suspicious networks, such as Shell companies that are registered under Individual names instead of Company names
+
+:::
+
+### **3.1.3: Who is linked to Higher Number of Multiple Companies?**
+
+```{r}
+links_by_target <- mc3_links %>%
+  group_by(target, type) %>%
+  summarise(company_count = n()) %>%
+  arrange(desc(company_count)) %>%
+  ungroup()
+
+datatable(links_by_target)
+```
+
+From the data output, it seems as though there are multiple individuals who are Beneficial Owners of many companies. As this could be indicative of more convoluted ties between companies or IUU fishing networks, these are filtered out and visualised:
+
+::: panel-tabset
+
+## **Extracting Nodes and Links**
+
+```{r}
+
+# Only get individuals who are Company contacts of more than or equal to 3 companies
+cc_count <- links_by_target %>%
+  filter(type == "Company Contacts") %>%
+  filter(company_count >= 3)
+
+cc_links <- mc3_links %>%
+  filter(type == "Company Contacts") %>%
+  filter(target %in% cc_count$target) %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+cc_source <- cc_links %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+cc_target <- cc_links %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **Creating Nodes and Edges Dataframes**
+
+```{r}
+# Bind into single dataframe
+cc_nodes <- bind_rows(cc_source, cc_target)
+
+cc_nodes$group <- ifelse(cc_nodes$id %in% company_nodes$id, "Company", "Company Contacts")
+
+```
+:::
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    cc_nodes, 
+    cc_links,
+    width = "100%",
+    main = list(text = "Multiple Companies Seem to be Owned by Individuals",
+                style = "font-size:17x;
+                weight:bold;
+                text-align:right;")
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Company Contacts",
+            color = "#eb99c2") %>%
+  visLegend() %>%
+  visEdges(
+    arrows = "from"
+  ) %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```
+
+## **Extracting Nodes and Links**
+
+```{r}
+
+# Only get individuals who are beneficial owners of more than or equal to 4 companies
+owner_count <- links_by_target %>%
+  filter(type == "Beneficial Owner") %>%
+  filter(company_count >= 4)
+
+links_owner <- mc3_links %>%
+  filter(type == "Beneficial Owner") %>%
+  filter(target %in% owner_count$target) %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+owner_source <- links_owner %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+owner_target <- links_owner %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **Creating Nodes and Edges Dataframes**
+
+```{r}
+# Bind into single dataframe
+owner_nodes <- bind_rows(owner_source, owner_target)
+
+owner_nodes$group <- ifelse(owner_nodes$id %in% company_nodes$id, "Company", "Beneficial Owner")
+
+```
+:::
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    owner_nodes, 
+    links_owner,
+    width = "100%",
+    main = list(text = "Multiple Companies Seem to be Owned by Individuals",
+                style = "font-size:17x;
+                weight:bold;
+                text-align:right;")
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Beneficial Owner",
+            color = "#fccb41") %>%
+  visLegend() %>%
+  visEdges(
+    arrows = "to"
+  ) %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```
+
+
+
+## **3.2: What are the most common products/services?**
+
+```{mermaid}
+%%| fig-width: 7
+%%{
+  init: {
+    "theme": "base",
+    "themeVariables": {
+      "primaryColor": "#d8e8e6",
+      "primaryTextColor": "#325985",
+      "primaryBorderColor": "#325985",
+      "lineColor": "#325985",
+      "secondaryColor": "#cedded",
+      "tertiaryColor": "#fff" 
+      }
+  }
+}%%
+
+flowchart LR
+    A{Overall\nNetwork} --> B{Fishy\nCompanies}
+    B --> C(Business Type) -.->|Dubious?|D[Products or\nServices]
+
+```
+
+
+### 3.2.1: Data Preparation: Tokenisation
 
 ```{r}
 #|code-fold: true
@@ -625,7 +1071,7 @@ wordcloud2(text_df_known,
 ```
 
 
-## Plotting a Bigram of frequent Products/Services
+### 3.2.2: Plotting a Bigram of frequent Products/Services
 
 ::: panel-tabset
 
@@ -642,7 +1088,7 @@ nodes_unnest2 <- mc3_nodes %>%
   # remove empty rows
    filter(!is.na(bigram)) %>%
   # Remove specific stopwords from bigrams
-   filter(!str_detect(bigram,"including|range"))
+   filter(!str_detect(bigram,"including|range|related"))
 ```
 
 ## **Step 2: Creating Links**
@@ -657,6 +1103,7 @@ product_bigram <- nodes_unnest2 %>%
     anti_join(stop_words, by = c("word2" = "word")) %>%
   # Keep only characters, dropping numbers 
     filter(str_detect(word1, "[a-z]") & str_detect(word2, "[a-z]"))
+
 ```
 
 ## **Step 3: Creating Graph Object**  
@@ -703,6 +1150,11 @@ ggraph(
   ) +
   theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
   )
+```
+
+
+```{r}
+datatable(product_bigram)
 ```
 
 
