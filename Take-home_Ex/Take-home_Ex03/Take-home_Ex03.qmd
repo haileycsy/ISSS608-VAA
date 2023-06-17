@@ -21,9 +21,7 @@ This study aims to use visual analytics to understand patterns of groups in the 
 * **focus on presenting key features of the business to the user**
 
 This will be done through investigating the following variables:
-```{r}
 
-```
 
 ```{mermaid}
 %%{
@@ -61,7 +59,7 @@ pacman::p_load(jsonlite, tidyverse, DT, lubridate, Hmisc,
                gganimate, ggstatsplot, ggrain, ggridges, 
                graphlayouts, plotly, patchwork, kableExtra, 
                ggpubr, ggrepel, ggforce, tidytext,
-               tm, wordcloud2, forcats, skimr)
+               tm, wordcloud2, forcats, skimr, kableExtra)
 ```
 
 ## 1.2: Loading the Data
@@ -76,6 +74,7 @@ mc3 <- fromJSON("data/MC3.json")
 
 ```{r}
 #| warning: false
+#| message: false
 #| code-fold: true
 mc3_links <- as_tibble(mc3$links) %>%
   distinct() %>%
@@ -123,8 +122,22 @@ mc3_nodes[duplicated(mc3_nodes),]
 There are 2,595 duplicated entries. These are removed so as to prevent skewing of aggregate figures in subsequent analyses:
 
 ```{r}
+#| warning: false
 mc3_nodes <- unique(mc3_nodes)
 ```
+
+There are several **ids** from the same country and type, but different revenue and products_services values. These are collapsed so as not to skew the analysis:
+
+```{r}
+#| message: false
+mc3_nodes_new <- mc3_nodes %>%
+  group_by(id, country, type) %>%
+  summarise(revenue_omu = sum(revenue_omu),
+            product_services = paste(product_services, collapse = ", "))
+  
+```
+
+
 
 ## **Links**
 
@@ -138,7 +151,7 @@ There are no missing values in mc3_links
 
 **II. Cleaning up grouped data in Source column**
 
-Source column contains vector-like strings with multiple company names, eg. c("Yu er he  Solutions", "Yu er he  Solutions",). This is extracted and split into separate rows: 
+Source column contains vector-like strings with multiple company names, eg. c("Yu er he  Solutions", "Yu er he  Solutions",). This is extracted and split into separate rows, also duplicating the original values from variables across the columns:
 
 ```{r}
 mc3_links_new <- mc3_links %>%
@@ -148,10 +161,10 @@ mc3_links_new <- mc3_links %>%
   unnest(source) %>%
   # Split phrases by comma ignoring leading spaces
   separate_rows(source, sep = ",\\s*") %>%
-  mutate(source = str_remove_all(source, '"'))
+  mutate(source = str_remove_all(source, '"')) %>%
+  fill(everything())
 
 ```
-
 
 
 **III. Checking for Duplicates:**
@@ -192,7 +205,7 @@ skim(mc3_links_new)
 # Set default plot theme
 set_urbn_defaults(style = "print")
 
-nodes_type <- mc3_nodes %>%
+nodes_type <- mc3_nodes_new %>%
   ggplot(
     aes(x = type)
   ) +
@@ -227,7 +240,7 @@ nodes_type
 #| message: false
 #| code-fold: true
 # Aggregate data frame by country and type
-nodes_agg <- mc3_nodes %>%
+nodes_agg <- mc3_nodes_new %>%
   group_by(country, type) %>%
   # Count number of companies per country
   summarise(count = n(),
@@ -380,7 +393,7 @@ links_count %>%
 #| fig-height: 3
 
 # Only feature data from Companies
-company_nodes <- mc3_nodes %>%
+company_nodes <- mc3_nodes_new %>%
   filter(type == "Company")
 
 company_rev <-
@@ -427,12 +440,12 @@ Distribution of  revenue as well as quantile values show a **highly right-skewed
 ```{r}
 #| code-fold: true
 # Calculate the percentiles
-percentiles <- quantile(mc3_nodes$revenue_omu, 
+percentiles <- quantile(mc3_nodes_new$revenue_omu, 
                         probs = c(0, 0.2, 0.4, 0.6, 0.8, 1),
                         na.rm = TRUE)
 
 # Create a new column and assign labels based on percentiles
-mc3_nodes$revenue_group <- cut(mc3_nodes$revenue_omu, 
+mc3_nodes_new$revenue_group <- cut(mc3_nodes_new$revenue_omu, 
                                    breaks = percentiles, 
                                    labels = c(5, 4, 3, 2, 1), 
                                    include.lowest = TRUE)
@@ -442,7 +455,7 @@ mc3_nodes$revenue_group <- cut(mc3_nodes$revenue_omu,
 #| code-fold: true
 # Barchart of revenue group
 ggplot(
-  mc3_nodes, 
+  mc3_nodes_new, 
   aes(x = revenue_group)
   ) +
   geom_bar() +
@@ -514,11 +527,13 @@ Firstly, the company ownership and company contact structure can be visualised t
   
 ::: panel-tabset
 
-## **Extracting Nodes and Links**
+## **I**
+
+**Extracting Nodes and Links**
 
 ```{r}
 # Extract nodes from Highest revenue band
-nodes_highrev <- mc3_nodes %>%
+nodes_highrev <- mc3_nodes_new %>%
   filter(revenue_group == "1")
 
 # Only get Beneficial Owners from companies with higher counts
@@ -534,7 +549,9 @@ links_highrev <- mc3_links_new %>%
          "to" = "target")
 ```
 
-## **Getting Distinct Source and Target**
+## **II**  
+  
+**Getting Distinct Source and Target**
 
 ```{r}
 # Get distinct Source and Target
@@ -547,7 +564,9 @@ hirev_target <- links_highrev %>%
   rename("id" = "to")
 ```
 
-## **Creating Nodes and Edges Dataframes**
+## **III**  
+  
+**Creating Nodes and Edges Dataframes**
 
 ```{r}
 # Bind into single dataframe
@@ -555,7 +574,8 @@ nodes_hirev_new <- bind_rows(hirev_source, hirev_target)
 
 nodes_hirev_new$group <- ifelse(nodes_hirev_new$id %in% company_nodes$id, "Company", "Beneficial Owner")
 
-```
+```  
+
 :::
 
 ```{r}
@@ -651,9 +671,8 @@ visNetwork(
     collapse = TRUE) %>%
   visInteraction(navigationButtons = TRUE)
 ```  
-  
-  
-  
+.  
+
 :::{ .focusbox .focus data-latex="focus"}  
 
 **Insights from Visualisations:**  
@@ -669,11 +688,13 @@ visNetwork(
 
 ::: panel-tabset
 
-## **Extracting Nodes and Links**
+## **I**  
+
+**Extracting Nodes and Links**
 
 ```{r}
 # Extract nodes that have unreported revenue
-nodes_missingrev <- mc3_nodes %>%
+nodes_missingrev <- mc3_nodes_new %>%
   filter(is.na(revenue_group))
 
 
@@ -686,7 +707,9 @@ links_missingrev <- mc3_links_new %>%
          "to" = "target")
 ```
 
-## **Getting Distinct Source and Target**
+## **II**   
+
+**Getting Distinct Source and Target**
 
 ```{r}
 # Get distinct Source and Target
@@ -699,7 +722,9 @@ missingrev_target <- links_missingrev %>%
   rename("id" = "to")
 ```
 
-## **Creating Nodes and Edges Dataframes**
+## **III**  
+
+**Creating Nodes and Edges Dataframes**
 
 ```{r}
 # Bind into single dataframe
@@ -749,7 +774,9 @@ visNetwork(
 
 ::: panel-tabset
 
-## **Extracting Nodes and Links**
+## **I**  
+
+**Extracting Nodes and Links**
 
 ```{r}
 high_cc_count <- links_count %>%
@@ -764,7 +791,9 @@ links_missingrev_cc <- mc3_links_new %>%
          "to" = "target")
 ```
 
-## **Getting Distinct Source and Target**
+## **II**  
+
+**Getting Distinct Source and Target**
 
 ```{r}
 # Get distinct Source and Target
@@ -777,7 +806,9 @@ missingrev_target_cc <- links_missingrev_cc %>%
   rename("id" = "to")
 ```
 
-## **Creating Nodes and Edges Dataframes**
+## **III**  
+
+**Creating Nodes and Edges Dataframes**
 
 ```{r}
 # Bind into single dataframe
@@ -823,14 +854,15 @@ visNetwork(
     selectedBy = "group",
     collapse = TRUE) %>%
   visInteraction(navigationButtons = TRUE)
-```
+```  
+.  
 
 :::{ .focusbox .focus data-latex="focus"}  
 
 **Insights from Visualisations:**  
 
 * Similar 'clusters' of companies can be observed in the unreported revenue group (compared to high revenue group), although no common Beneficial Owners. 
-* Network Graph of Company Contacts also does not reveal any obvious *fishy* patterns
+* Network Graph of Company Contacts also does not reveal any obvious *fishy* patterns. From the visualisations, it appears as though companies in the High Revenue band may have anomalous structures
 
 :::  
 
@@ -838,8 +870,11 @@ visNetwork(
 
 ### **3.1.3: Who is linked to Higher Number of Multiple Companies?**
 
+Analysis thus far has mapped structure around **Company** Nodes. However, this analysis has revealed that there are a few Entities who are Beneficial Owners of multiple companies. As this could form Conglomerates, or possible *fishy* structures, this section will investigate this area in further detail. 
+
 ```{r}
 #| message: false
+#| code-fold: true
 links_by_target <- mc3_links_new %>%
   group_by(target, type) %>%
   summarise(company_count = n()) %>%
@@ -848,24 +883,24 @@ links_by_target <- mc3_links_new %>%
 
 datatable(links_by_target)
 ```  
+.  
 
-
-
-  
-From the data output, **it seems as though there are multiple individuals who are Beneficial Owners of many companies.** As this could be indicative of more convoluted ties between companies or IUU fishing networks, these are filtered out and visualised:  
-
+From the data output, **it seems as though there are multiple individuals who are Beneficial Owners or Company Contacts of many companies.** As this could be indicative of more convoluted ties between companies or IUU fishing networks, these are filtered out and visualised:  
 
 
 ::: panel-tabset
 
-## **Extracting Nodes and Links**
+## **I**  
+
+**Extracting Nodes and Links**
 
 ```{r}
 
-# Only get individuals who are beneficial owners of more than or equal to 4 companies
+# Only get individuals who are beneficial owners of more than or equal to 3 companies
 owner_count <- links_by_target %>%
   filter(type == "Beneficial Owner") %>%
-  filter(company_count >= 4)
+  filter(company_count >= 3) %>%
+  distinct()
 
 links_owner <- mc3_links_new %>%
   filter(type == "Beneficial Owner") %>%
@@ -874,7 +909,9 @@ links_owner <- mc3_links_new %>%
          "to" = "target")
 ```
 
-## **Getting Distinct Source and Target**
+## **II**  
+
+**Getting Distinct Source and Target**
 
 ```{r}
 # Get distinct Source and Target
@@ -887,15 +924,18 @@ owner_target <- links_owner %>%
   rename("id" = "to")
 ```
 
-## **Creating Nodes and Edges Dataframes**
+##  **III**  
+
+**Creating Nodes and Edges Dataframes**
 
 ```{r}
 # Bind into single dataframe
-owner_nodes <- bind_rows(owner_source, owner_target)
+owner_nodes <- bind_rows(owner_source, owner_target) %>%
+  distinct()
 
 owner_nodes$group <- ifelse(owner_nodes$id %in% owner_count$target, "Beneficial Owner", "Company")
 
-```  
+```
 
 :::
 
@@ -907,7 +947,7 @@ visNetwork(
     owner_nodes, 
     links_owner,
     width = "100%",
-    main = list(text = "Multiple Companies Seem to be Owned by Several Individuals",
+    main = list(text = "Various Overlapping Company Ownership Structures Suggest Mini-Networks",
                 style = "font-size:17x;
                 weight:bold;
                 text-align:right;")
@@ -930,8 +970,332 @@ visNetwork(
     selectedBy = "group",
     collapse = TRUE) %>%
   visInteraction(navigationButtons = TRUE)
+```  
+.  
+
+:::{ .focusbox .focus data-latex="focus"}  
+
+**Insights from Visualisations:**  
+
+There are 3 key company network structures that fan be derived from the above visualisation:
+
+* **Single Beneficial Owner of multiple Companies:** Ultimate Beneficial Owner
+* **Multiple Companies with Completely overlapping Beneficial Owners:** Possible Shell/Front Companies
+* **Single Companies Linked to Same Beneficial Owners:** Joint Ventures
+
+:::  
+
+
+
+### **3.1.4: Are there Entities with Multiple Entries?**
+
+Similarly to Section 3.1.3, Entities in the **Nodes** dataframe could possess multiple roles within the network, or operate from different countries. As this may point towards *fishy* structures, this data is investigated further:
+
+```{r}
+#| message: false
+nodes_multiple <- mc3_nodes_new %>%
+  group_by(id) %>%
+  summarise(count = n()) %>%
+  # Only retain entities with multiple roles
+  filter(count >1) %>%
+  arrange(desc(count)) %>%
+  ungroup()
+
+datatable(nodes_multiple)
 ```
 
+Data above reveals that there are **1,464** Entities that may have multiple entries. This is investigated further:
+
+```{r}
+#| fig-height: 6
+#| code-fold: true
+#| warning: false
+#| message: false
+nodes_by_type <- mc3_nodes_new %>%
+  group_by(id, type) %>%
+  summarise(count = n()) %>%
+  # Pivot to get each type as a separate column
+  pivot_wider(names_from = type, values_from = count, values_fill = 0) %>%
+  arrange(desc(Company)) %>%
+  ungroup()
+
+company_plot <- nodes_by_type %>%
+  # Only get count of nodes with multiple company entries
+  filter(Company >1) %>%
+  # Show discrete count labels in x axis
+  mutate(Company = as.factor(Company)) %>%
+  ggplot(
+    aes(x = Company)
+  ) +
+  geom_bar() +
+  labs(
+    title = "Companies with Multiple Entries in Data",
+    x = "No. of Entries",
+    y = "No. of Companies"
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +
+  ylim(0, 200) +
+  theme(
+    text = element_text(size = 12),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+owner_plot <- nodes_by_type %>%
+  # Only find nodes that are owners
+  filter(`Beneficial Owner` >0) %>%
+  # Show discrete count labels in x axis
+  mutate(`Beneficial Owner` = as.factor(`Beneficial Owner`)) %>%
+  ggplot(
+    aes(x = `Beneficial Owner`)
+  ) +
+  geom_bar() +
+  labs(
+    title = "Beneficial Ownership",
+    x = "No. of Ownership",
+    y = "No. of Entities"
+  ) +
+  ylim(0, 11500) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +
+  theme(
+    text = element_text(size = 12),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+cc_plot <- nodes_by_type %>%
+  # Show discrete count labels in x axis
+  mutate(`Company Contacts` = as.factor(`Company Contacts`)) %>%
+  ggplot(
+    aes(x = `Company Contacts`)
+  ) +
+  geom_bar() +
+  labs(
+    title = "~ 27% of Entities are Company Contacts\nof Multiple Companies",
+    x = "No. of Contacts",
+    y = "No. of Entities"
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +
+  ylim(0,20000) +
+  theme(
+    text = element_text(size = 12),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
+
+patch <- owner_plot + cc_plot 
+full_patch <- company_plot / patch
+full_patch & theme(plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6"))
+```   
+  
+  
+::: panel-tabset
+
+## **I**  
+
+**Extracting Links from nodes_multiple table**
+
+```{r}
+links_multiple <- mc3_links_new %>%
+  filter(source %in% nodes_multiple$id) %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **II**  
+
+**Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+multiple_source <- links_multiple %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+multiple_target <- links_multiple %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **III**  
+
+**Creating Nodes and Edges Dataframes**
+
+```{r}
+# Bind into single dataframe
+nodes_multiple_new <- bind_rows(multiple_source, multiple_target) %>% distinct()
+
+nodes_multiple_new <- nodes_multiple_new %>%
+  left_join(nodes_multiple, by = "id") %>%
+  rename("value" = "count") %>%
+  # Assign value to number of entries each company has in dataframe
+  mutate(value = ifelse(is.na(value), 1, value*5)) %>%
+  select(id, value)
+  
+
+cc_nodes <- mc3_links_new %>%
+  filter(type == "Company Contacts")
+
+nodes_multiple_new$group <- ifelse(nodes_multiple_new$id %in% company_nodes$id, "Company",
+                              ifelse(nodes_multiple_new$id %in% cc_nodes$target, "Company Contacts", "Beneficial Owner" ))
+
+```  
+
+:::
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    nodes_multiple_new, 
+    links_multiple,
+    width = "100%",
+    main = list(text = "Variety of Company Structures",
+                style = "font-size:17x;
+                weight:bold;
+                text-align:right;")
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Beneficial Owner",
+            color = "#fccb41") %>%
+  visGroups(groupname = "Company Contacts",
+            color = "#eb99c2") %>%
+  visLegend() %>%
+  visEdges() %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```  
+
+  
+:::{ .focusbox .focus data-latex="focus"}  
+
+**Insights from Visualisations:**  
+
+Node size is pegged to number of entries per company in the dataframe. As the size of the company node does not seem proportional to number of links (type), this suggests that the multiple entries are due to the company operating across different countries instead. 
+
+:::  
+
+
+### **3.1.5: What Companies are operating across country borders?**
+
+The fishing industry is a transboundary operation, and vessels or companies that operate between different jurisdictions may often evade law enforcement authorities. Entities with multiple entries and listed countries could be related to *fishy* networks. These are filtered and visualised:  
+
+::: panel-tabset
+
+## **I**  
+
+**Extracting Nodes and Links from companies operating across countries**  
+
+```{r}
+# Create a filter dataframe to get companies operating across 3 countries
+nodes_companies <- nodes_by_type %>%
+  filter(Company >= 3)
+
+trans_nodes <- mc3_nodes_new %>%
+  filter(id %in% nodes_companies$id)
+
+trans_links <- mc3_links_new %>%
+  filter(source %in% trans_nodes$id) %>%
+  rename("from" = "source",
+         "to" = "target")
+```
+
+## **II**  
+
+**Getting Distinct Source and Target**
+
+```{r}
+# Get distinct Source and Target
+trans_source <- trans_links %>%
+  distinct(from) %>%
+  rename("id" = "from")
+
+trans_target <- trans_links %>%
+  distinct(to) %>%
+  rename("id" = "to")
+```
+
+## **III** 
+
+**Creating Nodes and Edges Dataframes**
+
+```{r}
+# Bind into single dataframe
+trans_nodes_new <- bind_rows(trans_source, trans_target) %>% distinct()
+
+# Get country count for each company node
+trans_nodes_new <- trans_nodes_new %>%
+  left_join(nodes_companies, by= "id") %>%
+  rename("value" = "Company") %>%
+# Assign value to number of countries each company is operating in
+  mutate(value = ifelse(is.na(value), 1, value*5)) %>%
+  select(id, value)
+
+trans_nodes_new$group <- ifelse(trans_nodes_new$id %in% company_nodes$id, "Company",
+                              ifelse(trans_nodes_new$id %in% cc_nodes$target, "Company Contacts", "Beneficial Owner" ))
+
+```  
+
+:::  
+
+```{r}
+#| code-fold: true
+#| fig-height: 6
+
+visNetwork(
+    trans_nodes_new, 
+    trans_links,
+    width = "100%",
+    main = list(text = "Companies Operating Across Borders",
+                style = "font-size:17x;
+                weight:bold;
+                text-align:right;"),
+    submain = list(text = "Node size represents Country Count",
+                style = "font-size:12x;
+                text-align:right;")
+  ) %>%
+  visIgraphLayout(
+    layout = "layout_with_fr"
+  ) %>%
+  visGroups(groupname = "Company",
+            color = "#1696d2") %>%
+  visGroups(groupname = "Beneficial Owner",
+            color = "#fccb41") %>%
+  visGroups(groupname = "Company Contacts",
+            color = "#eb99c2") %>%
+  visLegend() %>%
+  visEdges() %>%
+  visOptions(
+  # Specify additional Interactive Elements
+    highlightNearest = list(enabled = T, degree = 2, hover = T),
+  # Add drop-down menu to filter by company name
+    nodesIdSelection = TRUE,
+  # Add drop-down menu to filter by category
+    selectedBy = "group",
+    collapse = TRUE) %>%
+  visInteraction(navigationButtons = TRUE)
+```  
 
 
 ## **3.2: What are the most common products/services?**
@@ -964,10 +1328,10 @@ flowchart LR
 ```{r}
 #|code-fold: true
 # Replace all 'character(0)' values as unknown
-mc3_nodes$product_services[mc3_nodes$product_services == "character(0)"] <- "Unknown"
+mc3_nodes_new$product_services[mc3_nodes_new$product_services == "character(0)"] <- "Unknown"
 
 # Create new dataframe with words split into separate rows
-nodes_unnest <- mc3_nodes %>%
+nodes_unnest <- mc3_nodes_new %>%
   # Create new column 'word' to store split words
   unnest_tokens(word, 
                 product_services,
@@ -1050,7 +1414,7 @@ nodes_unnest2 <- mc3_nodes %>%
   # remove empty rows
    filter(!is.na(bigram)) %>%
   # Remove specific stopwords from bigrams
-   filter(!str_detect(bigram,"including|range|related"))
+   filter(!str_detect(bigram,"including|range|related|freelance"))
 ```
 
 ## **Step 2: Creating Links**
@@ -1065,7 +1429,6 @@ product_bigram <- nodes_unnest2 %>%
     anti_join(stop_words, by = c("word2" = "word")) %>%
   # Keep only characters, dropping numbers 
     filter(str_detect(word1, "[a-z]") & str_detect(word2, "[a-z]"))
-
 ```
 
 ## **Step 3: Creating Graph Object**  
@@ -1120,125 +1483,273 @@ ggraph(
 #| warning: false
 datatable(product_bigram)
 ```  
-  
-  
+.  
 
 :::{ .focusbox .focus data-latex="focus"}  
 
 **Insights from Visualisations:**  
 
 * Explorations revealed that most frequently declared products/services are related to the fishing industry. This is unsurprising. 
-* However, a high number of ambiguous services such as "freelance researcher" and "source freelance" were also uncovered. As these may point towards *fishy* activity, these will be extracted for further analysis
-* There are several overlaps in the frequent bigrams, that may be grouped together as the same category. The top 20 most frequent bigrams will be used as product/service categories
+* A high number of other food-related and shipping-related services were also uncovered. In fact, companies that provide **non fishing-related products or services** could be filtered out as possible brokers for *fishy* networks
+* There are several overlaps in the frequent bigrams, that may be grouped together as the same category. The most frequent bigrams and words in the wordcloud above will be used as a base for product/service company categories.
 
 :::  
 
 
 ## **3.3: Can the Companies be grouped according to Products/Services provided?**
 
-The bigram analysis in section 3.2 was used to deduce categories for products and services. As a company may have listed more than a single product/service, each category is appended as a separate column, with boolean values 1 = TRUE and 0 = FALSE as indication. The categories of interest to the study are:   
+The text analysis in section 3.2 was used to deduce categories for products and services. As non-fishing or non-food related companies within the network could be masking *fishy* company structures, the nodes are categorised as:    
   
   
-| **Category**         | **Inclusive of: **                                                      |
-|----------------------|-------------------------------------------------------------------------|
-| **Seafood Products** | fish products, frozen seafood, frozen fish, fresh shellfish, fresh fish |
-| **Processing**       | entrails shucking, smoking salting, %processing% , packaging            |
-| **Marine Products**  | aquatic products, marine fats, fins scales,                             |
-| **Trading**          | freight forwarding, transportation services, logistics services         |
-| **Freelance**        | freelance researcher, source freelance                                  |
-| **Unknown  **        | Unknown                                                                 |  
+| **Products/Services**           | **Inclusive of: **                                                                         |
+|---------------------------------|--------------------------------------------------------------------------------------------|
+| **Fishing-related Companies**   | fish products, food products, food processing, marine products                             |
+| **Non-fishing Companies**       | freight forwarding, transportation services, logistics services, equipment, machinery, etc |
+| **Unknown**                     | Unknown                                                                                    |  
 
 
+  
 
 ```{r}
-mc3_nodes_new <- mc3_nodes
+#| code-fold: true
 
-mc3_nodes_new$Seafood_products <- ifelse(grepl("fish|frozen|shellfish|fresh fish|seafood|sea food", 
-                                                mc3_nodes_new$product_services, ignore.case = TRUE), 1, 0)
+# Create nodes dataframe with unique node ids
+mc3_nodes_agg <- mc3_nodes_new %>%
+  group_by(id, type,) %>%
+  summarise(count = n(),
+            product_services = paste(product_services, collapse = ", ")) %>%
+  # Pivot to get each type as a separate column
+  pivot_wider(names_from = type, values_from = count, values_fill = 0) %>%
+  ungroup()
 
-mc3_nodes_new$Processing <- ifelse(grepl("entrails|shucking|smoking salting|processing|packaging", 
-                                                mc3_nodes_new$product_services, ignore.case = TRUE), 1, 0)
+mc3_nodes_cat <- mc3_nodes_agg
 
-mc3_nodes_new$Marine_products <- ifelse(grepl("aquatic products|marine fats|fins|scales", 
-                                                mc3_nodes_new$product_services, ignore.case = TRUE), 1, 0)
+mc3_nodes_cat$prod_group <- 
+  ifelse(grepl("fish|frozen|shellfish|fresh fish|seafood|food|meat|
+               dairy|vegetable|grocery|entrails|shucking|smoking|salting|
+               processing|packaging|canning|packing|aquatic products|
+               marine fats|fins|scales|tuna", 
+          mc3_nodes_agg$product_services, ignore.case = TRUE), "Fishing-related Companies",
+  ifelse(grepl("unknown",
+        mc3_nodes_agg$product_services, ignore.case = TRUE), "Unknown", "Non-fishing Companies"))
 
-mc3_nodes_new$Trading <- ifelse(grepl("freight|forwarding|transportation services|logistics services|import|export|trading", 
-                                                mc3_nodes_new$product_services, ignore.case = TRUE), 1, 0)
+nodes_cat_plot <- mc3_nodes_cat %>%
+  mutate(prod_group = as.factor(prod_group)) %>%
+  ggplot(
+    aes(x = prod_group)
+  ) +
+  geom_bar() +
+  labs(
+    title = "Mostly Unknown or Non-fishing Related Products or Services",
+    x = "Products/Services",
+    y = "No. of Companies"
+  ) +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    vjust = -1
+  ) +
+  ylim(0, 22000) +
+  theme(
+    text = element_text(size = 12),
+    plot.background = element_rect(fill="#F8F3E6",colour="#F8F3E6")
+  )
 
-mc3_nodes_new$Freelance <- ifelse(grepl("freelance", mc3_nodes_new$product_services, ignore.case = TRUE), 1, 0)
-
-# Get total count of products/services categories of interest offered by each company
-mc3_nodes_new <- mc3_nodes_new %>%
-  mutate(cat_count = Seafood_products + Processing + Marine_products + Trading + Freelance)
-
+nodes_cat_plot
 ```
 
-### 3.3.1 Unknown Network
+# 4: A *Fishy* Network
+
+Exploratory analysis thus far has revealed some underlying structures of various groups within the network. The most anomalous (and interlinked) sub-networks, **High Revenue and High Link Count** and **Beneficial Owners with Multiple Companies**, are concatenated to further investigate if these *fishy* structures are interlinked, as well as grouping companies and entities by categories.  
+
+The "group" that the entity is assigned is based on the following roles:  
+
+| **Group**                     | **Logic**                                                                                    |
+|-------------------------------|----------------------------------------------------------------------------------------------|
+| **Ultimate Beneficial Owner** | Beneficial Owner of >= 20 Companies, a key player in the network                             |
+| **Multi-role Entity**         | Plays multiple roles within the network, may be a key personnel or broker within the network |
+| **Beneficial Owner**          | Shareholder of the company                                                                   |
+| **Companies**                 | May be Fishing-related, Non-fishing related or offering Unknown products/services            |
+  
+  
 
 ::: panel-tabset
 
-## **Extracting Nodes and Links**
+## **I**  
+
+**Creating Nodes and Links Dataframes**  
+
+`links_owner` and `links_highrev` are merged
 
 ```{r}
-# Get Companies that do freelance work
-nodes_free <- mc3_nodes_new %>%
-  filter(Trading == "1")
+links_merged <- bind_rows(links_owner, links_highrev) %>% distinct()
 
-# Get links to these freelance companies
-links_free <- mc3_links_new %>%
-  filter(source %in% nodes_free$id) %>%
-  rename(from = "source",
-         to = "target")
-```
-
-## **Getting Distinct Source and Target**
-
-```{r}
-# Get distinct Source and Target
-free_source <- links_free %>%
+merged_source <- links_merged %>%
   distinct(from) %>%
   rename("id" = "from")
 
-free_target <- links_free %>%
+merged_target <- links_merged %>%
   distinct(to) %>%
   rename("id" = "to")
+
+nodes_merged <- bind_rows(merged_source, merged_target) %>% distinct()
 ```
 
-## **Creating Nodes and Edges Dataframes**
+## **II**   
+
+**Updating Nodes Groups**
 
 ```{r}
-# Bind into single dataframe
-nodes_free_new <- bind_rows(free_source, free_target)
+# Create a separate column counting no of different roles each entity takes on
+mc3_nodes_cat$cat_count <- rowSums(mc3_nodes_cat[, c("Company", "Beneficial Owner", "Company Contacts")] >0)
 
-bo_nodes <- mc3_nodes_new %>%
-  filter(type == "Beneficial Owner")
+nodes_merged_new <- nodes_merged %>%
+  # Get product category info
+  left_join(mc3_nodes_cat, by = "id") %>%
+  select(id, prod_group, cat_count) %>%
+  rename("type" = "prod_group") %>%
+  
+  # Get number of linked companies per beneficial owner/company contact
+  left_join(links_by_target, by= join_by("id" == "target")) %>%
+  # merge values from type column
+  mutate(type = coalesce(type.x, type.y)) %>%
+  select(id, type, company_count, cat_count) %>%
+  
+  # rename variables for visNetwork
+  rename("value" = "company_count") %>%
+  
+  # Assign values to nodes as size in visNetwork
+  mutate(value = ifelse(is.na(value), 1, value*5)) %>%
+  rename("group" = "type") %>%
+  select(id, group, value, cat_count) %>%
+  distinct()
+  
+  
+```
 
-nodes_free_new$group <- ifelse(nodes_free_new$id %in% company_nodes$id, "Company", 
-                        ifelse(nodes_free_new$id %in% bo_nodes$id, "Beneficial Owner", "Company Contacts"))
+## **III**  
 
-```  
+**Assigning Group Logic to nodes**
+
+```{r}
+#| message: false
+# Assigning Ultimate Beneficial Owner status
+nodes_merged_new$group <- ifelse(nodes_merged_new$value >= 20 & nodes_merged_new$group == "Beneficial Owner",
+                               yes = "Ultimate Beneficial Owner",
+                              # Remain as is
+                               no = nodes_merged_new$group)
+
+# Create filter from original links and nodes dataframe
+links_combined_cc <- mc3_links_new %>%
+  filter(type == "Company Contacts") %>%
+  select(target, type) %>%
+  rename("id" = "target")
+
+nodes_cc <- mc3_nodes_new %>%
+  filter(type == "Company Contacts") %>%
+  select(id, type) %>%
+  bind_rows(links_combined_cc) %>%
+  select(id, type) %>%
+  distinct()
+
+links_combined_bo <- mc3_links_new %>%
+  filter(type == "Beneficial Owner") %>%
+  select(target, type) %>%
+  rename("id" = "target")
+
+nodes_bo <- mc3_nodes_new %>%
+  filter(type == "Beneficial Owner") %>%
+  select(id, type) %>%
+  bind_rows(links_combined_bo) %>%
+  select(id, type) %>%
+  distinct()
+
+# Replace NA values in column based on conditional values
+nodes_merged_new$group <- ifelse(is.na(nodes_merged_new$group),
+                             ifelse(nodes_merged_new$id %in% nodes_cc$id, "Company Contacts", "?"),
+                             nodes_merged_new$group)
+
+nodes_merged_new$group <- ifelse((nodes_merged_new$group == "?"),
+                             ifelse(nodes_merged_new$id %in% nodes_bo$id, "Beneficial Owner", "Unknown"),
+                             nodes_merged_new$group)  
+
+nodes_merged_new <- nodes_merged_new %>%
+  mutate(value = ifelse(is.na(value), 1, value)) %>%
+  select(id, group, value)
+
+```
+
+## **IV**  
+
+**Filtering out nodes with multiple roles**
+
+```{r}
+# Create filter based on nodes with multiple roles
+nodes_merged_filter <- nodes_merged_new %>%
+  group_by(id) %>%
+  summarise(value = sum(value),
+            count = n()) %>%
+  ungroup() %>%
+  filter(count >1)
+
+# remove nodes from nodes_merged_new dataframe
+nodes_merged_new <- nodes_merged_new %>%
+  filter(!(id %in% nodes_merged_filter$id))
+
+# Assign group to nodes with multiple roles
+nodes_merged_filter <- nodes_merged_filter %>%
+  mutate(group = "Multi-role Entity") %>%
+  select(id, group, value)
+
+# Append back to nodes dataframe
+nodes_merged_new <- bind_rows(nodes_merged_new, nodes_merged_filter)
+```
+
 
 :::
+
 
 ```{r}
 #| code-fold: true
 #| fig-height: 6
 
 visNetwork(
-    nodes_free_new, 
-    links_free,
-    width = "100%",
-    main = list(text = "Multiple Companies Seem to be Owned by Several Individuals",
-                style = "font-size:17x;
-                weight:bold;
-                text-align:right;")
+    nodes_merged_new, 
+    links_merged,
+    width = "100%"
   ) %>%
   visIgraphLayout(
     layout = "layout_with_fr"
   ) %>%
-#
+  visGroups(groupname = "Ultimate Beneficial Owner", 
+            shape = "icon",
+            icon = list(code = "f521",
+                        size = 80,
+                        color = "#e25552")) %>%
+  visGroups(groupname = "Beneficial Owner",
+            shape = "icon",
+            icon = list(code = "f2bd",
+                        size = 45,
+                        color = "#fccb41")) %>%
+  visGroups(groupname = "Multi-role Entity",
+            shape = "icon",
+            icon = list(code = "f21b",
+                        color = "#695790")) %>%
+  visGroups(groupname = "Fishing-related Companies",
+            shape = "icon",
+            icon = list(code = "f21a",
+                        color = "#1696d2")) %>%
+  visGroups(groupname = "Non-fishing Companies",
+            shape = "icon",
+            icon = list(code = "f0b1",
+                        color = "#6CC3A5")) %>%
+  visGroups(groupname = "Unknown",
+            shape = "icon",
+            icon = list(code = "f059",
+                        color = "#5c5859")) %>%
   visLegend() %>%
   visEdges() %>%
+  addFontAwesome() %>%
   visOptions(
   # Specify additional Interactive Elements
     highlightNearest = list(enabled = T, degree = 2, hover = T),
@@ -1248,6 +1759,41 @@ visNetwork(
     selectedBy = "group",
     collapse = TRUE) %>%
   visInteraction(navigationButtons = TRUE)
+```  
+  
+.  
+
+The Various structures of the companies in the Network Graph with the roles of entities assigned can be summarised in the following flowchart: 
+
+```{mermaid}
+%%| fig-width: 7
+%%{
+  init: {
+    "theme": "base",
+    "themeVariables": {
+      "primaryColor": "#d8e8e6",
+      "primaryTextColor": "#325985",
+      "primaryBorderColor": "#325985",
+      "lineColor": "#325985",
+      "secondaryColor": "#cedded",
+      "tertiaryColor": "#fff" 
+      }
+  }
+}%%
+
+flowchart LR
+    A{Overall\nNetwork} --> B{Fishy\nCompany\nStructures}
+    B --> C(fa:fa-star-of-life\nShell/Front\nCompany) -.-|Two or More|D(Companies)
+    C -.-|Overlapping|E(fa:fa-users Beneficial Owners)
+    C -.-|+ Multi-role Entity|F(fa:fa-user-secret Broker)
+    B --> G(fa:fa-link\nJoint Venture) -.-|Multiple|H(fa:fa-diagram-project Company Networks)
+    G -.-|linked by|I(fa:fa-users Beneficial Owners)
+    G -.-|Multiple|J(Company Types)
+    B --> K(fa:fa-arrows-to-dot\nSole\nProprietorship) -.-|Several|L(Companies)
+    K -.-|Single|M(fa:fa-circle-user Beneficial Owner)
+    B --> N(fa:fa-building\nPublicly-listed\nCompany) -.-|Numerous|O(fa:fa-users Beneficial Owners)
+    N -.-|Single|P(Company)
+
 ```
 
 
